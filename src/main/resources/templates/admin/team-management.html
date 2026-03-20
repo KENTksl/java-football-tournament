@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý đội tuyển</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --surface: #f3f6f9;
+            --border: #d9d9d9;
+            --text: #111827;
+            --muted: #6b7280;
+            --muted-2: #b3b3b3;
+            --brand: #009cff;
+            --radius-xl: 25px;
+            --radius-lg: 20px;
+        }
+
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .app {
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar Styles from general-overview */
+        .sidebar {
+            width: 300px;
+            padding: 24px 18px;
+            border-right: 1px solid rgba(17, 24, 39, 0.06);
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar__brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 14px;
+            border-radius: var(--radius-lg);
+            background: var(--surface);
+            margin: 0 6px 18px;
+        }
+
+        .sidebar__brandIcon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(0, 156, 255, 0.18), rgba(0, 156, 255, 0.06));
+            display: grid;
+            place-items: center;
+        }
+
+        .sidebar__brandIcon svg { width: 26px; height: 26px; }
+
+        .sidebar__brandTitle {
+            font-weight: 700;
+            font-size: 18px;
+            line-height: 1.2;
+        }
+
+        .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 0 6px;
+        }
+
+        .nav__item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 12px;
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        .nav__item:hover {
+            background: rgba(243, 246, 249, 0.8);
+        }
+
+        .nav__item--active {
+            background: var(--surface);
+        }
+
+        .nav__icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            overflow: hidden;
+            flex: 0 0 auto;
+            background: rgba(17, 24, 39, 0.06);
+            display: grid;
+            place-items: center;
+        }
+
+        .nav__icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .nav__label {
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .nav__item--large {
+            padding: 10px 12px;
+        }
+
+        .nav__icon--large {
+            width: 71px;
+            height: 71px;
+            border-radius: 20px;
+            background: var(--surface);
+        }
+
+        .nav__label--large {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .nav__chevron {
+            margin-left: auto;
+            width: 18px;
+            height: 18px;
+            opacity: 0.55;
+        }
+
+        .sidebar__footer {
+            margin-top: auto;
+            padding: 0 6px;
+        }
+
+        /* Topbar Styles from general-overview */
+        .content {
+            flex: 1 1 auto;
+            padding: 28px 32px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 26px;
+        }
+
+        .topbar__menuBtn {
+            width: 44px;
+            height: 44px;
+            border: 0;
+            background: transparent;
+            display: grid;
+            place-items: center;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .topbar__menuBtn img {
+            width: 30px;
+            height: 30px;
+            display: block;
+        }
+
+        .search {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            width: 320px;
+            height: 62px;
+            border-radius: 9999px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+        }
+
+        .search svg { width: 18px; height: 18px; color: var(--muted-2); }
+
+        .search input {
+            border: 0;
+            outline: none;
+            background: transparent;
+            width: 100%;
+            font-size: 16px;
+            color: var(--text);
+        }
+
+        .topbar__right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .iconBtn {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: var(--surface);
+            border: 0;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+        }
+
+        .iconBtn img { width: 20px; height: 20px; display: block; }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 9999px;
+            background: transparent;
+        }
+
+        .profile__avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 9999px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(0, 156, 255, 0.22), rgba(17, 24, 39, 0.08));
+        }
+
+        .profile__avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .profile__name {
+            font-weight: 600;
+            font-size: 16px;
+            white-space: nowrap;
+        }
+
+        .profile__dropdown {
+            width: 18px;
+            height: 18px;
+            display: block;
+            opacity: 0.65;
+        }
+
+        /* Table Specific Styles from image */
+        .section-title {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #111827;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            width: fit-content;
+            border: 1px solid #000;
+        }
+
+        .tab {
+            padding: 10px 24px;
+            background: #fff;
+            border: none;
+            border-right: 1px solid #000;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            color: #111827;
+        }
+
+        .tab:last-child {
+            border-right: none;
+        }
+
+        .tab--active {
+            background: #fff;
+            color: #111827;
+            text-decoration: underline;
+        }
+
+        .table-container {
+            border: 2px solid #000;
+            border-radius: 0;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th, .data-table td {
+            border: 1px solid #000;
+            padding: 16px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            color: #000;
+        }
+
+        .data-table th {
+            background: #fff;
+            font-weight: 700;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 14px;
+            min-width: 100px;
+        }
+
+        .badge--approved {
+            background: #2e7d32;
+            color: #fff;
+        }
+
+        .badge--pending {
+            background: #fbc02d;
+            color: #000;
+        }
+
+        .btn-detail {
+            background: #fff;
+            border: 1.5px solid #000;
+            border-radius: 20px;
+            padding: 6px 20px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 40px;
+            gap: 16px;
+        }
+
+        .page-numbers {
+            display: flex;
+            gap: 10px;
+        }
+
+        .page-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid #000;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .page-btn--active {
+            background: #fff;
+        }
+
+        .arrow-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .triangle-left {
+            width: 0;
+            height: 0;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            border-right: 20px solid #009cff;
+        }
+
+        .triangle-right {
+            width: 0;
+            height: 0;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            border-left: 20px solid #009cff;
+        }
+
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .content { padding: 18px; }
+            .search { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <!-- Sidebar from general-overview -->
+    <aside class="sidebar">
+        <div class="sidebar__brand">
+            <div class="sidebar__brandIcon">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M4 12.5l4.5 4.5L20 5.5" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div>
+                <div class="sidebar__brandTitle">Admin Space</div>
+                <div class="muted" style="font-size: 13px; margin-top: 2px;">Bảng điều khiển</div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <a class="nav__item nav__item--large" href="/admin/general-overview">
+                <span class="nav__icon nav__icon--large">
+                    <img src="/assets/general-overview/nav-dashboard.png" alt="">
+                </span>
+                <span class="nav__label nav__label--large">Bảng điều khiển</span>
+            </a>
+            <a class="nav__item nav__item--large" href="#">
+                <span class="nav__icon nav__icon--large">
+                    <img src="/assets/general-overview/nav-profile.png" alt="">
+                </span>
+                <span class="nav__label nav__label--large">Hồ sơ của tôi</span>
+            </a>
+            <a class="nav__item nav__item--large nav__item--active" href="#">
+                <span class="nav__icon nav__icon--large">
+                    <img src="/assets/general-overview/tournament.jpg" alt="">
+                </span>
+                <span class="nav__label nav__label--large">Quản lý</span>
+                <img class="nav__chevron" src="/assets/general-overview/sidebar-arrow.png" alt="">
+            </a>
+        </nav>
+
+        <nav class="nav">
+            <a class="nav__item" href="#">
+                <span class="nav__label">Giải đấu</span>
+            </a>
+            <a class="nav__item" href="#">
+                <span class="nav__label">Người dùng</span>
+            </a>
+            <a class="nav__item nav__item--active" href="/admin/team-management">
+                <span class="nav__label">Đội tuyển</span>
+            </a>
+        </nav>
+
+        <a class="nav__item nav__item--large" href="#">
+            <span class="nav__icon nav__icon--large">
+                <img src="/assets/general-overview/sidebar-stats.png" alt="">
+            </span>
+            <span class="nav__label nav__label--large">Thống kê</span>
+            <img class="nav__chevron" src="/assets/general-overview/sidebar-arrow.png" alt="">
+        </a>
+
+        <div class="sidebar__footer">
+            <a class="nav__item nav__item--large" href="#">
+                <span class="nav__icon nav__icon--large">
+                    <img src="/assets/general-overview/sidebar-logout.png" alt="">
+                </span>
+                <span class="nav__label nav__label--large">Đăng xuất</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="content">
+        <!-- Topbar from general-overview -->
+        <header class="topbar">
+            <button class="topbar__menuBtn" type="button">
+                <img src="/assets/general-overview/menu.svg" alt="">
+            </button>
+
+            <div class="search">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2"/>
+                    <path d="M16.3 16.3 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <input type="text" placeholder="Tìm kiếm">
+            </div>
+
+            <div class="topbar__right">
+                <div class="pill">Tin nhắn</div>
+                <button class="iconBtn">
+                    <img src="/assets/general-overview/top-mail.png" alt="">
+                </button>
+
+                <div class="pill">Thông báo</div>
+                <button class="iconBtn">
+                    <img src="/assets/general-overview/top-notification.png" alt="">
+                </button>
+
+                <div class="profile">
+                    <div class="profile__avatar">
+                        <img src="/assets/general-overview/top-avatar.png" alt="">
+                    </div>
+                    <div class="profile__name">Quang Minh</div>
+                    <img class="profile__dropdown" src="/assets/general-overview/top-dropdown.png" alt="">
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content: Team Management Table -->
+        <h1 class="section-title">Danh Sách Hồ Sơ Đội Tuyển</h1>
+
+        <div class="tabs">
+            <button class="tab tab--active">Tất cả</button>
+            <button class="tab">Chờ duyệt</button>
+            <button class="tab">Đã duyệt</button>
+            <button class="tab">Đã hủy</button>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Ngày nộp</th>
+                        <th>Tên đội</th>
+                        <th>Người đại diện</th>
+                        <th>SĐT</th>
+                        <th>Số thành viên</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>8/1/2026</td>
+                        <td>FC Test 196267</td>
+                        <td>Nguyen Van B</td>
+                        <td>0901234567</td>
+                        <td>6</td>
+                        <td><span class="badge badge--approved">Đã duyệt</span></td>
+                        <td><button class="btn-detail">Chi tiết</button></td>
+                    </tr>
+                    <tr>
+                        <td>8/1/2026</td>
+                        <td>FC Test 196093</td>
+                        <td>Nguyen Van C</td>
+                        <td>0982219370</td>
+                        <td>6</td>
+                        <td><span class="badge badge--pending">Chờ duyệt</span></td>
+                        <td><button class="btn-detail">Chi tiết</button></td>
+                    </tr>
+                    <tr>
+                        <td>8/1/2026</td>
+                        <td>FC Test 195891</td>
+                        <td>Nguyen Van D</td>
+                        <td>0982219370</td>
+                        <td>6</td>
+                        <td><span class="badge badge--pending">Chờ duyệt</span></td>
+                        <td><button class="btn-detail">Chi tiết</button></td>
+                    </tr>
+                    <tr>
+                        <td>8/1/2026</td>
+                        <td>FC Test 159841</td>
+                        <td>Nguyen Van T</td>
+                        <td>0982219370</td>
+                        <td>6</td>
+                        <td><span class="badge badge--approved">Đã duyệt</span></td>
+                        <td><button class="btn-detail">Chi tiết</button></td>
+                    </tr>
+                    <tr>
+                        <td>8/1/2026</td>
+                        <td>FC Test 156940</td>
+                        <td>Nguyen Van E</td>
+                        <td>0982219370</td>
+                        <td>6</td>
+                        <td><span class="badge badge--approved">Đã duyệt</span></td>
+                        <td><button class="btn-detail">Chi tiết</button></td>
+                    </tr>
+                    <tr>
+                        <td>8/1/2026</td>
+                        <td>22DTHC3</td>
+                        <td>Nhan</td>
+                        <td>0982219370</td>
+                        <td>6</td>
+                        <td><span class="badge badge--approved">Đã duyệt</span></td>
+                        <td><button class="btn-detail">Chi tiết</button></td>
+                    </tr>
+                    <tr>
+                        <td>8/1/2026</td>
+                        <td>22DTHC5</td>
+                        <td>Nguyen Van Z</td>
+                        <td>0982219370</td>
+                        <td>6</td>
+                        <td><span class="badge badge--approved">Đã duyệt</span></td>
+                        <td><button class="btn-detail">Chi tiết</button></td>
+                    </tr>
+                    <tr>
+                        <td>8/1/2026</td>
+                        <td>22DTHC6</td>
+                        <td>Nguyen Van M</td>
+                        <td>0982219370</td>
+                        <td>6</td>
+                        <td><span class="badge badge--approved">Đã duyệt</span></td>
+                        <td><button class="btn-detail">Chi tiết</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-container">
+            <button class="arrow-btn"><div class="triangle-left"></div></button>
+            <div class="page-numbers">
+                <button class="page-btn page-btn--active">1</button>
+                <button class="page-btn">2</button>
+                <button class="page-btn">3</button>
+                <button class="page-btn">4</button>
+                <button class="page-btn">5</button>
+                <button class="page-btn">6</button>
+                <button class="page-btn">...</button>
+            </div>
+            <button class="arrow-btn"><div class="triangle-right"></div></button>
+        </div>
+    </main>
+</div>
+</body>
+</html>
