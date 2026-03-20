@@ -10,9 +10,15 @@ public class AdminController {
 	public String generalOverview() {
 		return "admin/general-overview";
 	}
-	@GetMapping({"/", "/admin/admin-profile"})
+
+	@GetMapping({"/admin/admin-profile", "/admin/profile"})
 	public String adminProfile() {
-		return "/admin/admin-profile";
+		return "admin/admin-profile";
+	}
+
+	@GetMapping({"/admin/manage", "/admin/manage-tournament", "/admin/manage/tournament"})
+	public String manageTournament() {
+		return "admin/manage/manage-tournament";
 	}
 }
 
