@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class AdminController {
 
-	@GetMapping({"/", "/general-overview"})
+	@GetMapping({"/", "/admin/general-overview"})
 	public String generalOverview() {
-		return "general-overview";
+		return "/admin/general-overview";
 	}
 }
 
