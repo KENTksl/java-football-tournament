@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ quản trị</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --surface: #f3f6f9;
+            --border: #d9d9d9;
+            --text: #111827;
+            --muted: #6b7280;
+            --muted-2: #b3b3b3;
+            --brand: #009cff;
+            --radius-xl: 25px;
+            --radius-lg: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .app {
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 300px;
+            padding: 24px 18px;
+            border-right: 1px solid rgba(17, 24, 39, 0.06);
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar__brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 14px;
+            border-radius: var(--radius-lg);
+            background: var(--surface);
+            margin: 0 6px 18px;
+        }
+
+        .sidebar__brandIcon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(0, 156, 255, 0.18), rgba(0, 156, 255, 0.06));
+            display: grid;
+            place-items: center;
+        }
+
+        .sidebar__brandIcon svg {
+            width: 26px;
+            height: 26px;
+        }
+
+        .sidebar__brandTitle {
+            font-weight: 700;
+            font-size: 18px;
+            line-height: 1.2;
+        }
+
+        .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 0 6px;
+        }
+
+        .nav__item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 12px;
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        .nav__item:hover {
+            background: rgba(243, 246, 249, 0.8);
+        }
+
+        .nav__item--active {
+            background: var(--surface);
+        }
+
+        .nav__icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            overflow: hidden;
+            flex: 0 0 auto;
+            background: rgba(17, 24, 39, 0.06);
+            display: grid;
+            place-items: center;
+        }
+
+        .nav__icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+        }
+
+        .nav__label {
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .nav__item--large {
+            padding: 10px 12px;
+        }
+
+        .nav__icon--large {
+            width: 71px;
+            height: 71px;
+            border-radius: 20px;
+            background: var(--surface);
+        }
+
+        .nav__label--large {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .nav__chevron {
+            margin-left: auto;
+            width: 18px;
+            height: 18px;
+            opacity: 0.55;
+        }
+
+        .sidebar__footer {
+            margin-top: auto;
+            padding: 0 6px;
+        }
+
+        .content {
+            flex: 1 1 auto;
+            padding: 28px 32px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 26px;
+        }
+
+        .topbar__menuBtn {
+            width: 44px;
+            height: 44px;
+            border: 0;
+            background: transparent;
+            display: grid;
+            place-items: center;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .topbar__menuBtn img {
+            width: 30px;
+            height: 30px;
+            display: block;
+        }
+
+        .search {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            width: 320px;
+            height: 62px;
+            border-radius: 9999px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+        }
+
+        .search svg {
+            width: 18px;
+            height: 18px;
+            color: var(--muted-2);
+        }
+
+        .search input {
+            border: 0;
+            outline: none;
+            background: transparent;
+            width: 100%;
+            font-size: 16px;
+            color: var(--text);
+        }
+
+        .search input::placeholder {
+            color: var(--muted-2);
+        }
+
+        .topbar__right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .pill {
+            font-weight: 500;
+            font-size: 16px;
+            color: var(--text);
+        }
+
+        .iconBtn {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: var(--surface);
+            border: 0;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+        }
+
+        .iconBtn svg {
+            width: 20px;
+            height: 20px;
+            color: var(--text);
+        }
+
+        .iconBtn img {
+            width: 20px;
+            height: 20px;
+            display: block;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 9999px;
+            background: transparent;
+        }
+
+        .profile__avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 9999px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(0, 156, 255, 0.22), rgba(17, 24, 39, 0.08));
+        }
+
+        .profile__avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .profile__name {
+            font-weight: 600;
+            font-size: 16px;
+            white-space: nowrap;
+        }
+
+        .profile__dropdown {
+            width: 18px;
+            height: 18px;
+            display: block;
+            opacity: 0.65;
+        }
+
+        .footer {
+            margin-top: 24px;
+            padding: 18px 0 4px;
+            border-top: 1px solid rgba(17, 24, 39, 0.08);
+            color: var(--muted);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .footer a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 1200px) {
+            .search {
+                width: 280px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                display: none;
+            }
+
+            .content {
+                padding: 18px;
+            }
+
+            .search {
+                width: 100%;
+                flex: 1 1 auto;
+            }
+
+            .pill {
+                display: none;
+            }
+        }
+
+        /* --- CSS cho Bảng Hồ sơ cá nhân --- */
+        .profile-container {
+            background-color: #f8fafc;
+            /* Màu nền nhẹ của card */
+            border-radius: 15px;
+            padding: 40px;
+            margin-top: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .profile-container__title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: #000;
+        }
+
+        .profile-layout {
+            display: flex;
+            gap: 80px;
+            align-items: flex-start;
+        }
+
+        /* Bên trái: Ảnh đại diện */
+        .profile-avatar-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 200px;
+        }
+
+        .profile-avatar-col span {
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .profile-avatar-circle {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            border: 1px solid #ddd;
+            overflow: hidden;
+            background: #fff;
+            margin-bottom: 20px;
+        }
+
+        .profile-avatar-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .btn-change-avatar {
+            background-color: #0076a3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        /* Bên phải: Form nhập liệu */
+        .profile-form-col {
+            flex: 1;
+            max-width: 600px;
+        }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            width: 140px;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            flex: 1;
+            border: 1px solid #999;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .form-group textarea {
+            height: 120px;
+            resize: none;
+        }
+
+        .input-short {
+            max-width: 180px;
+        }
+
+        .btn-save {
+            background-color: #0076a3;
+            color: white;
+            border: none;
+            padding: 10px 40px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: block;
+            margin: 30px auto 0;
+            /* Căn giữa nút Lưu */
+        }
+
+        /* Responsive cơ bản */
+        @media (max-width: 1100px) {
+            .profile-layout {
+                flex-direction: column;
+                align-items: center;
+                gap: 40px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <aside class="sidebar" aria-label="Thanh điều hướng">
+            <div class="sidebar__brand">
+                <div class="sidebar__brandIcon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M4 12.5l4.5 4.5L20 5.5" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="sidebar__brandTitle">Admin Space</div>
+                    <div class="muted" style="font-size: 13px; margin-top: 2px;">Hồ sơ</div>
+                </div>
+            </div>
+
+            <nav class="nav" aria-label="Mục chính">
+                <a class="nav__item nav__item--large" href="/admin/general-overview">
+                    <span class="nav__icon nav__icon--large">
+                        <img src="/assets/general-overview/nav-dashboard.png" alt="">
+                    </span>
+                    <span class="nav__label nav__label--large">Bảng điều khiển</span>
+                </a>
+                <a class="nav__item nav__item--large nav__item--active" href="/admin/admin-profile">
+                    <span class="nav__icon nav__icon--large">
+                        <img src="/assets/general-overview/nav-profile.png" alt="">
+                    </span>
+                    <span class="nav__label nav__label--large">Hồ sơ của tôi</span>
+                </a>
+                <a class="nav__item nav__item--large" href="/admin/manage">
+                    <span class="nav__icon nav__icon--large">
+                        <img src="/assets/general-overview/tournament.jpg" alt="">
+                    </span>
+                    <span class="nav__label nav__label--large">Quản lý</span>
+                    <img class="nav__chevron" src="/assets/general-overview/sidebar-arrow.png" alt="">
+                </a>
+            </nav>
+
+            <nav class="nav" aria-label="Danh mục">
+                <a class="nav__item" href="/admin/tournaments">
+                    <span class="nav__label">Giải đấu</span>
+                </a>
+                <a class="nav__item" href="/admin/users">
+                    <span class="nav__label">Người dùng</span>
+                </a>
+                <a class="nav__item" href="/admin/teams">
+                    <span class="nav__label">Đội tuyển</span>
+                </a>
+            </nav>
+
+            <a class="nav__item nav__item--large" href="/admin/stats">
+                <span class="nav__icon nav__icon--large">
+                    <img src="/assets/general-overview/sidebar-stats.png" alt="">
+                </span>
+                <span class="nav__label nav__label--large">Thống kê</span>
+                <img class="nav__chevron" src="/assets/general-overview/sidebar-arrow.png" alt="">
+            </a>
+            <nav class="nav" aria-label="Khác">
+                <a class="nav__item" href="/admin/billing">
+                    <span class="nav__label">Hóa đơn</span>
+                </a>
+            </nav>
+
+            <div class="sidebar__footer">
+                <a class="nav__item nav__item--large" href="/logout">
+                    <span class="nav__icon nav__icon--large">
+                        <img src="/assets/general-overview/sidebar-logout.png" alt="">
+                    </span>
+                    <span class="nav__label nav__label--large">Đăng xuất</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="content">
+            <header class="topbar">
+                <button class="topbar__menuBtn" type="button" aria-label="Menu">
+                    <img src="/assets/general-overview/menu.svg" alt="">
+                </button>
+
+                <div class="search" role="search">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor"
+                            stroke-width="2" />
+                        <path d="M16.3 16.3 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    <input type="text" placeholder="Tìm kiếm" aria-label="Tìm kiếm">
+                </div>
+
+                <div class="topbar__right">
+                    <div class="pill">Tin nhắn</div>
+                    <button class="iconBtn" type="button" aria-label="Tin nhắn">
+                        <img src="/assets/general-overview/top-mail.png" alt="">
+                    </button>
+
+                    <div class="pill">Thông báo</div>
+                    <button class="iconBtn" type="button" aria-label="Thông báo">
+                        <img src="/assets/general-overview/top-notification.png" alt="">
+                    </button>
+
+                    <div class="profile" aria-label="Người dùng">
+                        <div class="profile__avatar">
+                            <img src="/assets/general-overview/top-avatar.png" alt="">
+                        </div>
+                        <div class="profile__name">Quản trị viên</div>
+                        <img class="profile__dropdown" src="/assets/general-overview/top-dropdown.png" alt="">
+                    </div>
+                </div>
+            </header>
+            
+            <section class="profile-container">
+                <h2 class="profile-container__title">Hồ sơ cá nhân</h2>
+
+                <div class="profile-layout">
+                    <div class="profile-avatar-col">
+                        <span>Ảnh đại diện</span>
+                        <div class="profile-avatar-circle">
+                            <img src="https://via.placeholder.com/160" alt="Avatar">
+                        </div>
+                        <button class="btn-change-avatar">Đổi ảnh đại diện</button>
+                    </div>
+
+                    <form class="profile-form-col">
+                        <div class="form-group">
+                            <label for="username">Tên người dùng</label>
+                            <input type="text" id="username" name="username">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Số điện thoại</label>
+                            <input type="text" id="phone" name="phone" class="input-short">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="address">Địa chỉ</label>
+                            <textarea id="address" name="address"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dob">Ngày sinh</label>
+                            <input type="date" id="dob" name="dob" class="input-short">
+                        </div>
+
+                        <button type="submit" class="btn-save">Lưu</button>
+                    </form>
+                </div>
+            </section>
+
+            <footer class="footer" aria-label="Chân trang">
+                <span>© 2026 Admin Space</span>
+                <span>•</span>
+                <a href="/support">Hỗ trợ</a>
+                <span>•</span>
+                <a href="/privacy">Chính sách</a>
+            </footer>
+        </main>
+    </div>
+</body>
+
+</html>

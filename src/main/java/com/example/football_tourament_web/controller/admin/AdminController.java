@@ -10,5 +10,9 @@ public class AdminController {
 	public String generalOverview() {
 		return "admin/general-overview";
 	}
+	@GetMapping({"/", "/admin/admin-profile"})
+	public String adminProfile() {
+		return "/admin/admin-profile";
+	}
 }
 
