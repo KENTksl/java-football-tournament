@@ -20,5 +20,15 @@ public class AdminController {
 	public String manageTournament() {
 		return "admin/manage/manage-tournament";
 	}
+
+	@GetMapping({"/admin/manage", "/admin/manage-user", "/admin/manage/user"})
+	public String manageUser() {
+		return "admin/manage/manage-user";
+	}
+
+	@GetMapping({"/admin/manage", "/admin/user-detail", "/admin/manage/user-detail"})
+	public String userDetail() {
+		return "admin/manage/user-detail";
+	}
 }
 
