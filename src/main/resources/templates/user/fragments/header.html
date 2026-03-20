@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <header class="header" th:fragment="header(active)">
+      <div class="container header-inner">
+        <div class="brand">SPORT TOURNAMENT</div>
+        <nav class="nav" aria-label="Điều hướng chính">
+          <a th:href="@{/}" th:attr="aria-current=${active == 'home'} ? 'page' : null">TRANG CHỦ</a>
+          <a href="#">GIẢI ĐẤU</a>
+          <a th:href="@{/gioi-thieu}" th:attr="aria-current=${active == 'about'} ? 'page' : null">GIỚI THIỆU</a>
+          <a th:href="@{/tin-tuc}" th:attr="aria-current=${active == 'news'} ? 'page' : null">TIN TỨC</a>
+          <a th:href="@{/lien-he}" th:attr="aria-current=${active == 'contact'} ? 'page' : null">LIÊN HỆ</a>
+          <a href="#">ĐĂNG NHẬP</a>
+        </nav>
+      </div>
+    </header>
+  </body>
+</html>
