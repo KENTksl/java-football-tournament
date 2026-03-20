@@ -691,10 +691,35 @@
             font-style: italic;
             color: #999;
         }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
     </style>
 </head>
 
 <body>
+    <!-- Modal for Adding Tournament -->
+    <div id="addTournamentModal" class="modal-overlay">
+        <!-- Content will be loaded or embedded here -->
+        <div th:insert="~{admin/manage/add-tournament}"></div>
+    </div>
     <div class="app">
         <aside class="sidebar" aria-label="Thanh điều hướng">
             <div class="sidebar__brand">
@@ -806,7 +831,7 @@
             <section class="tournament-card" aria-label="Quản lý giải đấu bóng đá">
                 <div class="tournament-card__header">
                     <h1 class="tournament-card__title">Quản lý Giải đấu bóng đá</h1>
-                    <button class="btn-add-tournament">Thêm giải đấu</button>
+                    <button class="btn-add-tournament" onclick="openModal()">Thêm giải đấu</button>
                 </div>
 
                 <div class="tableWrap" style="border: none; background: transparent;">
@@ -897,6 +922,26 @@
             </footer>
         </main>
     </div>
+
+    <script>
+        function openModal() {
+            document.getElementById('addTournamentModal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // Ngăn cuộn trang
+        }
+
+        function closeModal() {
+            document.getElementById('addTournamentModal').classList.remove('active');
+            document.body.style.overflow = 'auto'; // Cho phép cuộn lại
+        }
+
+        // Đóng modal khi click ra ngoài vùng modal-content
+        window.onclick = function(event) {
+            const modal = document.getElementById('addTournamentModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
 </body>
 
 </html>
