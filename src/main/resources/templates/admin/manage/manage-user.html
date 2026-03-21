@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hồ sơ quản trị</title>
+    <title>Quản lý người dùng</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -242,12 +242,6 @@
             cursor: pointer;
         }
 
-        .iconBtn svg {
-            width: 20px;
-            height: 20px;
-            color: var(--text);
-        }
-
         .iconBtn img {
             width: 20px;
             height: 20px;
@@ -291,8 +285,86 @@
             opacity: 0.65;
         }
 
+        /* --- User Management Styling --- */
+        .user-card {
+            background-color: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            min-height: 500px;
+        }
+
+        .user-card__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .user-card__title {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .btn-add-user {
+            background-color: #009cff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .user-table th {
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 2px solid #ccc;
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--text);
+        }
+
+        .user-table td {
+            padding: 15px 10px;
+            font-size: 14px;
+            color: #666;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 4px;
+        }
+
+        .btn-act {
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: white;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-act--detail { background-color: #f39c12; }
+        .btn-act--edit { background-color: #009cff; }
+        .btn-act--delete { background-color: #e74c3c; }
+
+        .status-text {
+            font-style: italic;
+            color: #999;
+        }
+
         .footer {
-            margin-top: 24px;
+            margin-top: 8px;
             padding: 18px 0 4px;
             border-top: 1px solid rgba(17, 24, 39, 0.08);
             color: var(--muted);
@@ -313,152 +385,11 @@
             text-decoration: underline;
         }
 
-        @media (max-width: 1200px) {
-            .search {
-                width: 280px;
-            }
-        }
-
         @media (max-width: 900px) {
-            .sidebar {
-                display: none;
-            }
-
-            .content {
-                padding: 18px;
-            }
-
-            .search {
-                width: 100%;
-                flex: 1 1 auto;
-            }
-
-            .pill {
-                display: none;
-            }
-        }
-
-        /* --- CSS cho Bảng Hồ sơ cá nhân --- */
-        .profile-container {
-            background-color: #f8fafc;
-            /* Màu nền nhẹ của card */
-            border-radius: 15px;
-            padding: 40px;
-            margin-top: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-        }
-
-        .profile-container__title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 30px;
-            color: #000;
-        }
-
-        .profile-layout {
-            display: flex;
-            gap: 80px;
-            align-items: flex-start;
-        }
-
-        /* Bên trái: Ảnh đại diện */
-        .profile-avatar-col {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 200px;
-        }
-
-        .profile-avatar-col span {
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-
-        .profile-avatar-circle {
-            width: 160px;
-            height: 160px;
-            border-radius: 50%;
-            border: 1px solid #ddd;
-            overflow: hidden;
-            background: #fff;
-            margin-bottom: 20px;
-        }
-
-        .profile-avatar-circle img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .btn-change-avatar {
-            background-color: #0076a3;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        /* Bên phải: Form nhập liệu */
-        .profile-form-col {
-            flex: 1;
-            max-width: 600px;
-        }
-
-        .form-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            width: 140px;
-            font-weight: 500;
-            font-size: 15px;
-        }
-
-        .form-group input,
-        .form-group textarea {
-            flex: 1;
-            border: 1px solid #999;
-            border-radius: 8px;
-            padding: 10px 15px;
-            font-size: 14px;
-            outline: none;
-        }
-
-        .form-group textarea {
-            height: 120px;
-            resize: none;
-        }
-
-        .input-short {
-            max-width: 180px;
-        }
-
-        .btn-save {
-            background-color: #0076a3;
-            color: white;
-            border: none;
-            padding: 10px 40px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            display: block;
-            margin: 30px auto 0;
-            /* Căn giữa nút Lưu */
-        }
-
-        /* Responsive cơ bản */
-        @media (max-width: 1100px) {
-            .profile-layout {
-                flex-direction: column;
-                align-items: center;
-                gap: 40px;
-            }
+            .sidebar { display: none; }
+            .content { padding: 18px; }
+            .search { width: 100%; flex: 1 1 auto; }
+            .pill { display: none; }
         }
     </style>
 </head>
@@ -468,14 +399,14 @@
         <aside class="sidebar" aria-label="Thanh điều hướng">
             <div class="sidebar__brand">
                 <div class="sidebar__brandIcon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
                         <path d="M4 12.5l4.5 4.5L20 5.5" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round"
-                              stroke-linejoin="round" />
+                            stroke-linejoin="round" />
                     </svg>
                 </div>
                 <div>
                     <div class="sidebar__brandTitle">Admin Space</div>
-                    <div class="muted" style="font-size: 13px; margin-top: 2px;">Hồ sơ</div>
+                    <div style="font-size: 13px; margin-top: 2px; color: var(--muted);">Quản lý người dùng</div>
                 </div>
             </div>
 
@@ -486,13 +417,13 @@
                     </span>
                     <span class="nav__label nav__label--large">Bảng điều khiển</span>
                 </a>
-                <a class="nav__item nav__item--large nav__item--active" href="/admin/admin-profile">
+                <a class="nav__item nav__item--large" href="/admin/admin-profile">
                     <span class="nav__icon nav__icon--large">
                         <img src="/assets/general-overview/nav-profile.png" alt="">
                     </span>
                     <span class="nav__label nav__label--large">Hồ sơ của tôi</span>
                 </a>
-                <a class="nav__item nav__item--large" href="/admin/manage">
+                <a class="nav__item nav__item--large nav__item--active" href="/admin/manage">
                     <span class="nav__icon nav__icon--large">
                         <img src="/assets/general-overview/tournament.jpg" alt="">
                     </span>
@@ -502,13 +433,13 @@
             </nav>
 
             <nav class="nav" aria-label="Danh mục">
-                <a class="nav__item" href="/admin/manage">
+                <a class="nav__item" href="/admin/manage/tournament">
                     <span class="nav__label">Giải đấu</span>
                 </a>
-                <a class="nav__item" href="/admin/manage/user">
+                <a class="nav__item nav__item--active" href="/admin/manage/user">
                     <span class="nav__label">Người dùng</span>
                 </a>
-                <a class="nav__item" href="/admin/teams">
+                <a class="nav__item" href="/admin/manage/team">
                     <span class="nav__label">Đội tuyển</span>
                 </a>
             </nav>
@@ -548,7 +479,7 @@
                             stroke-width="2" />
                         <path d="M16.3 16.3 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                     </svg>
-                    <input type="text" placeholder="Tìm kiếm" aria-label="Tìm kiếm">
+                    <input type="text" placeholder="Tìm kiếm người dùng..." aria-label="Tìm kiếm">
                 </div>
 
                 <div class="topbar__right">
@@ -571,42 +502,74 @@
                     </div>
                 </div>
             </header>
-            
-            <section class="profile-container">
-                <h2 class="profile-container__title">Hồ sơ cá nhân</h2>
 
-                <div class="profile-layout">
-                    <div class="profile-avatar-col">
-                        <span>Ảnh đại diện</span>
-                        <div class="profile-avatar-circle">
-                            <img src="/assets/figma/avatar.jpg" alt="Avatar">
-                        </div>
-                        <button class="btn-change-avatar">Đổi ảnh đại diện</button>
-                    </div>
+            <section class="user-card" aria-label="Quản lý người dùng">
+                <div class="user-card__header">
+                    <h1 class="user-card__title">Quản lý Người dùng</h1>
+                    <button class="btn-add-user">Thêm người dùng</button>
+                </div>
 
-                    <form class="profile-form-col">
-                        <div class="form-group">
-                            <label for="username">Tên người dùng</label>
-                            <input type="text" id="username" name="username">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="phone">Số điện thoại</label>
-                            <input type="text" id="phone" name="phone" class="input-short">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="address">Địa chỉ</label>
-                            <textarea id="address" name="address"></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="dob">Ngày sinh</label>
-                            <input type="date" id="dob" name="dob" class="input-short">
-                        </div>
-
-                        <button type="submit" class="btn-save">Lưu</button>
-                    </form>
+                <div class="tableWrap" style="border: none; background: transparent;">
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;">#</th>
+                                <th>Tên đăng nhập</th>
+                                <th>Họ tên</th>
+                                <th>Email</th>
+                                <th>Vai trò</th>
+                                <th>Trạng thái</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>admin_hutech</td>
+                                <td>Nguyễn Nhật Hào</td>
+                                <td>hao.nn@hutech.edu.vn</td>
+                                <td>Admin</td>
+                                <td class="status-text">active</td>
+                                <td>
+                                    <div class="action-btns">
+                                        <a href="/admin/manage/user-detail" class="btn-act btn-act--detail" style="text-decoration: none;">Chi tiết</a>
+                                        <button class="btn-act btn-act--edit">Sửa</button>
+                                        <button class="btn-act btn-act--delete">Xóa</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>quangminh_99</td>
+                                <td>Trần Quang Minh</td>
+                                <td>minh.tq@gmail.com</td>
+                                <td>User</td>
+                                <td class="status-text">active</td>
+                                <td>
+                                    <div class="action-btns">
+                                        <a href="/admin/manage/user-detail" class="btn-act btn-act--detail" style="text-decoration: none;">Chi tiết</a>
+                                        <button class="btn-act btn-act--edit">Sửa</button>
+                                        <button class="btn-act btn-act--delete">Xóa</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>fc_test_user</td>
+                                <td>FC Test 196267</td>
+                                <td>test.fc@hutech.vn</td>
+                                <td>User</td>
+                                <td class="status-text">inactive</td>
+                                <td>
+                                    <div class="action-btns">
+                                        <a href="/admin/manage/user-detail" class="btn-act btn-act--detail" style="text-decoration: none;">Chi tiết</a>
+                                        <button class="btn-act btn-act--edit">Sửa</button>
+                                        <button class="btn-act btn-act--delete">Xóa</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </section>
 
