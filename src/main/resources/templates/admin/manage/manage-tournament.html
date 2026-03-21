@@ -724,14 +724,14 @@
         <aside class="sidebar" aria-label="Thanh điều hướng">
             <div class="sidebar__brand">
                 <div class="sidebar__brandIcon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                         <path d="M4 12.5l4.5 4.5L20 5.5" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round"
-                            stroke-linejoin="round" />
+                              stroke-linejoin="round" />
                     </svg>
                 </div>
                 <div>
                     <div class="sidebar__brandTitle">Admin Space</div>
-                    <div style="font-size: 13px; margin-top: 2px; color: var(--muted);">Quản lý giải đấu</div>
+                    <div class="muted" style="font-size: 13px; margin-top: 2px;">Hồ sơ</div>
                 </div>
             </div>
 
@@ -742,13 +742,13 @@
                     </span>
                     <span class="nav__label nav__label--large">Bảng điều khiển</span>
                 </a>
-                <a class="nav__item nav__item--large" href="/admin/admin-profile">
+                <a class="nav__item nav__item--large nav__item--active" href="/admin/admin-profile">
                     <span class="nav__icon nav__icon--large">
                         <img src="/assets/general-overview/nav-profile.png" alt="">
                     </span>
                     <span class="nav__label nav__label--large">Hồ sơ của tôi</span>
                 </a>
-                <a class="nav__item nav__item--large nav__item--active" href="/admin/manage">
+                <a class="nav__item nav__item--large" href="/admin/manage">
                     <span class="nav__icon nav__icon--large">
                         <img src="/assets/general-overview/tournament.jpg" alt="">
                     </span>
@@ -758,7 +758,7 @@
             </nav>
 
             <nav class="nav" aria-label="Danh mục">
-                <a class="nav__item nav__item--active" href="/admin/manage/tournament">
+                <a class="nav__item" href="/admin/general-information">
                     <span class="nav__label">Giải đấu</span>
                 </a>
                 <a class="nav__item" href="/admin/manage/user">
@@ -857,7 +857,8 @@
                                 <td class="status-text">completed</td>
                                 <td>
                                     <div class="action-btns">
-                                        <button class="btn-act btn-act--detail">Chi tiết</button>
+                                        <a th:href="@{/admin/general-information}" class="btn-act btn-act--detail">Chi tiết</a>
+
                                         <button class="btn-act btn-act--edit">Sửa</button>
                                         <button class="btn-act btn-act--delete">Xóa</button>
                                     </div>
@@ -872,7 +873,8 @@
                                 <td class="status-text">completed</td>
                                 <td>
                                     <div class="action-btns">
-                                        <button class="btn-act btn-act--detail">Chi tiết</button>
+                                        <a th:href="@{/admin/general-information}" class="btn-act btn-act--detail">Chi tiết</a>
+
                                         <button class="btn-act btn-act--edit">Sửa</button>
                                         <button class="btn-act btn-act--delete">Xóa</button>
                                     </div>
@@ -887,7 +889,8 @@
                                 <td class="status-text">completed</td>
                                 <td>
                                     <div class="action-btns">
-                                        <button class="btn-act btn-act--detail">Chi tiết</button>
+                                        <a th:href="@{/admin/general-information}" class="btn-act btn-act--detail">Chi tiết</a>
+
                                         <button class="btn-act btn-act--edit">Sửa</button>
                                         <button class="btn-act btn-act--delete">Xóa</button>
                                     </div>
@@ -902,7 +905,8 @@
                                 <td class="status-text">completed</td>
                                 <td>
                                     <div class="action-btns">
-                                        <button class="btn-act btn-act--detail">Chi tiết</button>
+                                        <a th:href="@{/admin/general-information}" class="btn-act btn-act--detail">Chi tiết</a>
+
                                         <button class="btn-act btn-act--edit">Sửa</button>
                                         <button class="btn-act btn-act--delete">Xóa</button>
                                     </div>

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thông tin đội</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/assets/css/user-home.css}" />
+    <link rel="stylesheet" th:href="@{/assets/css/user-pages.css}" />
+  </head>
+  <body>
+    <header th:replace="~{user/fragments/header :: header('profile')}"></header>
+    <main>
+      <section class="profile-hero">
+        <div class="container">
+          <h1>HỒ SƠ CÁ NHÂN</h1>
+          <p class="crumb">Home / HỒ SƠ</p>
+        </div>
+      </section>
+
+      <section class="profile-page">
+        <div class="container profile-grid">
+          <aside class="profile-card" aria-label="Điều hướng hồ sơ">
+            <div class="profile-user">
+              <div class="profile-avatar" aria-hidden="true">A</div>
+              <div>
+                <p class="name" th:text="${fullName ?: 'Quang'}">Quang</p>
+                <p class="email" th:text="${email ?: 'abcd@gmail.com'}">abcd@gmail.com</p>
+              </div>
+            </div>
+
+            <div class="profile-balance" aria-label="Số dư">
+              <div class="value" th:text="${balanceText ?: 'Số dư: 100.000đ'}">Số dư: 100.000đ</div>
+              <button class="profile-btn" type="button">Nạp tiền</button>
+            </div>
+
+            <nav class="profile-menu" aria-label="Menu hồ sơ">
+              <a th:href="@{/ca-nhan}">
+                <img class="icon" th:src="@{/assets/figma/icon-mail.svg}" alt="" />
+                <span>Thông Tin Cá Nhân</span>
+              </a>
+              <a th:href="@{/thong-tin-doi}" aria-current="page">
+                <img class="icon" th:src="@{/assets/figma/icon-map-pin.svg}" alt="" />
+                <span>Thông Tin Đội</span>
+              </a>
+              <a th:href="@{/lich-su-dang-ky}">
+                <img class="icon" th:src="@{/assets/figma/icon-phone.svg}" alt="" />
+                <span>Lịch Sử Đăng Ký</span>
+              </a>
+              <a th:href="@{/lich-su-giao-dich}">
+                <img class="icon" th:src="@{/assets/figma/icon-phone.svg}" alt="" />
+                <span>Lịch Sử Giao Dịch</span>
+              </a>
+              <a th:href="@{/thanh-toan}">
+                <img class="icon" th:src="@{/assets/figma/icon-mail.svg}" alt="" />
+                <span>Thanh Toán</span>
+              </a>
+            </nav>
+          </aside>
+
+          <section class="profile-card" aria-label="Thông tin đội">
+            <h2>Thông Tin Đội</h2>
+            <div class="profile-form">
+              <div class="profile-field">
+                <label>Tên đội</label>
+                <div class="profile-input" th:text="${teamName ?: '---'}">---</div>
+              </div>
+              <div class="profile-field">
+                <label>Trưởng đội</label>
+                <div class="profile-input" th:text="${captainName ?: '---'}">---</div>
+              </div>
+              <div class="profile-field">
+                <label>Số thành viên</label>
+                <div class="profile-input" th:text="${memberCount ?: 0}">0</div>
+              </div>
+              <div class="profile-field">
+                <label>Danh sách thành viên</label>
+                <div class="history-grid">
+                  <div class="history-item" th:each="m : ${members}">
+                    <p class="title" th:text="${m}">---</p>
+                    <p class="meta">Thành viên đội.</p>
+                  </div>
+                  <div class="history-item" th:if="${members == null or #lists.isEmpty(members)}">
+                    <p class="title">Chưa có dữ liệu</p>
+                    <p class="meta">Danh sách thành viên sẽ hiển thị tại đây.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+    <footer th:replace="~{user/fragments/footer :: footer('home')}"></footer>
+  </body>
+</html>
