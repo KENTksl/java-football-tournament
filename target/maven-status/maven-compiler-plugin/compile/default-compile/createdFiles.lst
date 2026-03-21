@@ -1,2 +1,3 @@
-com\example\football_tourament_web\TournamentController.class
+com\example\football_tourament_web\controller\user\HomeController.class
+com\example\football_tourament_web\controller\admin\AdminController.class
 com\example\football_tourament_web\FootballTouramentWebApplication.class

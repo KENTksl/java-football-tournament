@@ -1,0 +1,348 @@
+<div th:fragment="bracket">
+    <style>
+        .bracket-section {
+            padding: 40px 0;
+            background: #fff;
+            overflow-x: auto;
+            min-height: 600px;
+        }
+
+        .bracket-container {
+            display: flex;
+            gap: 60px;
+            padding: 20px;
+            min-width: 900px;
+            justify-content: center;
+        }
+
+        .bracket-column {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            flex: 1;
+            max-width: 250px;
+        }
+
+        .bracket-round-title {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: #777;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            letter-spacing: 0.1em;
+            position: relative;
+        }
+
+        .bracket-round-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 2px;
+            background: #e8b931;
+        }
+
+        /* Match Card */
+        .bracket-match {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            margin: 20px 0;
+            position: relative;
+            transition: transform 0.2s ease;
+        }
+
+        .bracket-match:hover {
+            transform: translateY(-2px);
+            border-color: #e8b931;
+        }
+
+        .bracket-team {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .bracket-team:first-child {
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .bracket-team-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bracket-team-logo {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        .bracket-score {
+            font-weight: 700;
+            color: #171717;
+            width: 20px;
+            text-align: right;
+        }
+
+        .bracket-winner .bracket-team-name {
+            color: #e8b931;
+        }
+
+        /* Connectors */
+        .bracket-column:nth-child(1) .bracket-match::after {
+            content: '';
+            position: absolute;
+            right: -30px;
+            width: 30px;
+            height: 2px;
+            background: #ddd;
+            top: 50%;
+        }
+
+        .bracket-column:nth-child(1) .bracket-match:nth-of-type(odd)::after {
+            height: calc(50% + 40px);
+            border-right: 2px solid #ddd;
+            border-top: 2px solid #ddd;
+            background: transparent;
+            top: 50%;
+        }
+
+        .bracket-column:nth-child(1) .bracket-match:nth-of-type(even)::after {
+            height: calc(50% + 40px);
+            border-right: 2px solid #ddd;
+            border-bottom: 2px solid #ddd;
+            background: transparent;
+            top: calc(50% - (50% + 40px));
+        }
+
+        /* Semi-final to Final connectors */
+        .bracket-column:nth-child(2) .bracket-match::after {
+            content: '';
+            position: absolute;
+            right: -30px;
+            width: 30px;
+            height: 2px;
+            background: #ddd;
+            top: 50%;
+        }
+
+        .bracket-column:nth-child(2) .bracket-match:nth-of-type(odd)::after {
+            height: calc(50% + 100px);
+            border-right: 2px solid #ddd;
+            border-top: 2px solid #ddd;
+            background: transparent;
+            top: 50%;
+        }
+
+        .bracket-column:nth-child(2) .bracket-match:nth-of-type(even)::after {
+            height: calc(50% + 100px);
+            border-right: 2px solid #ddd;
+            border-bottom: 2px solid #ddd;
+            background: transparent;
+            top: calc(50% - (50% + 100px));
+        }
+
+        /* Final Column has no connectors */
+        .bracket-column:last-child .bracket-match::after {
+            display: none;
+        }
+
+        /* Inward connectors for Semi-finals and Final */
+        .bracket-column:nth-child(n+2) .bracket-match::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            width: 30px;
+            height: 2px;
+            background: #ddd;
+            top: 50%;
+        }
+
+        /* Round specific styling */
+        .round-quarter { justify-content: space-around; }
+        .round-semi { justify-content: space-around; padding: 40px 0; }
+        .round-final { justify-content: center; }
+
+        .final-badge {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #171717;
+            color: #e8b931;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 800;
+            white-space: nowrap;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .trophy-final {
+            font-size: 40px;
+            margin-bottom: 10px;
+            display: block;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .bracket-section {
+                padding: 20px 0;
+            }
+        }
+    </style>
+
+    <div class="bracket-section">
+        <div class="bracket-container">
+            <!-- Quarter Finals -->
+            <div class="bracket-column round-quarter">
+                <div class="bracket-round-title">Tứ kết</div>
+                
+                <div class="bracket-match">
+                    <div class="bracket-team bracket-winner">
+                        <div class="bracket-team-info">
+                            <div class="bracket-team-logo" style="background: #da291c; color: #fff;">M</div>
+                            <span class="bracket-team-name">Man United</span>
+                        </div>
+                        <span class="bracket-score">3</span>
+                    </div>
+                    <div class="bracket-team">
+                        <div class="bracket-team-info">
+                            <div class="bracket-team-logo" style="background: #6cabdd; color: #fff;">C</div>
+                            <span class="bracket-team-name">Chelsea FC</span>
+                        </div>
+                        <span class="bracket-score">1</span>
+                    </div>
+                </div>
+
+                <div class="bracket-match">
+                    <div class="bracket-team">
+                        <div class="bracket-team-info">
+                            <div class="bracket-team-logo" style="background: #dc052d; color: #fff;">B</div>
+                            <span class="bracket-team-name">Bayern Munich</span>
+                        </div>
+                        <span class="bracket-score">0</span>
+                    </div>
+                    <div class="bracket-team bracket-winner">
+                        <div class="bracket-team-info">
+                            <div class="bracket-team-logo" style="background: #c8102e; color: #fff;">L</div>
+                            <span class="bracket-team-name">Liverpool FC</span>
+                        </div>
+                        <span class="bracket-score">2</span>
+                    </div>
+                </div>
+
+                <div class="bracket-match">
+                    <div class="bracket-team bracket-winner">
+                        <div class="bracket-team-info">
+                            <div class="bracket-team-logo" style="background: #ffcd00; color: #111;">D</div>
+                            <span class="bracket-team-name">Dortmund</span>
+                        </div>
+                        <span class="bracket-score">2</span>
+                    </div>
+                    <div class="bracket-team">
+                        <div class="bracket-team-info">
+                            <div class="bracket-team-logo" style="background: #004170; color: #fff;">P</div>
+                            <span class="bracket-team-name">PSG</span>
+                        </div>
+                        <span class="bracket-score">1</span>
+                    </div>
+                </div>
+
+                <div class="bracket-match">
+                    <div class="bracket-team">
+                        <div class="bracket-team-info">
+                            <div class="bracket-team-logo" style="background: #fe0000; color: #fff;">A</div>
+                            <span class="bracket-team-name">Arsenal</span>
+                        </div>
+                        <span class="bracket-score">1</span>
+                    </div>
+                    <div class="bracket-team bracket-winner">
+                        <div class="bracket-team-info">
+                            <div class="bracket-team-logo" style="background: #000000; color: #fff;">J</div>
+                            <span class="bracket-team-name">Juventus</span>
+                        </div>
+                        <span class="bracket-score">2</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Semi Finals -->
+            <div class="bracket-column round-semi">
+                <div class="bracket-round-title">Bán kết</div>
+
+                <div class="bracket-match">
+                    <div class="bracket-team bracket-winner">
+                        <div class="bracket-team-info">
+                            <div class="bracket-team-logo" style="background: #da291c; color: #fff;">M</div>
+                            <span class="bracket-team-name">Man United</span>
+                        </div>
+                        <span class="bracket-score">2</span>
+                    </div>
+                    <div class="bracket-team">
+                        <div class="bracket-team-info">
+                            <div class="bracket-team-logo" style="background: #c8102e; color: #fff;">L</div>
+                            <span class="bracket-team-name">Liverpool FC</span>
+                        </div>
+                        <span class="bracket-score">1</span>
+                    </div>
+                </div>
+
+                <div class="bracket-match">
+                    <div class="bracket-team bracket-winner">
+                        <div class="bracket-team-info">
+                            <div class="bracket-team-logo" style="background: #ffcd00; color: #111;">D</div>
+                            <span class="bracket-team-name">Dortmund</span>
+                        </div>
+                        <span class="bracket-score">3</span>
+                    </div>
+                    <div class="bracket-team">
+                        <div class="bracket-team-info">
+                            <div class="bracket-team-logo" style="background: #000000; color: #fff;">J</div>
+                            <span class="bracket-team-name">Juventus</span>
+                        </div>
+                        <span class="bracket-score">2</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Final -->
+            <div class="bracket-column round-final">
+                <div class="bracket-round-title">Chung kết</div>
+
+                <div class="trophy-final">🏆</div>
+                <div class="bracket-match">
+                    <span class="final-badge">GRAND FINAL</span>
+                    <div class="bracket-team bracket-winner">
+                        <div class="bracket-team-info">
+                            <div class="bracket-team-logo" style="background: #da291c; color: #fff;">M</div>
+                            <span class="bracket-team-name">Man United</span>
+                        </div>
+                        <span class="bracket-score">1</span>
+                    </div>
+                    <div class="bracket-team">
+                        <div class="bracket-team-info">
+                            <div class="bracket-team-logo" style="background: #ffcd00; color: #111;">D</div>
+                            <span class="bracket-team-name">Dortmund</span>
+                        </div>
+                        <span class="bracket-score">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
