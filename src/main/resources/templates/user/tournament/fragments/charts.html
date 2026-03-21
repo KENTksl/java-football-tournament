@@ -7,6 +7,46 @@
             margin-top: 8px;
         }
 
+        .charts-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .charts-toolbar__title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #171717;
+            margin: 0;
+        }
+
+        .charts-toolbar__control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .charts-toolbar__label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #5a5a5a;
+            white-space: nowrap;
+        }
+
+        .charts-team-select {
+            height: 40px;
+            border: 1px solid #dfdfdf;
+            border-radius: 10px;
+            background: #fff;
+            padding: 8px 12px;
+            font-size: 14px;
+            color: #222;
+            min-width: 220px;
+            outline: none;
+        }
+
         .charts-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
@@ -41,6 +81,16 @@
         }
 
         @media (max-width: 768px) {
+            .charts-toolbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .charts-toolbar__control {
+                width: 100%;
+            }
+            .charts-team-select {
+                width: 100%;
+            }
             .charts-grid {
                 grid-template-columns: 1fr;
             }
@@ -51,34 +101,42 @@
     </style>
 
     <div class="charts-section">
+        <div class="charts-toolbar">
+            <h2 class="charts-toolbar__title">Biểu đồ theo đội</h2>
+            <div class="charts-toolbar__control">
+                <div class="charts-toolbar__label">Chọn đội:</div>
+                <select id="chartsTeamSelect" class="charts-team-select" aria-label="Chọn đội bóng">
+                    <option value="Man United">Man United</option>
+                    <option value="Chelsea FC">Chelsea FC</option>
+                    <option value="Bayern Munich">Bayern Munich</option>
+                    <option value="Liverpool FC">Liverpool FC</option>
+                </select>
+            </div>
+        </div>
         <div class="charts-grid">
-            <!-- Goals Distribution -->
             <div class="chart-card">
-                <h3 class="chart-card-title">Phân bổ bàn thắng theo đội</h3>
+                <h3 class="chart-card-title">Phân bổ bàn thắng trong đội</h3>
                 <div class="chart-container">
                     <canvas id="goalsDoughnutChart"></canvas>
                 </div>
             </div>
 
-            <!-- Top Scorers Bar Chart -->
             <div class="chart-card">
-                <h3 class="chart-card-title">Top 5 cầu thủ ghi bàn</h3>
+                <h3 class="chart-card-title">Top 5 ghi bàn của đội</h3>
                 <div class="chart-container">
                     <canvas id="topScorersBarChart"></canvas>
                 </div>
             </div>
 
-            <!-- Goals per Match Day Line Chart -->
             <div class="chart-card">
-                <h3 class="chart-card-title">Số bàn thắng qua từng vòng đấu</h3>
+                <h3 class="chart-card-title">Bàn thắng theo vòng đấu</h3>
                 <div class="chart-container">
                     <canvas id="goalsTimelineChart"></canvas>
                 </div>
             </div>
 
-            <!-- Team Performance Radar Chart -->
             <div class="chart-card">
-                <h3 class="chart-card-title">So sánh hiệu suất đội bóng</h3>
+                <h3 class="chart-card-title">Hiệu suất đội bóng</h3>
                 <div class="chart-container">
                     <canvas id="teamPerformanceRadarChart"></canvas>
                 </div>
@@ -87,11 +145,9 @@
     </div>
 
     <script th:inline="javascript">
-        // Function to destroy and re-create charts
         function initAllCharts() {
-            // Common colors from design
             const colors = {
-                brand: '#e8b931', // Yellow
+                brand: '#e8b931',
                 blue: '#6cabdd',
                 red: '#da291c',
                 dark: '#171717',
@@ -99,139 +155,181 @@
                 green: '#2c9e49'
             };
 
-            // Chart IDs to handle
             const chartIds = ['goalsDoughnutChart', 'topScorersBarChart', 'goalsTimelineChart', 'teamPerformanceRadarChart'];
 
-            // Destroy existing instances if they exist
-            chartIds.forEach(id => {
-                const existingChart = Chart.getChart(id);
-                if (existingChart) {
-                    existingChart.destroy();
-                }
-            });
+            const teamColor = {
+                'Man United': colors.red,
+                'Chelsea FC': colors.blue,
+                'Bayern Munich': colors.dark,
+                'Liverpool FC': colors.brand
+            };
 
-            // 1. Goals Distribution Doughnut Chart
-            const ctxDoughnut = document.getElementById('goalsDoughnutChart').getContext('2d');
-            new Chart(ctxDoughnut, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Man United', 'Chelsea FC', 'Bayern Munich', 'Liverpool FC'],
-                    datasets: [{
-                        data: [12, 10, 8, 6],
-                        backgroundColor: [colors.red, colors.blue, colors.dark, colors.brand],
-                        borderWidth: 2,
-                        borderColor: '#ffffff'
-                    }]
+            const teamStats = {
+                'Man United': {
+                    goalsBreakdown: { labels: ['Ronaldo', 'Bruno', 'Rashford', 'Khác'], data: [8, 4, 3, 2] },
+                    topScorers: { labels: ['Ronaldo', 'Rashford', 'Bruno', 'Garnacho', 'Antony'], data: [8, 3, 3, 2, 1] },
+                    goalsByRound: { labels: ['Vòng 1', 'Vòng 2', 'Vòng 3', 'Vòng 4', 'Vòng 5'], data: [2, 3, 1, 4, 2] },
+                    performance: { labels: ['Tấn công', 'Phòng ngự', 'Kiểm soát', 'Kỷ luật', 'Thể lực'], data: [90, 70, 78, 62, 84] }
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { usePointStyle: true, padding: 20 }
-                        }
+                'Chelsea FC': {
+                    goalsBreakdown: { labels: ['Jackson', 'Palmer', 'Sterling', 'Khác'], data: [5, 3, 2, 1] },
+                    topScorers: { labels: ['Jackson', 'Palmer', 'Sterling', 'Nkunku', 'Mudryk'], data: [5, 3, 2, 1, 1] },
+                    goalsByRound: { labels: ['Vòng 1', 'Vòng 2', 'Vòng 3', 'Vòng 4', 'Vòng 5'], data: [1, 2, 2, 1, 2] },
+                    performance: { labels: ['Tấn công', 'Phòng ngự', 'Kiểm soát', 'Kỷ luật', 'Thể lực'], data: [76, 85, 70, 80, 74] }
+                },
+                'Bayern Munich': {
+                    goalsBreakdown: { labels: ['Kane', 'Musiala', 'Sane', 'Khác'], data: [6, 3, 2, 1] },
+                    topScorers: { labels: ['Kane', 'Musiala', 'Sane', 'Gnabry', 'Kimmich'], data: [6, 3, 2, 2, 1] },
+                    goalsByRound: { labels: ['Vòng 1', 'Vòng 2', 'Vòng 3', 'Vòng 4', 'Vòng 5'], data: [2, 1, 3, 2, 2] },
+                    performance: { labels: ['Tấn công', 'Phòng ngự', 'Kiểm soát', 'Kỷ luật', 'Thể lực'], data: [86, 82, 76, 68, 80] }
+                },
+                'Liverpool FC': {
+                    goalsBreakdown: { labels: ['Salah', 'Nunez', 'Diaz', 'Khác'], data: [4, 2, 2, 1] },
+                    topScorers: { labels: ['Salah', 'Nunez', 'Diaz', 'Jota', 'Szoboszlai'], data: [4, 2, 2, 2, 1] },
+                    goalsByRound: { labels: ['Vòng 1', 'Vòng 2', 'Vòng 3', 'Vòng 4', 'Vòng 5'], data: [1, 2, 1, 3, 2] },
+                    performance: { labels: ['Tấn công', 'Phòng ngự', 'Kiểm soát', 'Kỷ luật', 'Thể lực'], data: [82, 78, 74, 70, 86] }
+                }
+            };
+
+            const destroyCharts = () => {
+                chartIds.forEach(id => {
+                    const existingChart = Chart.getChart(id);
+                    if (existingChart) {
+                        existingChart.destroy();
+                    }
+                });
+            };
+
+            const renderTeamCharts = teamName => {
+                destroyCharts();
+
+                const stats = teamStats[teamName] || teamStats['Man United'];
+                const accent = teamColor[teamName] || colors.brand;
+                const accentFill = accent === colors.dark ? 'rgba(23, 23, 23, 0.16)' : accent === colors.brand ? 'rgba(232, 185, 49, 0.18)' : accent === colors.red ? 'rgba(218, 41, 28, 0.18)' : 'rgba(108, 171, 221, 0.18)';
+
+                const ctxDoughnut = document.getElementById('goalsDoughnutChart').getContext('2d');
+                new Chart(ctxDoughnut, {
+                    type: 'doughnut',
+                    data: {
+                        labels: stats.goalsBreakdown.labels,
+                        datasets: [{
+                            data: stats.goalsBreakdown.data,
+                            backgroundColor: [accent, colors.brand, colors.blue, colors.dark],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
                     },
-                    cutout: '65%'
-                }
-            });
-
-            // 2. Top Scorers Bar Chart
-            const ctxBar = document.getElementById('topScorersBarChart').getContext('2d');
-            new Chart(ctxBar, {
-                type: 'bar',
-                data: {
-                    labels: ['C. Ronaldo', 'L. Messi', 'E. Haaland', 'K. Mbappe', 'M. Salah'],
-                    datasets: [{
-                        label: 'Số bàn thắng',
-                        data: [8, 6, 5, 5, 4],
-                        backgroundColor: colors.brand,
-                        borderRadius: 6,
-                        barThickness: 25
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { display: false } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-
-            // 3. Goals Timeline Line Chart
-            const ctxLine = document.getElementById('goalsTimelineChart').getContext('2d');
-            new Chart(ctxLine, {
-                type: 'line',
-                data: {
-                    labels: ['Vòng 1', 'Vòng 2', 'Vòng 3', 'Vòng 4', 'Vòng 5'],
-                    datasets: [{
-                        label: 'Tổng bàn thắng',
-                        data: [12, 15, 8, 20, 14],
-                        borderColor: colors.brand,
-                        backgroundColor: 'rgba(232, 185, 49, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 5,
-                        pointBackgroundColor: colors.brand
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-
-            // 4. Team Performance Radar Chart
-            const ctxRadar = document.getElementById('teamPerformanceRadarChart').getContext('2d');
-            new Chart(ctxRadar, {
-                type: 'radar',
-                data: {
-                    labels: ['Tấn công', 'Phòng ngự', 'Kiểm soát', 'Kỷ luật', 'Thể lực'],
-                    datasets: [
-                        {
-                            label: 'Man United',
-                            data: [90, 70, 80, 60, 85],
-                            borderColor: colors.red,
-                            backgroundColor: 'rgba(218, 41, 28, 0.2)',
-                            pointBackgroundColor: colors.red
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { usePointStyle: true, padding: 18 }
+                            }
                         },
-                        {
-                            label: 'Chelsea FC',
-                            data: [75, 85, 70, 80, 75],
-                            borderColor: colors.blue,
-                            backgroundColor: 'rgba(108, 171, 221, 0.2)',
-                            pointBackgroundColor: colors.blue
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    elements: { line: { borderWidth: 2 } },
-                    scales: {
-                        r: {
-                            angleLines: { display: true },
-                            suggestedMin: 0,
-                            suggestedMax: 100,
-                            ticks: { display: false }
-                        }
-                    },
-                    plugins: {
-                        legend: { position: 'bottom', labels: { usePointStyle: true } }
+                        cutout: '65%'
                     }
-                }
-            });
+                });
+
+                const ctxBar = document.getElementById('topScorersBarChart').getContext('2d');
+                new Chart(ctxBar, {
+                    type: 'bar',
+                    data: {
+                        labels: stats.topScorers.labels,
+                        datasets: [{
+                            label: 'Bàn thắng',
+                            data: stats.topScorers.data,
+                            backgroundColor: accent,
+                            borderRadius: 6,
+                            barThickness: 26
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { display: false } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+
+                const ctxLine = document.getElementById('goalsTimelineChart').getContext('2d');
+                new Chart(ctxLine, {
+                    type: 'line',
+                    data: {
+                        labels: stats.goalsByRound.labels,
+                        datasets: [{
+                            label: 'Bàn thắng',
+                            data: stats.goalsByRound.data,
+                            borderColor: accent,
+                            backgroundColor: accentFill,
+                            fill: true,
+                            tension: 0.35,
+                            pointRadius: 5,
+                            pointBackgroundColor: accent
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+
+                const ctxRadar = document.getElementById('teamPerformanceRadarChart').getContext('2d');
+                new Chart(ctxRadar, {
+                    type: 'radar',
+                    data: {
+                        labels: stats.performance.labels,
+                        datasets: [
+                            {
+                                label: teamName,
+                                data: stats.performance.data,
+                                borderColor: accent,
+                                backgroundColor: accentFill,
+                                pointBackgroundColor: accent
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        elements: { line: { borderWidth: 2 } },
+                        scales: {
+                            r: {
+                                angleLines: { display: true },
+                                suggestedMin: 0,
+                                suggestedMax: 100,
+                                ticks: { display: false }
+                            }
+                        },
+                        plugins: {
+                            legend: { position: 'bottom', labels: { usePointStyle: true } }
+                        }
+                    }
+                });
+            };
+
+            const teamSelect = document.getElementById('chartsTeamSelect');
+            const initialTeam = teamSelect?.value || 'Man United';
+
+            if (teamSelect) {
+                teamSelect.addEventListener('change', () => {
+                    renderTeamCharts(teamSelect.value);
+                    window.dispatchEvent(new Event('resize'));
+                });
+            }
+
+            renderTeamCharts(initialTeam);
         }
 
-        // Initialize immediately
         initAllCharts();
     </script>
 </div>
