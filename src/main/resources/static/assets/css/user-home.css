@@ -83,8 +83,9 @@ a {
   margin: 0;
   font-size: 20px;
   line-height: 1.22;
-  font-weight: 400;
+  
   color: rgba(0, 0, 0, 0.9);
+  font-weight: bold;
 }
 
 .hero-image {
