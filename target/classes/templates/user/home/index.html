@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SPORT TOURNAMENT - Trang chủ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/assets/css/user-home.css}" />
+  </head>
+  <body>
+    <header th:replace="~{user/fragments/header :: header('home')}"></header>
+
+    <main>
+      <section class="hero">
+        <div class="container hero-inner">
+          <div>
+            <h1>NỀN TẢNG TỔ CHỨC GIẢI ĐẤU BÓNG ĐÁ TRỰC TUYẾN</h1>
+            <p>
+              Website cung cấp thông tin và nội dung liên quan đến các hoạt động thể thao,
+              giải đấu và sự kiện. Giao diện được thiết kế hiện đại, đơn giản và thân thiện,
+              giúp người dùng dễ dàng theo dõi và tiếp cận các thông tin thể thao cần thiết.
+            </p>
+          </div>
+          <div class="hero-image" aria-hidden="true">
+            <img src="/assets/figma/home-hero.png" alt="" />
+          </div>
+        </div>
+      </section>
+
+      <section class="intro">
+        <div class="container">
+          <h2>Kết nối cộng đồng yêu thích thể thao</h2>
+          <p>
+            Nền tảng được xây dựng nhằm giới thiệu và cập nhật thông tin về các hoạt động thể thao và
+            giải đấu. Người dùng có thể theo dõi tin tức, lịch trình và các nội dung liên quan đến
+            thể thao trong một giao diện trực quan và dễ sử dụng.
+          </p>
+          <div class="label">GIỚI THIỆU NỀN TẢNG</div>
+        </div>
+      </section>
+    </main>
+
+    <footer th:replace="~{user/fragments/footer :: footer('home')}"></footer>
+  </body>
+</html>

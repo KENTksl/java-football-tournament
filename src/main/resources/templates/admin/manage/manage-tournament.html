@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý giải đấu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --surface: #f3f6f9;
+            --border: #d9d9d9;
+            --text: #111827;
+            --muted: #6b7280;
+            --muted-2: #b3b3b3;
+            --brand: #009cff;
+            --radius-xl: 25px;
+            --radius-lg: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .app {
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 300px;
+            padding: 24px 18px;
+            border-right: 1px solid rgba(17, 24, 39, 0.06);
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar__brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 14px;
+            border-radius: var(--radius-lg);
+            background: var(--surface);
+            margin: 0 6px 18px;
+        }
+
+        .sidebar__brandIcon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(0, 156, 255, 0.18), rgba(0, 156, 255, 0.06));
+            display: grid;
+            place-items: center;
+        }
+
+        .sidebar__brandIcon svg {
+            width: 26px;
+            height: 26px;
+        }
+
+        .sidebar__brandTitle {
+            font-weight: 700;
+            font-size: 18px;
+            line-height: 1.2;
+        }
+
+        .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 0 6px;
+        }
+
+        .nav__item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 12px;
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        .nav__item:hover {
+            background: rgba(243, 246, 249, 0.8);
+        }
+
+        .nav__item--active {
+            background: var(--surface);
+        }
+
+        .nav__icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            overflow: hidden;
+            flex: 0 0 auto;
+            background: rgba(17, 24, 39, 0.06);
+            display: grid;
+            place-items: center;
+        }
+
+        .nav__icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+        }
+
+        .nav__label {
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .nav__item--large {
+            padding: 10px 12px;
+        }
+
+        .nav__icon--large {
+            width: 71px;
+            height: 71px;
+            border-radius: 20px;
+            background: var(--surface);
+        }
+
+        .nav__label--large {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .nav__chevron {
+            margin-left: auto;
+            width: 18px;
+            height: 18px;
+            opacity: 0.55;
+        }
+
+        .sidebar__footer {
+            margin-top: auto;
+            padding: 0 6px;
+        }
+
+        .content {
+            flex: 1 1 auto;
+            padding: 28px 32px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 26px;
+        }
+
+        .topbar__menuBtn {
+            width: 44px;
+            height: 44px;
+            border: 0;
+            background: transparent;
+            display: grid;
+            place-items: center;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .topbar__menuBtn img {
+            width: 30px;
+            height: 30px;
+            display: block;
+        }
+
+        .search {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            width: 320px;
+            height: 62px;
+            border-radius: 9999px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+        }
+
+        .search svg {
+            width: 18px;
+            height: 18px;
+            color: var(--muted-2);
+        }
+
+        .search input {
+            border: 0;
+            outline: none;
+            background: transparent;
+            width: 100%;
+            font-size: 16px;
+            color: var(--text);
+        }
+
+        .search input::placeholder {
+            color: var(--muted-2);
+        }
+
+        .topbar__right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .pill {
+            font-weight: 500;
+            font-size: 16px;
+            color: var(--text);
+        }
+
+        .iconBtn {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: var(--surface);
+            border: 0;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+        }
+
+        .iconBtn img {
+            width: 20px;
+            height: 20px;
+            display: block;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 9999px;
+            background: transparent;
+        }
+
+        .profile__avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 9999px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(0, 156, 255, 0.22), rgba(17, 24, 39, 0.08));
+        }
+
+        .profile__avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .profile__name {
+            font-weight: 600;
+            font-size: 16px;
+            white-space: nowrap;
+        }
+
+        .profile__dropdown {
+            width: 18px;
+            height: 18px;
+            display: block;
+            opacity: 0.65;
+        }
+
+        .managePage {
+            display: grid;
+            gap: 18px;
+        }
+
+        .manageHero {
+            border-radius: var(--radius-xl);
+            border: 1px solid rgba(17, 24, 39, 0.08);
+            background: #fff;
+            padding: 20px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .manageHero h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .manageHero p {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: 15px;
+        }
+
+        .button {
+            border: 1px solid transparent;
+            border-radius: 14px;
+            height: 46px;
+            padding: 0 18px;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            gap: 8px;
+        }
+
+        .button--primary {
+            background: var(--brand);
+            color: #fff;
+        }
+
+        .button--ghost {
+            background: var(--surface);
+            color: var(--text);
+            border-color: rgba(17, 24, 39, 0.08);
+        }
+
+        .statGrid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .statCard {
+            border-radius: 18px;
+            border: 1px solid rgba(17, 24, 39, 0.08);
+            background: #fff;
+            padding: 16px 18px;
+        }
+
+        .statCard__label {
+            font-size: 13px;
+            color: var(--muted);
+            margin: 0 0 8px;
+        }
+
+        .statCard__value {
+            margin: 0;
+            font-size: 30px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .statCard__note {
+            margin-top: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #0f8a3b;
+        }
+
+        .layoutGrid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 320px;
+            gap: 18px;
+            align-items: start;
+        }
+
+        .panel {
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(17, 24, 39, 0.08);
+            background: #fff;
+            padding: 18px;
+        }
+
+        .panelHead {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .panelHead h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .chip {
+            height: 32px;
+            border-radius: 9999px;
+            padding: 0 12px;
+            border: 1px solid rgba(17, 24, 39, 0.1);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .filterRow {
+            display: grid;
+            grid-template-columns: 1fr 170px 170px 120px;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .field {
+            width: 100%;
+            height: 42px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0 12px;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .field:focus {
+            border-color: rgba(0, 156, 255, 0.7);
+            box-shadow: 0 0 0 3px rgba(0, 156, 255, 0.12);
+        }
+
+        .tableWrap {
+            border: 1px solid rgba(17, 24, 39, 0.08);
+            border-radius: 16px;
+            overflow: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+            background: #fff;
+        }
+
+        .table th,
+        .table td {
+            text-align: left;
+            padding: 13px 14px;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .table th {
+            font-weight: 700;
+            background: rgba(243, 246, 249, 0.85);
+            border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+        }
+
+        .table tr+tr td {
+            border-top: 1px solid rgba(17, 24, 39, 0.06);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            height: 28px;
+            border-radius: 9999px;
+            padding: 0 10px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .badge--active {
+            background: rgba(0, 156, 255, 0.12);
+            color: #0074be;
+        }
+
+        .badge--draft {
+            background: rgba(251, 191, 36, 0.2);
+            color: #9a6400;
+        }
+
+        .badge--done {
+            background: rgba(16, 185, 129, 0.16);
+            color: #0d7a56;
+        }
+
+        .actionRow {
+            display: flex;
+            gap: 8px;
+        }
+
+        .iconAction {
+            width: 30px;
+            height: 30px;
+            border-radius: 10px;
+            border: 1px solid rgba(17, 24, 39, 0.12);
+            background: #fff;
+            color: var(--text);
+            display: grid;
+            place-items: center;
+            font-size: 14px;
+        }
+
+        .stack {
+            display: grid;
+            gap: 14px;
+        }
+
+        .list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .listItem {
+            border-radius: 14px;
+            background: var(--surface);
+            padding: 12px;
+        }
+
+        .listItem strong {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .listItem span {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .footer {
+            margin-top: 8px;
+            padding: 18px 0 4px;
+            border-top: 1px solid rgba(17, 24, 39, 0.08);
+            color: var(--muted);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .footer a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 1280px) {
+            .statGrid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .layoutGrid {
+                grid-template-columns: 1fr;
+            }
+
+            .filterRow {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                display: none;
+            }
+
+            .content {
+                padding: 18px;
+            }
+
+            .search {
+                width: 100%;
+                flex: 1 1 auto;
+            }
+
+            .pill {
+                display: none;
+            }
+
+            .filterRow {
+                grid-template-columns: 1fr;
+            }
+
+            .statGrid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- CSS cho Bảng Quản lý giải đấu (Figma Style) --- */
+        .tournament-card {
+            background-color: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            min-height: 500px;
+        }
+
+        .tournament-card__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .tournament-card__title {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .btn-add-tournament {
+            background-color: #009cff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .tournament-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .tournament-table th {
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 2px solid #ccc;
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--text);
+        }
+
+        .tournament-table td {
+            padding: 15px 10px;
+            font-size: 14px;
+            color: #666;
+            /* Màu chữ nhạt như Figma */
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        /* Các nút hành động */
+        .action-btns {
+            display: flex;
+            gap: 4px;
+        }
+
+        .btn-act {
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: white;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-act--detail {
+            background-color: #f39c12;
+        }
+
+        /* Cam */
+        .btn-act--edit {
+            background-color: #009cff;
+        }
+
+        /* Xanh */
+        .btn-act--delete {
+            background-color: #e74c3c;
+        }
+
+        /* Đỏ */
+
+        .status-text {
+            font-style: italic;
+            color: #999;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Modal for Adding Tournament -->
+    <div id="addTournamentModal" class="modal-overlay">
+        <!-- Content will be loaded or embedded here -->
+        <div th:insert="~{admin/manage/add-tournament}"></div>
+    </div>
+    <div class="app">
+        <aside class="sidebar" aria-label="Thanh điều hướng">
+            <div class="sidebar__brand">
+                <div class="sidebar__brandIcon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M4 12.5l4.5 4.5L20 5.5" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round"
+                              stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="sidebar__brandTitle">Admin Space</div>
+                    <div class="muted" style="font-size: 13px; margin-top: 2px;">Hồ sơ</div>
+                </div>
+            </div>
+
+            <nav class="nav" aria-label="Mục chính">
+                <a class="nav__item nav__item--large" href="/admin/general-overview">
+                    <span class="nav__icon nav__icon--large">
+                        <img src="/assets/general-overview/nav-dashboard.png" alt="">
+                    </span>
+                    <span class="nav__label nav__label--large">Bảng điều khiển</span>
+                </a>
+                <a class="nav__item nav__item--large nav__item--active" href="/admin/admin-profile">
+                    <span class="nav__icon nav__icon--large">
+                        <img src="/assets/general-overview/nav-profile.png" alt="">
+                    </span>
+                    <span class="nav__label nav__label--large">Hồ sơ của tôi</span>
+                </a>
+                <a class="nav__item nav__item--large" href="/admin/manage">
+                    <span class="nav__icon nav__icon--large">
+                        <img src="/assets/general-overview/tournament.jpg" alt="">
+                    </span>
+                    <span class="nav__label nav__label--large">Quản lý</span>
+                    <img class="nav__chevron" src="/assets/general-overview/sidebar-arrow.png" alt="">
+                </a>
+            </nav>
+
+            <nav class="nav" aria-label="Danh mục">
+                <a class="nav__item" href="/admin/general-information">
+                    <span class="nav__label">Giải đấu</span>
+                </a>
+                <a class="nav__item" href="/admin/manage/user">
+                    <span class="nav__label">Người dùng</span>
+                </a>
+                <a class="nav__item" href="/admin/teams">
+                    <span class="nav__label">Đội tuyển</span>
+                </a>
+            </nav>
+
+            <a class="nav__item nav__item--large" href="/admin/stats">
+                <span class="nav__icon nav__icon--large">
+                    <img src="/assets/general-overview/sidebar-stats.png" alt="">
+                </span>
+                <span class="nav__label nav__label--large">Thống kê</span>
+                <img class="nav__chevron" src="/assets/general-overview/sidebar-arrow.png" alt="">
+            </a>
+            <nav class="nav" aria-label="Khác">
+                <a class="nav__item" href="/admin/billing">
+                    <span class="nav__label">Hóa đơn</span>
+                </a>
+            </nav>
+
+            <div class="sidebar__footer">
+                <a class="nav__item nav__item--large" href="/logout">
+                    <span class="nav__icon nav__icon--large">
+                        <img src="/assets/general-overview/sidebar-logout.png" alt="">
+                    </span>
+                    <span class="nav__label nav__label--large">Đăng xuất</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="content">
+            <header class="topbar">
+                <button class="topbar__menuBtn" type="button" aria-label="Menu">
+                    <img src="/assets/general-overview/menu.svg" alt="">
+                </button>
+
+                <div class="search" role="search">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor"
+                            stroke-width="2" />
+                        <path d="M16.3 16.3 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    <input type="text" placeholder="Tìm kiếm giải đấu, mùa giải..." aria-label="Tìm kiếm">
+                </div>
+
+                <div class="topbar__right">
+                    <div class="pill">Tin nhắn</div>
+                    <button class="iconBtn" type="button" aria-label="Tin nhắn">
+                        <img src="/assets/general-overview/top-mail.png" alt="">
+                    </button>
+
+                    <div class="pill">Thông báo</div>
+                    <button class="iconBtn" type="button" aria-label="Thông báo">
+                        <img src="/assets/general-overview/top-notification.png" alt="">
+                    </button>
+
+                    <div class="profile" aria-label="Người dùng">
+                        <div class="profile__avatar">
+                            <img src="/assets/general-overview/top-avatar.png" alt="">
+                        </div>
+                        <div class="profile__name">Quản trị viên</div>
+                        <img class="profile__dropdown" src="/assets/general-overview/top-dropdown.png" alt="">
+                    </div>
+                </div>
+            </header>
+
+            <section class="tournament-card" aria-label="Quản lý giải đấu bóng đá">
+                <div class="tournament-card__header">
+                    <h1 class="tournament-card__title">Quản lý Giải đấu bóng đá</h1>
+                    <button class="btn-add-tournament" onclick="openModal()">Thêm giải đấu</button>
+                </div>
+
+                <div class="tableWrap" style="border: none; background: transparent;">
+                    <table class="tournament-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;">#</th>
+                                <th>Tên giải</th>
+                                <th>Ban tổ chức</th>
+                                <th>Chế độ</th>
+                                <th>Số đội</th>
+                                <th>Trạng thái</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Hutech mở rộng lần 1</td>
+                                <td>Nguyễn Nhật Hào</td>
+                                <td>Knockout</td>
+                                <td>4/4</td>
+                                <td class="status-text">completed</td>
+                                <td>
+                                    <div class="action-btns">
+                                        <a th:href="@{/admin/general-information}" class="btn-act btn-act--detail">Chi tiết</a>
+
+                                        <button class="btn-act btn-act--edit">Sửa</button>
+                                        <button class="btn-act btn-act--delete">Xóa</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Hutech mở rộng lần 1</td>
+                                <td>Nguyễn Nhật Hào</td>
+                                <td>Knockout</td>
+                                <td>4/4</td>
+                                <td class="status-text">completed</td>
+                                <td>
+                                    <div class="action-btns">
+                                        <a th:href="@{/admin/general-information}" class="btn-act btn-act--detail">Chi tiết</a>
+
+                                        <button class="btn-act btn-act--edit">Sửa</button>
+                                        <button class="btn-act btn-act--delete">Xóa</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>Hutech mở rộng lần 1</td>
+                                <td>Nguyễn Nhật Hào</td>
+                                <td>Knockout</td>
+                                <td>4/4</td>
+                                <td class="status-text">completed</td>
+                                <td>
+                                    <div class="action-btns">
+                                        <a th:href="@{/admin/general-information}" class="btn-act btn-act--detail">Chi tiết</a>
+
+                                        <button class="btn-act btn-act--edit">Sửa</button>
+                                        <button class="btn-act btn-act--delete">Xóa</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>Hutech mở rộng lần 1</td>
+                                <td>Nguyễn Nhật Hào</td>
+                                <td>Knockout</td>
+                                <td>4/4</td>
+                                <td class="status-text">completed</td>
+                                <td>
+                                    <div class="action-btns">
+                                        <a th:href="@{/admin/general-information}" class="btn-act btn-act--detail">Chi tiết</a>
+
+                                        <button class="btn-act btn-act--edit">Sửa</button>
+                                        <button class="btn-act btn-act--delete">Xóa</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <footer class="footer" aria-label="Chân trang">
+                <span>© 2026 Admin Space</span>
+                <span>•</span>
+                <a href="/support">Hỗ trợ</a>
+                <span>•</span>
+                <a href="/privacy">Chính sách</a>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        function openModal() {
+            document.getElementById('addTournamentModal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // Ngăn cuộn trang
+        }
+
+        function closeModal() {
+            document.getElementById('addTournamentModal').classList.remove('active');
+            document.body.style.overflow = 'auto'; // Cho phép cuộn lại
+        }
+
+        // Đóng modal khi click ra ngoài vùng modal-content
+        window.onclick = function(event) {
+            const modal = document.getElementById('addTournamentModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+
+</html>
