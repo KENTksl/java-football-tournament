@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết người dùng</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --surface: #f3f6f9;
+            --border: #d9d9d9;
+            --text: #111827;
+            --muted: #6b7280;
+            --muted-2: #b3b3b3;
+            --brand: #009cff;
+            --radius-xl: 25px;
+            --radius-lg: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .app {
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 300px;
+            padding: 24px 18px;
+            border-right: 1px solid rgba(17, 24, 39, 0.06);
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar__brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 14px;
+            border-radius: var(--radius-lg);
+            background: var(--surface);
+            margin: 0 6px 18px;
+        }
+
+        .sidebar__brandIcon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(0, 156, 255, 0.18), rgba(0, 156, 255, 0.06));
+            display: grid;
+            place-items: center;
+        }
+
+        .sidebar__brandIcon svg {
+            width: 26px;
+            height: 26px;
+        }
+
+        .sidebar__brandTitle {
+            font-weight: 700;
+            font-size: 18px;
+            line-height: 1.2;
+        }
+
+        .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 0 6px;
+        }
+
+        .nav__item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 12px;
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        .nav__item:hover {
+            background: rgba(243, 246, 249, 0.8);
+        }
+
+        .nav__item--active {
+            background: var(--surface);
+        }
+
+        .nav__icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            overflow: hidden;
+            flex: 0 0 auto;
+            background: rgba(17, 24, 39, 0.06);
+            display: grid;
+            place-items: center;
+        }
+
+        .nav__icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+        }
+
+        .nav__label {
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .nav__item--large {
+            padding: 10px 12px;
+        }
+
+        .nav__icon--large {
+            width: 71px;
+            height: 71px;
+            border-radius: 20px;
+            background: var(--surface);
+        }
+
+        .nav__label--large {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .nav__chevron {
+            margin-left: auto;
+            width: 18px;
+            height: 18px;
+            opacity: 0.55;
+        }
+
+        .sidebar__footer {
+            margin-top: auto;
+            padding: 0 6px;
+        }
+
+        .content {
+            flex: 1 1 auto;
+            padding: 28px 32px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 26px;
+        }
+
+        .topbar__menuBtn {
+            width: 44px;
+            height: 44px;
+            border: 0;
+            background: transparent;
+            display: grid;
+            place-items: center;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .topbar__menuBtn img {
+            width: 30px;
+            height: 30px;
+            display: block;
+        }
+
+        .search {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            width: 320px;
+            height: 62px;
+            border-radius: 9999px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+        }
+
+        .search svg {
+            width: 18px;
+            height: 18px;
+            color: var(--muted-2);
+        }
+
+        .search input {
+            border: 0;
+            outline: none;
+            background: transparent;
+            width: 100%;
+            font-size: 16px;
+            color: var(--text);
+        }
+
+        .search input::placeholder {
+            color: var(--muted-2);
+        }
+
+        .topbar__right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .pill {
+            font-weight: 500;
+            font-size: 16px;
+            color: var(--text);
+        }
+
+        .iconBtn {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: var(--surface);
+            border: 0;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+        }
+
+        .iconBtn img {
+            width: 20px;
+            height: 20px;
+            display: block;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 9999px;
+            background: transparent;
+        }
+
+        .profile__avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 9999px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(0, 156, 255, 0.22), rgba(17, 24, 39, 0.08));
+        }
+
+        .profile__avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .profile__name {
+            font-weight: 600;
+            font-size: 16px;
+            white-space: nowrap;
+        }
+
+        .profile__dropdown {
+            width: 18px;
+            height: 18px;
+            display: block;
+            opacity: 0.65;
+        }
+
+        /* --- User Detail Styling --- */
+        .detail-page {
+            display: grid;
+            gap: 24px;
+        }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .detail-header__title {
+            font-size: 24px;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            background: var(--surface);
+            border: 1px solid rgba(17, 24, 39, 0.08);
+            color: var(--text);
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: var(--radius-xl);
+            border: 1px solid rgba(17, 24, 39, 0.08);
+            padding: 24px;
+        }
+
+        /* Left Sidebar Card */
+        .profile-card {
+            text-align: center;
+        }
+
+        .profile-card__avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 9999px;
+            margin: 0 auto 18px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(0, 156, 255, 0.22), rgba(17, 24, 39, 0.08));
+            border: 4px solid var(--surface);
+        }
+
+        .profile-card__avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-card__name {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0 0 6px;
+        }
+
+        .profile-card__username {
+            font-size: 14px;
+            color: var(--muted);
+            margin: 0 0 16px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            height: 28px;
+            border-radius: 9999px;
+            padding: 0 12px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        .badge--admin {
+            background: rgba(0, 156, 255, 0.12);
+            color: #0074be;
+        }
+
+        .badge--active {
+            background: rgba(16, 185, 129, 0.16);
+            color: #0d7a56;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            border-top: 1px solid rgba(17, 24, 39, 0.06);
+            padding-top: 20px;
+        }
+
+        .profile-stat__label {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .profile-stat__value {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        /* Right Content Card */
+        .info-card h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0 0 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px 32px;
+        }
+
+        .info-item__label {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .info-item__value {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .info-item--full {
+            grid-column: 1 / -1;
+        }
+
+        .action-footer {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            height: 44px;
+            padding: 0 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn--primary {
+            background: var(--brand);
+            color: #fff;
+        }
+
+        .btn--danger {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        .btn--outline {
+            background: #fff;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .footer {
+            margin-top: 24px;
+            padding: 18px 0 4px;
+            border-top: 1px solid rgba(17, 24, 39, 0.08);
+            color: var(--muted);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .footer a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 1100px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-card {
+                max-width: 400px;
+                margin: 0 auto;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                display: none;
+            }
+
+            .content {
+                padding: 18px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- CSS cho bảng Chi tiết người dùng theo Figma mới --- */
+        .user-detail-container {
+            background-color: #f8fafc;
+            border: 2px solid #009cff;
+            /* Viền xanh đặc trưng trong ảnh */
+            border-radius: 5px;
+            padding: 30px 40px;
+            margin-top: 10px;
+            position: relative;
+            min-height: 450px;
+        }
+
+        .user-detail__title {
+            font-size: 20px;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 35px;
+            color: #000;
+        }
+
+        .user-detail__body {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        /* Phần thông tin bên trái */
+        .user-info-list {
+            flex: 1;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 20px;
+            align-items: center;
+            font-size: 16px;
+        }
+
+        .info-row label {
+            width: 150px;
+            font-weight: 700;
+            color: #000;
+        }
+
+        .info-row span {
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* Nút xem chi tiết đội nhỏ */
+        .btn-team-info {
+            background-color: #f39c12;
+            color: white;
+            border: none;
+            padding: 3px 10px;
+            border-radius: 5px;
+            font-size: 11px;
+            margin-left: 15px;
+            cursor: pointer;
+        }
+
+        /* Phần ảnh bên phải */
+        .user-avatar-side {
+            width: 250px;
+            text-align: center;
+        }
+
+        .user-avatar-side p {
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .avatar-circle-large {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .avatar-circle-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Hàng nút bấm dưới cùng */
+        .user-detail__actions {
+            margin-top: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-group-right {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-action {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            color: white;
+        }
+
+        .btn--blue-dark {
+            background-color: #1a0dab;
+        }
+
+        /* Xem lịch sử */
+        .btn--grey {
+            background-color: #7f8c8d;
+            color: white;
+        }
+
+        /* Quay lại */
+        .btn--sky {
+            background-color: #009cff;
+        }
+
+        /* Khóa tài khoản */
+
+        .btn-action:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <aside class="sidebar" aria-label="Thanh điều hướng">
+            <div class="sidebar__brand">
+                <div class="sidebar__brandIcon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M4 12.5l4.5 4.5L20 5.5" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="sidebar__brandTitle">Admin Space</div>
+                    <div style="font-size: 13px; margin-top: 2px; color: var(--muted);">Chi tiết người dùng</div>
+                </div>
+            </div>
+
+            <nav class="nav" aria-label="Mục chính">
+                <a class="nav__item nav__item--large" href="/admin/general-overview">
+                    <span class="nav__icon nav__icon--large">
+                        <img src="/assets/general-overview/nav-dashboard.png" alt="">
+                    </span>
+                    <span class="nav__label nav__label--large">Bảng điều khiển</span>
+                </a>
+                <a class="nav__item nav__item--large" href="/admin/admin-profile">
+                    <span class="nav__icon nav__icon--large">
+                        <img src="/assets/general-overview/nav-profile.png" alt="">
+                    </span>
+                    <span class="nav__label nav__label--large">Hồ sơ của tôi</span>
+                </a>
+                <a class="nav__item nav__item--large nav__item--active" href="/admin/manage">
+                    <span class="nav__icon nav__icon--large">
+                        <img src="/assets/general-overview/tournament.jpg" alt="">
+                    </span>
+                    <span class="nav__label nav__label--large">Quản lý</span>
+                    <img class="nav__chevron" src="/assets/general-overview/sidebar-arrow.png" alt="">
+                </a>
+            </nav>
+
+            <nav class="nav" aria-label="Danh mục">
+                <a class="nav__item" href="/admin/manage/tournament">
+                    <span class="nav__label">Giải đấu</span>
+                </a>
+                <a class="nav__item nav__item--active" href="/admin/manage/user">
+                    <span class="nav__label">Người dùng</span>
+                </a>
+                <a class="nav__item" href="/admin/manage/team">
+                    <span class="nav__label">Đội tuyển</span>
+                </a>
+            </nav>
+
+            <a class="nav__item nav__item--large" href="/admin/stats">
+                <span class="nav__icon nav__icon--large">
+                    <img src="/assets/general-overview/sidebar-stats.png" alt="">
+                </span>
+                <span class="nav__label nav__label--large">Thống kê</span>
+                <img class="nav__chevron" src="/assets/general-overview/sidebar-arrow.png" alt="">
+            </a>
+            <nav class="nav" aria-label="Khác">
+                <a class="nav__item" href="/admin/billing">
+                    <span class="nav__label">Hóa đơn</span>
+                </a>
+            </nav>
+
+            <div class="sidebar__footer">
+                <a class="nav__item nav__item--large" href="/logout">
+                    <span class="nav__icon nav__icon--large">
+                        <img src="/assets/general-overview/sidebar-logout.png" alt="">
+                    </span>
+                    <span class="nav__label nav__label--large">Đăng xuất</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="content">
+            <header class="topbar">
+                <button class="topbar__menuBtn" type="button" aria-label="Menu">
+                    <img src="/assets/general-overview/menu.svg" alt="">
+                </button>
+
+                <div class="search" role="search">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor"
+                            stroke-width="2" />
+                        <path d="M16.3 16.3 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    <input type="text" placeholder="Tìm kiếm..." aria-label="Tìm kiếm">
+                </div>
+
+                <div class="topbar__right">
+                    <div class="pill">Tin nhắn</div>
+                    <button class="iconBtn" type="button" aria-label="Tin nhắn">
+                        <img src="/assets/general-overview/top-mail.png" alt="">
+                    </button>
+
+                    <div class="pill">Thông báo</div>
+                    <button class="iconBtn" type="button" aria-label="Thông báo">
+                        <img src="/assets/general-overview/top-notification.png" alt="">
+                    </button>
+
+                    <div class="profile" aria-label="Người dùng">
+                        <div class="profile__avatar">
+                            <img src="/assets/general-overview/top-avatar.png" alt="">
+                        </div>
+                        <div class="profile__name">Quản trị viên</div>
+                        <img class="profile__dropdown" src="/assets/general-overview/top-dropdown.png" alt="">
+                    </div>
+                </div>
+            </header>
+
+            <section class="user-detail-container">
+                <h1 class="user-detail__title">CHI TIẾT NGƯỜI DÙNG</h1>
+
+                <div class="user-detail__body">
+                    <div class="user-info-list">
+                        <div class="info-row">
+                            <label>Họ và Tên:</label>
+                            <span>Huỳnh Văn A</span>
+                        </div>
+                        <div class="info-row">
+                            <label>Địa chỉ:</label>
+                            <span>Thủ Đức, TPHCM</span>
+                        </div>
+                        <div class="info-row">
+                            <label>Ngày đăng ký:</label>
+                            <span>dd/mm/yyyy</span>
+                        </div>
+                        <div class="info-row">
+                            <label>Vai trò:</label>
+                            <span>User</span>
+                        </div>
+                        <div class="info-row">
+                            <label>Đội:</label>
+                            <span>22DTHC3</span>
+                            <button class="btn-team-info">Xem chi tiết đội</button>
+                        </div>
+                        <div class="info-row">
+                            <label>Trạng thái:</label>
+                            <span>Đang kích hoạt</span>
+                        </div>
+                    </div>
+
+                    <div class="user-avatar-side">
+                        <p>Ảnh đại diện</p>
+                        <div class="avatar-circle-large">
+                            <img src="/assets/figma/avatar.jpg" alt="User Avatar">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="user-detail__actions">
+                    <button class="btn-action btn--blue-dark">Xem lịch sử giao dịch</button>
+
+                    <div class="btn-group-right">
+                        <button class="btn-action btn--grey">Quay lại</button>
+                        <button class="btn-action btn--sky">Khóa tài khoản này</button>
+                    </div>
+                </div>
+            </section>
+
+            <footer class="footer" aria-label="Chân trang">
+                <span>© 2026 Admin Space</span>
+                <span>•</span>
+                <a href="/support">Hỗ trợ</a>
+                <span>•</span>
+                <a href="/privacy">Chính sách</a>
+            </footer>
+        </main>
+    </div>
+</body>
+
+</html>

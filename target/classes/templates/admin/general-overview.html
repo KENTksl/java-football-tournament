@@ -399,69 +399,71 @@
     <aside class="sidebar" aria-label="Thanh điều hướng">
         <div class="sidebar__brand">
             <div class="sidebar__brandIcon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M4 12.5l4.5 4.5L20 5.5" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round"
-                          stroke-linejoin="round" />
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M4 12.5l4.5 4.5L20 5.5" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </div>
             <div>
                 <div class="sidebar__brandTitle">Admin Space</div>
-                <div class="muted" style="font-size: 13px; margin-top: 2px;">Hồ sơ</div>
+                <div class="muted" style="font-size: 13px; margin-top: 2px;">Bảng điều khiển</div>
             </div>
         </div>
 
-        <nav class="nav" aria-label="Mục chính">
-            <a class="nav__item nav__item--large" href="/admin/general-overview">
-                    <span class="nav__icon nav__icon--large">
-                        <img src="/assets/general-overview/nav-dashboard.png" alt="">
-                    </span>
+        <nav class="nav">
+            <a class="nav__item nav__item--large nav__item--active" href="#">
+                <span class="nav__icon nav__icon--large">
+                    <img src="/assets/general-overview/nav-dashboard.png" alt="">
+                </span>
                 <span class="nav__label nav__label--large">Bảng điều khiển</span>
             </a>
-            <a class="nav__item nav__item--large nav__item--active" href="/admin/admin-profile">
-                    <span class="nav__icon nav__icon--large">
-                        <img src="/assets/general-overview/nav-profile.png" alt="">
-                    </span>
+            <a class="nav__item nav__item--large" href="/admin/admin-profile">
+                <span class="nav__icon nav__icon--large">
+                    <img src="/assets/general-overview/nav-profile.png" alt="">
+                </span>
                 <span class="nav__label nav__label--large">Hồ sơ của tôi</span>
             </a>
-            <a class="nav__item nav__item--large" href="/admin/manage">
-                    <span class="nav__icon nav__icon--large">
-                        <img src="/assets/general-overview/tournament.jpg" alt="">
-                    </span>
+            <a class="nav__item nav__item--large" href="#">
+                <span class="nav__icon nav__icon--large">
+                    <img src="/assets/general-overview/tournament.jpg" alt="">
+                </span>
                 <span class="nav__label nav__label--large">Quản lý</span>
                 <img class="nav__chevron" src="/assets/general-overview/sidebar-arrow.png" alt="">
             </a>
         </nav>
 
-        <nav class="nav" aria-label="Danh mục">
-            <a class="nav__item" href="/admin/manage">
+        <nav class="nav">
+            <a class="nav__item" href="/admin/manage/tournament">
                 <span class="nav__label">Giải đấu</span>
+                
             </a>
-            <a class="nav__item" href="/admin/users">
+            <a class="nav__item" href="/admin/manage/user">
                 <span class="nav__label">Người dùng</span>
             </a>
-            <a class="nav__item" href="/admin/teams">
+            <a class="nav__item" href="#">
                 <span class="nav__label">Đội tuyển</span>
             </a>
         </nav>
 
-        <a class="nav__item nav__item--large" href="/admin/stats">
-                <span class="nav__icon nav__icon--large">
-                    <img src="/assets/general-overview/sidebar-stats.png" alt="">
-                </span>
+        <a class="nav__item nav__item--large" href="#">
+            <span class="nav__icon nav__icon--large">
+                <img src="/assets/general-overview/sidebar-stats.png" alt="">
+            </span>
             <span class="nav__label nav__label--large">Thống kê</span>
             <img class="nav__chevron" src="/assets/general-overview/sidebar-arrow.png" alt="">
         </a>
-        <nav class="nav" aria-label="Khác">
-            <a class="nav__item" href="/admin/billing">
+        <nav class="nav">      
+            <a class="nav__item" href="#">
+                
                 <span class="nav__label">Hóa đơn</span>
+                
             </a>
         </nav>
 
         <div class="sidebar__footer">
-            <a class="nav__item nav__item--large" href="/logout">
-                    <span class="nav__icon nav__icon--large">
-                        <img src="/assets/general-overview/sidebar-logout.png" alt="">
-                    </span>
+            <a class="nav__item nav__item--large" href="#">
+                <span class="nav__icon nav__icon--large">
+                    <img src="/assets/general-overview/sidebar-logout.png" alt="">
+                </span>
                 <span class="nav__label nav__label--large">Đăng xuất</span>
             </a>
         </div>

@@ -1,0 +1,300 @@
+<div th:fragment="teams">
+    <style>
+        .teams-section { padding: 18px 0 0; }
+        .teams-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .teams-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0;
+        }
+        .teams-count {
+            font-size: 14px;
+            color: #6c6c6c;
+            margin-top: 4px;
+        }
+        .search-box-teams {
+            width: 280px;
+            border: 1px solid #dfdfdf;
+            border-radius: 10px;
+            background: #fff;
+            padding: 10px 12px;
+            font-size: 14px;
+            color: #222;
+            outline: none;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+            padding-bottom: 20px;
+        }
+
+        .team-card {
+            border: 1px solid #e8e8e8;
+            border-radius: 14px;
+            background: #fff;
+            overflow: hidden;
+            display: grid;
+            gap: 0;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .team-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        .team-card__cover {
+            height: 86px;
+            background: linear-gradient(135deg, #f7cf5a, #e8b931);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .team-card__body {
+            padding: 16px;
+        }
+
+        .team-card__head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .team-card__logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            flex: 0 0 auto;
+            border: 1px solid #eee;
+        }
+        .team-card__name {
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin: 0;
+        }
+        .team-card__meta {
+            display: grid;
+            gap: 6px;
+            color: #565656;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+        .team-card__actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding-top: 12px;
+            border-top: 1px solid #f0f0f0;
+        }
+        .member-chip {
+            padding: 4px 12px;
+            border-radius: 999px;
+            background: #f6f6f6;
+            color: #555;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .detail-btn {
+            border: 1px solid #000;
+            border-radius: 8px;
+            background: #e8b931;
+            color: #111;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 14px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .detail-btn:hover {
+            background: #d4a72a;
+        }
+
+        @media (max-width: 1024px) {
+            .team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 768px) {
+            .team-grid { grid-template-columns: 1fr; }
+            .teams-toolbar { flex-direction: column; align-items: flex-start; }
+            .search-box-teams { width: 100%; }
+        }
+    </style>
+
+    <section class="teams-section">
+        <div class="teams-toolbar">
+            <div>
+                <h2 class="teams-title">Danh sách đội tham gia</h2>
+                <div class="teams-count">8 đội đã xác nhận tham gia</div>
+            </div>
+            <input class="search-box-teams" type="text" placeholder="Tìm theo tên đội...">
+        </div>
+
+        <div class="team-grid">
+            <article class="team-card">
+                <div class="team-card__cover">A</div>
+                <div class="team-card__body">
+                    <div class="team-card__head">
+                        <div class="team-card__logo"></div>
+                        <h3 class="team-card__name">CNTT United</h3>
+                    </div>
+                    <div class="team-card__meta">
+                        <div>Đội trưởng: Nguyễn Minh Khang</div>
+                        <div>Mã đội: #TU01</div>
+                    </div>
+                    <div class="team-card__actions">
+                        <span class="member-chip">16 thành viên</span>
+                        <button type="button" class="detail-btn" onclick="openTeamModal('CNTT United')">Xem đội hình</button>
+                    </div>
+                </div>
+            </article>
+
+            <article class="team-card">
+                <div class="team-card__cover">B</div>
+                <div class="team-card__body">
+                    <div class="team-card__head">
+                        <div class="team-card__logo"></div>
+                        <h3 class="team-card__name">Ô Tô FC</h3>
+                    </div>
+                    <div class="team-card__meta">
+                        <div>Đội trưởng: Trần Quốc Vương</div>
+                        <div>Mã đội: #TU02</div>
+                    </div>
+                    <div class="team-card__actions">
+                        <span class="member-chip">14 thành viên</span>
+                        <button type="button" class="detail-btn" onclick="openTeamModal('Ô Tô FC')">Xem đội hình</button>
+                    </div>
+                </div>
+            </article>
+
+            <article class="team-card">
+                <div class="team-card__cover">C</div>
+                <div class="team-card__body">
+                    <div class="team-card__head">
+                        <div class="team-card__logo"></div>
+                        <h3 class="team-card__name">Xây Dựng Stars</h3>
+                    </div>
+                    <div class="team-card__meta">
+                        <div>Đội trưởng: Lê Thành Long</div>
+                        <div>Mã đội: #TU03</div>
+                    </div>
+                    <div class="team-card__actions">
+                        <span class="member-chip">17 thành viên</span>
+                        <button type="button" class="detail-btn" onclick="openTeamModal('Xây Dựng Stars')">Xem đội hình</button>
+                    </div>
+                </div>
+            </article>
+            
+            <article class="team-card">
+                <div class="team-card__cover">D</div>
+                <div class="team-card__body">
+                    <div class="team-card__head">
+                        <div class="team-card__logo"></div>
+                        <h3 class="team-card__name">Cơ Khí Legends</h3>
+                    </div>
+                    <div class="team-card__meta">
+                        <div>Đội trưởng: Võ Trường An</div>
+                        <div>Mã đội: #TU04</div>
+                    </div>
+                    <div class="team-card__actions">
+                        <span class="member-chip">15 thành viên</span>
+                        <button type="button" class="detail-btn" onclick="openTeamModal('Cơ Khí Legends')">Xem đội hình</button>
+                    </div>
+                </div>
+            </article>
+
+            <article class="team-card">
+                <div class="team-card__cover">E</div>
+                <div class="team-card__body">
+                    <div class="team-card__head">
+                        <div class="team-card__logo"></div>
+                        <h3 class="team-card__name">Điện Tử Power</h3>
+                    </div>
+                    <div class="team-card__meta">
+                        <div>Đội trưởng: Hoàng Việt Dũng</div>
+                        <div>Mã đội: #TU05</div>
+                    </div>
+                    <div class="team-card__actions">
+                        <span class="member-chip">13 thành viên</span>
+                        <button type="button" class="detail-btn" onclick="openTeamModal('Điện Tử Power')">Xem đội hình</button>
+                    </div>
+                </div>
+            </article>
+
+            <article class="team-card">
+                <div class="team-card__cover">F</div>
+                <div class="team-card__body">
+                    <div class="team-card__head">
+                        <div class="team-card__logo"></div>
+                        <h3 class="team-card__name">Kinh Tế Warriors</h3>
+                    </div>
+                    <div class="team-card__meta">
+                        <div>Đội trưởng: Phạm Nhật Minh</div>
+                        <div>Mã đội: #TU06</div>
+                    </div>
+                    <div class="team-card__actions">
+                        <span class="member-chip">18 thành viên</span>
+                        <button type="button" class="detail-btn" onclick="openTeamModal('Kinh Tế Warriors')">Xem đội hình</button>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- Team Lineup Modal (Should be outside content but for simplicity within fragment) -->
+    <div class="modal" id="teamLineupModal" aria-hidden="true" style="display: none; position: fixed; inset: 0; align-items: center; justify-content: center; z-index: 1200;">
+        <div class="modal__backdrop" onclick="closeTeamModal()" style="position: absolute; inset: 0; background: rgba(0, 0, 0, 0.56);"></div>
+        <section class="modal__dialog" role="dialog" aria-modal="true" style="position: relative; width: min(780px, calc(100% - 28px)); background: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 18px 60px rgba(0, 0, 0, 0.25);">
+            <header class="modal__top" style="background: #e8b931; color: #ffffff; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px;">
+                <h2 class="modal__title" id="teamLineupModalTitle" style="margin: 0; font-size: 24px; font-weight: 700; text-transform: uppercase;">CHI TIẾT ĐỘI HÌNH</h2>
+                <button type="button" class="modal__close" onclick="closeTeamModal()" style="width: 34px; height: 34px; border-radius: 50%; border: 0; background: rgba(0,0,0,0.2); color: #fff; font-size: 22px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">×</button>
+            </header>
+            <div class="modal__body" style="padding: 16px;">
+                <div class="lineup-panel">
+                    <h3 class="lineup-team" id="lineupTeamName" style="margin: 0 0 10px; font-size: 18px; font-weight: 600; color: #252525; text-align: center;">CNTT United</h3>
+                    <div class="pitch" style="position: relative; height: 360px; border-radius: 12px; background: linear-gradient(180deg, #2c9e49 0%, #2a9142 45%, #24793a 100%); border: 2px solid rgba(255,255,255,0.75);">
+                        <div class="slot slot--fw" style="position: absolute; left: 50%; top: 18%; transform: translate(-50%, -50%); width: 58px; height: 58px; border-radius: 50%; border: 2px dashed rgba(255,255,255,0.9); background: rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700;">FW</div>
+                        <div class="slot slot--df" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 58px; height: 58px; border-radius: 50%; border: 2px dashed rgba(255,255,255,0.9); background: rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700;">DF</div>
+                        <div class="slot slot--gk" style="position: absolute; left: 50%; top: 82%; transform: translate(-50%, -50%); width: 58px; height: 58px; border-radius: 50%; border: 2px dashed rgba(255,255,255,0.9); background: rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700;">GK</div>
+                    </div>
+                    <div class="bench-title" style="margin: 10px 0 8px; font-size: 13px; font-weight: 600; color: #3c3c3c;">Đội hình dự bị</div>
+                    <div class="bench" style="min-height: 56px; border: 1px dashed #d5d5d5; border-radius: 10px; padding: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: #ffffff;">
+                        <div class="player" style="width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #f7f7f7, #cfcfcf); border: 2px solid #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.2); color: #1f1f1f; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">A1</div>
+                        <div class="player" style="width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #f7f7f7, #cfcfcf); border: 2px solid #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.2); color: #1f1f1f; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">A2</div>
+                        <div class="player" style="width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #f7f7f7, #cfcfcf); border: 2px solid #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.2); color: #1f1f1f; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">A3</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        function openTeamModal(teamName) {
+            const modal = document.getElementById('teamLineupModal');
+            document.getElementById('lineupTeamName').textContent = teamName;
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeTeamModal() {
+            const modal = document.getElementById('teamLineupModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    </script>
+</div>

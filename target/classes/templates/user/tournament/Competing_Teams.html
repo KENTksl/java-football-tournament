@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Các đội tham gia</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #1e1e1e;
+            --surface: #f3f3f3;
+            --surface-muted: #d5d5d5;
+            --brand: #e8b931;
+            --dark: #171717;
+            --line: #d9d9d9;
+            --muted: #5a5a5a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: Inter, system-ui, -apple-system, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .container {
+            width: min(1170px, calc(100% - 48px));
+            margin: 0 auto;
+        }
+
+        .top-nav { background: var(--dark); color: #fff; }
+        .top-nav__inner {
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+        .brand { font-size: 22px; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
+        .menu { display: flex; align-items: center; gap: 28px; font-size: 15px; font-weight: 500; }
+        .menu__item { color: #fff; text-decoration: none; white-space: nowrap; }
+        .menu__item--active { color: var(--brand); }
+
+        .hero {
+            background: var(--brand);
+            color: #ffffff;
+            padding: 100px 0;
+            text-align: center;
+        }
+        .hero__title {
+            margin: 0;
+            font-size: 48px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .hero__sub {
+            margin: 12px 0 0;
+            font-size: 14px;
+            color: rgba(255,255,255,0.85);
+            font-weight: 400;
+        }
+
+        .back-link-bar {
+            padding: 16px 0;
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .back-link__icon {
+            width: 28px;
+            height: 28px;
+            border: 1.5px solid #ccc;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .page-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 10px 18px;
+            border: 1px solid #000000;
+            border-radius: 8px;
+            background: #e8b931;
+            color: #111111;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .tournament-section { padding: 28px 0 0; }
+        .tournament-info {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 24px;
+            align-items: start;
+            margin-bottom: 28px;
+        }
+        .tournament-logo {
+            width: 140px;
+            height: 140px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .club-logo-svg { width: 110px; height: 110px; }
+        .tournament-details { padding-top: 4px; }
+        .tournament-name { font-size: 22px; font-weight: 600; margin-bottom: 10px; }
+        .tournament-meta { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #333; }
+        .status-badge {
+            display: inline-block;
+            background: #e8b931;
+            color: #111;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 4px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 2px solid var(--line);
+            overflow-x: auto;
+        }
+        .tab {
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 500;
+            padding: 10px 18px;
+            cursor: pointer;
+            white-space: nowrap;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            font-family: inherit;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        .tab--active {
+            color: #fff;
+            background: var(--brand);
+            border-radius: 6px 6px 0 0;
+            border-bottom-color: var(--brand);
+        }
+
+        .teams-section { padding: 18px 0 0; }
+        .teams-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .teams-title {
+            font-size: 22px;
+            font-weight: 600;
+        }
+        .teams-count {
+            font-size: 14px;
+            color: #6c6c6c;
+        }
+        .search-box {
+            width: 280px;
+            border: 1px solid #dfdfdf;
+            border-radius: 10px;
+            background: #fff;
+            padding: 10px 12px;
+            font-size: 14px;
+            color: #222;
+            outline: none;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            padding-bottom: 6px;
+        }
+
+        .team-card {
+            border: 1px solid #e8e8e8;
+            border-radius: 14px;
+            background: #fff;
+            overflow: hidden;
+            display: grid;
+            gap: 0;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+        }
+
+        .team-card__cover {
+            height: 86px;
+            background: linear-gradient(135deg, #f7cf5a, #e8b931);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .team-card__body {
+            padding: 14px 14px 12px;
+        }
+
+        .team-card__head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .team-card__logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--surface-muted);
+            flex: 0 0 auto;
+        }
+        .team-card__name {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.15;
+        }
+        .team-card__meta {
+            display: grid;
+            gap: 4px;
+            color: #565656;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+        .team-card__actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .member-chip {
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #f6f6f6;
+            color: #333;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .detail-btn {
+            border: 1px solid #000;
+            border-radius: 8px;
+            background: var(--brand);
+            color: #111;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 9px 12px;
+            white-space: nowrap;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1200;
+        }
+
+        .modal.is-open {
+            display: flex;
+        }
+
+        .modal__backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.56);
+        }
+
+        .modal__dialog {
+            position: relative;
+            width: min(780px, calc(100% - 28px));
+            background: #ffffff;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 18px 60px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal__top {
+            background: #e8b931;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 16px 18px;
+        }
+
+        .modal__title {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .modal__close {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 0;
+            background: rgba(0,0,0,0.2);
+            color: #fff;
+            font-size: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal__body {
+            padding: 16px;
+        }
+
+        .lineup-panel {
+            border: 1px solid #e6e6e6;
+            border-radius: 12px;
+            background: #fbfbfb;
+            padding: 12px;
+        }
+
+        .lineup-team {
+            margin: 0 0 10px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #252525;
+            text-align: center;
+        }
+
+        .pitch {
+            position: relative;
+            height: 360px;
+            border-radius: 12px;
+            background:
+                linear-gradient(to right, rgba(255,255,255,0.26) 1px, transparent 1px) 0 0 / 34px 34px,
+                linear-gradient(to bottom, rgba(255,255,255,0.26) 1px, transparent 1px) 0 0 / 34px 34px,
+                linear-gradient(180deg, #2c9e49 0%, #2a9142 45%, #24793a 100%);
+            border: 2px solid rgba(255,255,255,0.75);
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+        }
+
+        .pitch::before {
+            content: "";
+            position: absolute;
+            inset: 12px;
+            border: 2px solid rgba(255,255,255,0.9);
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        .pitch::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 12px;
+            bottom: 12px;
+            width: 2px;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.9);
+            pointer-events: none;
+        }
+
+        .slot {
+            position: absolute;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            border: 2px dashed rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.14);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.58);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+            transform: translate(-50%, -50%);
+            transition: box-shadow 0.15s ease, border-color 0.15s ease;
+            z-index: 1;
+        }
+
+        .slot--fw { left: 50%; top: 18%; }
+        .slot--df { left: 50%; top: 50%; }
+        .slot--gk { left: 50%; top: 82%; }
+
+        .slot.is-target {
+            border-color: #e8b931;
+            box-shadow: 0 0 0 3px rgba(232,185,49,0.4);
+            background: rgba(232,185,49,0.25);
+        }
+
+        .slot.is-filled {
+            border-style: solid;
+            border-color: rgba(232,185,49,0.95);
+            background: rgba(232,185,49,0.14);
+            color: rgba(255,255,255,0.22);
+        }
+
+        .bench-title {
+            margin: 10px 0 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #3c3c3c;
+        }
+
+        .bench {
+            min-height: 56px;
+            border: 1px dashed #d5d5d5;
+            border-radius: 10px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            background: #ffffff;
+        }
+
+        .bench.is-target {
+            border-color: #e8b931;
+            box-shadow: 0 0 0 2px rgba(232,185,49,0.28);
+            background: #fffdf2;
+        }
+
+        .player {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f7f7f7, #cfcfcf);
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            color: #1f1f1f;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            position: relative;
+            z-index: 2;
+        }
+
+        .player.is-dragging {
+            cursor: grabbing;
+            opacity: 0.95;
+        }
+
+        .pitch .player {
+            position: absolute;
+            transform: translate(-50%, -50%);
+        }
+
+        .footer { background: var(--dark); color: #fff; padding: 40px 0 0; margin-top: 40px; }
+        .footer__grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 40px;
+            padding-bottom: 32px;
+        }
+        .footer__brand { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .footer__col-title { font-size: 14px; font-weight: 700; text-transform: uppercase; margin-bottom: 14px; letter-spacing: 0.05em; }
+        .footer__contact { font-size: 13px; color: #bbb; line-height: 1.6; margin-bottom: 12px; }
+        .footer__contact-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: #ccc; margin-bottom: 8px; }
+        .footer__links { display: flex; flex-direction: column; gap: 8px; }
+        .footer__link { color: #ccc; text-decoration: none; font-size: 13px; }
+        .footer__link:hover { color: var(--brand); }
+        .footer__bottom { border-top: 1px solid #333; padding: 16px 0; text-align: center; font-size: 12px; color: #777; }
+
+        @media (max-width: 1024px) {
+            .team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .search-box { width: 220px; }
+        }
+
+        @media (max-width: 768px) {
+            .container { width: calc(100% - 24px); }
+            .top-nav__inner { height: auto; padding: 14px 0; flex-direction: column; align-items: flex-start; }
+            .menu { flex-wrap: wrap; gap: 10px 16px; font-size: 13px; }
+            .hero { padding: 38px 0 42px; }
+            .hero__title { font-size: 32px; }
+            .back-link-bar { flex-direction: column; align-items: flex-start; }
+            .tournament-info { grid-template-columns: 1fr; }
+            .teams-toolbar { flex-direction: column; align-items: flex-start; }
+            .search-box { width: 100%; }
+            .team-grid { grid-template-columns: 1fr; }
+            .footer__grid { grid-template-columns: 1fr; gap: 24px; }
+            .modal__title { font-size: 20px; }
+            .pitch { height: 300px; }
+        }
+    </style>
+</head>
+<body>
+<header class="top-nav">
+    <div class="container top-nav__inner">
+        <div class="brand">SPORT TOURNAMENT</div>
+        <nav class="menu">
+            <a href="#" class="menu__item">TRANG CHỦ</a>
+            <a href="#" class="menu__item menu__item--active">GIẢI ĐẤU</a>
+            <a href="#" class="menu__item">TIN TỨC</a>
+            <a href="#" class="menu__item">GIỚI THIỆU</a>
+            <a href="#" class="menu__item">LIÊN HỆ</a>
+            <a href="#" class="menu__item">ĐĂNG NHẬP</a>
+        </nav>
+    </div>
+</header>
+
+<div class="hero">
+    <div class="container">
+        <h1 class="hero__title">CHI TIẾT GIẢI ĐẤU</h1>
+        <p class="hero__sub">Thông tin chi tiết, lịch thi đấu và kết quả.</p>
+    </div>
+</div>
+
+<main>
+    <div class="container">
+        <div class="back-link-bar">
+            <a href="/user/tournament/match-schedule" class="back-link">
+                <span class="back-link__icon">←</span>
+                Quay lại lịch đấu
+            </a>
+            <a href="/user/tournament/sign-up" class="page-btn">Đăng kí giải đấu</a>
+        </div>
+
+        <div class="tournament-section">
+            <div class="tournament-info">
+                <div class="tournament-logo">
+                    <svg class="club-logo-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="55" cy="55" r="50" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+                        <circle cx="55" cy="55" r="42" fill="none" stroke="#222" stroke-width="3"/>
+                        <circle cx="55" cy="55" r="12" fill="#222"/>
+                        <line x1="55" y1="13" x2="55" y2="97" stroke="#222" stroke-width="2.5"/>
+                        <line x1="13" y1="55" x2="97" y2="55" stroke="#222" stroke-width="2.5"/>
+                        <polygon points="55,22 68,42 55,55 42,42" fill="#222"/>
+                        <polygon points="55,88 68,68 55,55 42,68" fill="#222"/>
+                        <text x="55" y="30" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" font-family="Arial">CLUB</text>
+                        <text x="55" y="82" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" font-family="Arial">NAME</text>
+                    </svg>
+                </div>
+
+                <div class="tournament-details">
+                    <div class="tournament-name">HUTECH mở rộng lần 31</div>
+                    <div class="tournament-meta">
+                        <span>BTC: Đỗ Thành Nhân</span>
+                        <span>Hình thức: Knockout</span>
+                        <span>Số đội: 8</span>
+                        <span>Trạng thái: <span class="status-badge">Đang diễn ra</span></span>
+                        <span>Mô tả: Giải đấu phong trào dành cho các đội sinh viên.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <a class="tab" href="/user/tournament/match-schedule">Lịch đấu</a>
+                <button type="button" class="tab">BXH</button>
+                <button type="button" class="tab">Thống kê</button>
+                <button type="button" class="tab">Biểu đồ</button>
+                <button type="button" class="tab">Bracket</button>
+                <a class="tab tab--active" href="/user/tournament/competing-teams">Các đội</a>
+            </div>
+        </div>
+
+        <section class="teams-section">
+            <div class="teams-toolbar">
+                <div>
+                    <h2 class="teams-title">Danh sách đội tham gia</h2>
+                    <div class="teams-count">8 đội đã xác nhận tham gia</div>
+                </div>
+                <input class="search-box" type="text" placeholder="Tìm theo tên đội...">
+            </div>
+
+            <div class="team-grid">
+                <article class="team-card">
+                    <div class="team-card__cover">A</div>
+                    <div class="team-card__body">
+                        <div class="team-card__head">
+                            <div class="team-card__logo"></div>
+                            <h3 class="team-card__name">CNTT United</h3>
+                        </div>
+                        <div class="team-card__meta">
+                            <div>Đội trưởng: Nguyễn Minh Khang</div>
+                            <div>Mã đội: #TU01</div>
+                        </div>
+                        <div class="team-card__actions">
+                            <span class="member-chip">16 thành viên</span>
+                            <button type="button" class="detail-btn" data-open-team-modal data-team-name="CNTT United">Xem đội hình</button>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="team-card">
+                    <div class="team-card__cover">B</div>
+                    <div class="team-card__body">
+                        <div class="team-card__head">
+                            <div class="team-card__logo"></div>
+                            <h3 class="team-card__name">Ô Tô FC</h3>
+                        </div>
+                        <div class="team-card__meta">
+                            <div>Đội trưởng: Trần Quốc Vương</div>
+                            <div>Mã đội: #TU02</div>
+                        </div>
+                        <div class="team-card__actions">
+                            <span class="member-chip">14 thành viên</span>
+                            <button type="button" class="detail-btn" data-open-team-modal data-team-name="Ô Tô FC">Xem đội hình</button>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="team-card">
+                    <div class="team-card__cover">C</div>
+                    <div class="team-card__body">
+                        <div class="team-card__head">
+                            <div class="team-card__logo"></div>
+                            <h3 class="team-card__name">Xây Dựng Stars</h3>
+                        </div>
+                        <div class="team-card__meta">
+                            <div>Đội trưởng: Lê Thành Long</div>
+                            <div>Mã đội: #TU03</div>
+                        </div>
+                        <div class="team-card__actions">
+                            <span class="member-chip">17 thành viên</span>
+                            <button type="button" class="detail-btn" data-open-team-modal data-team-name="Xây Dựng Stars">Xem đội hình</button>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="team-card">
+                    <div class="team-card__cover">D</div>
+                    <div class="team-card__body">
+                        <div class="team-card__head">
+                            <div class="team-card__logo"></div>
+                            <h3 class="team-card__name">Cơ Khí Legends</h3>
+                        </div>
+                        <div class="team-card__meta">
+                            <div>Đội trưởng: Võ Trường An</div>
+                            <div>Mã đội: #TU04</div>
+                        </div>
+                        <div class="team-card__actions">
+                            <span class="member-chip">15 thành viên</span>
+                            <button type="button" class="detail-btn" data-open-team-modal data-team-name="Cơ Khí Legends">Xem đội hình</button>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="team-card">
+                    <div class="team-card__cover">E</div>
+                    <div class="team-card__body">
+                        <div class="team-card__head">
+                            <div class="team-card__logo"></div>
+                            <h3 class="team-card__name">Điện Tử Power</h3>
+                        </div>
+                        <div class="team-card__meta">
+                            <div>Đội trưởng: Hoàng Việt Dũng</div>
+                            <div>Mã đội: #TU05</div>
+                        </div>
+                        <div class="team-card__actions">
+                            <span class="member-chip">13 thành viên</span>
+                            <button type="button" class="detail-btn" data-open-team-modal data-team-name="Điện Tử Power">Xem đội hình</button>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="team-card">
+                    <div class="team-card__cover">F</div>
+                    <div class="team-card__body">
+                        <div class="team-card__head">
+                            <div class="team-card__logo"></div>
+                            <h3 class="team-card__name">Kinh Tế Warriors</h3>
+                        </div>
+                        <div class="team-card__meta">
+                            <div>Đội trưởng: Phạm Nhật Minh</div>
+                            <div>Mã đội: #TU06</div>
+                        </div>
+                        <div class="team-card__actions">
+                            <span class="member-chip">18 thành viên</span>
+                            <button type="button" class="detail-btn" data-open-team-modal data-team-name="Kinh Tế Warriors">Xem đội hình</button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <div class="footer__grid">
+            <div>
+                <div class="footer__brand">SPORT<br>TOURNAMENT</div>
+            </div>
+            <div>
+                <div class="footer__col-title">LIÊN HỆ</div>
+                <p class="footer__contact">Nếu bạn cần hỗ trợ hoặc muốn góp ý cho nền tảng,<br>hãy liên hệ với chúng tôi qua thông tin bên dưới.</p>
+                <div class="footer__contact-item">📍 TP. Thủ Đức, TP. HCM</div>
+                <div class="footer__contact-item">📞 0123456789</div>
+                <div class="footer__contact-item">✉️ sporttournament@example.com</div>
+            </div>
+            <div>
+                <div class="footer__col-title">LIÊN KẾT NHANH</div>
+                <div class="footer__links">
+                    <a href="#" class="footer__link">TRANG CHỦ</a>
+                    <a href="#" class="footer__link">GIẢI ĐẤU</a>
+                    <a href="#" class="footer__link">TIN TỨC</a>
+                    <a href="#" class="footer__link">GIỚI THIỆU</a>
+                    <a href="#" class="footer__link">LIÊN HỆ</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer__bottom">
+            © SPORT TOURNAMENT. All Rights Reserved.
+        </div>
+    </div>
+</footer>
+<div class="modal" id="teamLineupModal" aria-hidden="true">
+    <div class="modal__backdrop" data-close-team-modal></div>
+    <section class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="teamLineupModalTitle">
+        <header class="modal__top">
+            <h2 class="modal__title" id="teamLineupModalTitle">CHI TIẾT ĐỘI HÌNH</h2>
+            <button type="button" class="modal__close" data-close-team-modal aria-label="Đóng">×</button>
+        </header>
+        <div class="modal__body">
+            <div class="lineup-panel">
+                <h3 class="lineup-team" id="lineupTeamName">CNTT United</h3>
+                <div class="pitch" data-pitch>
+                    <div class="slot slot--fw" data-slot>FW</div>
+                    <div class="slot slot--df" data-slot>DF</div>
+                    <div class="slot slot--gk" data-slot>GK</div>
+                </div>
+                <div class="bench-title">Đội hình dự bị</div>
+                <div class="bench" data-bench>
+                    <div class="player">A1</div>
+                    <div class="player">A2</div>
+                    <div class="player">A3</div>
+                    <div class="player">A4</div>
+                    <div class="player">A5</div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<script>
+    const teamLineupModal = document.getElementById('teamLineupModal');
+    const lineupTeamName = document.getElementById('lineupTeamName');
+    const openTeamModalButtons = document.querySelectorAll('[data-open-team-modal]');
+    const closeTeamModalButtons = document.querySelectorAll('[data-close-team-modal]');
+    const slots = teamLineupModal.querySelectorAll('[data-slot]');
+    const bench = teamLineupModal.querySelector('[data-bench]');
+    const players = teamLineupModal.querySelectorAll('.player');
+    let dragState = null;
+
+    const resetModalLineup = () => {
+        players.forEach(player => {
+            bench.appendChild(player);
+            player.dataset.slotId = '';
+            player.style.position = '';
+            player.style.left = '';
+            player.style.top = '';
+            player.style.transform = '';
+            player.style.width = '';
+            player.style.height = '';
+            player.style.zIndex = '';
+        });
+        slots.forEach(slot => {
+            slot.dataset.occupiedBy = '';
+            slot.classList.remove('is-filled', 'is-target');
+        });
+    };
+
+    const openTeamModal = teamName => {
+        resetModalLineup();
+        lineupTeamName.textContent = teamName;
+        teamLineupModal.classList.add('is-open');
+        teamLineupModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    };
+
+    const closeTeamModal = () => {
+        teamLineupModal.classList.remove('is-open');
+        teamLineupModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    };
+
+    openTeamModalButtons.forEach(button => {
+        button.addEventListener('click', () => openTeamModal(button.dataset.teamName || 'Đội bóng'));
+    });
+
+    closeTeamModalButtons.forEach(button => {
+        button.addEventListener('click', closeTeamModal);
+    });
+
+    const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+    const resetSlotHighlight = () => {
+        slots.forEach(slot => slot.classList.remove('is-target'));
+    };
+
+    const clearSlotOccupancy = slotId => {
+        if (!slotId) {
+            return;
+        }
+        const slot = teamLineupModal.querySelector('[data-slot-id="' + slotId + '"]');
+        if (slot) {
+            slot.dataset.occupiedBy = '';
+            slot.classList.remove('is-filled');
+        }
+    };
+
+    const setPlayerToBench = player => {
+        bench.appendChild(player);
+        player.dataset.slotId = '';
+        player.style.position = '';
+        player.style.left = '';
+        player.style.top = '';
+        player.style.transform = '';
+        player.style.width = '';
+        player.style.height = '';
+        player.style.zIndex = '';
+    };
+
+    const setPlayerToSlot = (player, slot) => {
+        const occupiedBy = slot.dataset.occupiedBy;
+        if (occupiedBy && occupiedBy !== player.dataset.playerId) {
+            const oldPlayer = teamLineupModal.querySelector('[data-player-id="' + occupiedBy + '"]');
+            if (oldPlayer) {
+                clearSlotOccupancy(oldPlayer.dataset.slotId);
+                setPlayerToBench(oldPlayer);
+            }
+        }
+        clearSlotOccupancy(player.dataset.slotId);
+        const pitch = slot.closest('[data-pitch]');
+        const pitchRect = pitch.getBoundingClientRect();
+        const slotRect = slot.getBoundingClientRect();
+        const leftPercent = clamp((((slotRect.left + slotRect.width / 2) - pitchRect.left) / pitchRect.width) * 100, 8, 92);
+        const topPercent = clamp((((slotRect.top + slotRect.height / 2) - pitchRect.top) / pitchRect.height) * 100, 8, 92);
+        pitch.appendChild(player);
+        slot.dataset.occupiedBy = player.dataset.playerId;
+        slot.classList.add('is-filled');
+        player.dataset.slotId = slot.dataset.slotId;
+        player.style.position = 'absolute';
+        player.style.left = leftPercent + '%';
+        player.style.top = topPercent + '%';
+        player.style.transform = 'translate(-50%, -50%)';
+        player.style.width = '';
+        player.style.height = '';
+        player.style.zIndex = '';
+    };
+
+    const findNearestSlot = (clientX, clientY, player) => {
+        const threshold = 70;
+        let target = null;
+        let minDistance = Number.POSITIVE_INFINITY;
+        slots.forEach(slot => {
+            const occupiedBy = slot.dataset.occupiedBy;
+            if (occupiedBy && occupiedBy !== player.dataset.playerId) {
+                return;
+            }
+            const rect = slot.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const distance = Math.hypot(clientX - cx, clientY - cy);
+            if (distance < threshold && distance < minDistance) {
+                target = slot;
+                minDistance = distance;
+            }
+        });
+        return target;
+    };
+
+    const onDragMove = event => {
+        if (!dragState) {
+            return;
+        }
+        dragState.player.style.left = event.clientX - dragState.offsetX + 'px';
+        dragState.player.style.top = event.clientY - dragState.offsetY + 'px';
+        resetSlotHighlight();
+        const slot = findNearestSlot(event.clientX, event.clientY, dragState.player);
+        if (slot) {
+            slot.classList.add('is-target');
+            dragState.targetSlot = slot;
+        } else {
+            dragState.targetSlot = null;
+        }
+        const benchTarget = document.elementFromPoint(event.clientX, event.clientY)?.closest('[data-bench]');
+        if (benchTarget) {
+            bench.classList.add('is-target');
+            dragState.targetBench = bench;
+        } else {
+            bench.classList.remove('is-target');
+            dragState.targetBench = null;
+        }
+    };
+
+    const onDragEnd = event => {
+        if (!dragState) {
+            return;
+        }
+        const slot = dragState.targetSlot || findNearestSlot(event.clientX, event.clientY, dragState.player);
+        const benchTarget = dragState.targetBench || document.elementFromPoint(event.clientX, event.clientY)?.closest('[data-bench]');
+        if (slot) {
+            setPlayerToSlot(dragState.player, slot);
+        } else if (benchTarget) {
+            clearSlotOccupancy(dragState.player.dataset.slotId || '');
+            setPlayerToBench(dragState.player);
+        } else if (dragState.fromSlotId) {
+            const fromSlot = teamLineupModal.querySelector('[data-slot-id="' + dragState.fromSlotId + '"]');
+            if (fromSlot) {
+                setPlayerToSlot(dragState.player, fromSlot);
+            } else {
+                setPlayerToBench(dragState.player);
+            }
+        } else {
+            setPlayerToBench(dragState.player);
+        }
+        dragState.player.classList.remove('is-dragging');
+        dragState.player.style.pointerEvents = '';
+        resetSlotHighlight();
+        bench.classList.remove('is-target');
+        document.removeEventListener('pointermove', onDragMove);
+        document.removeEventListener('pointerup', onDragEnd);
+        dragState = null;
+    };
+
+    slots.forEach((slot, index) => {
+        slot.dataset.slotId = 'slot-' + (index + 1);
+        slot.dataset.occupiedBy = '';
+    });
+
+    players.forEach((player, index) => {
+        player.dataset.playerId = 'player-' + (index + 1);
+        player.dataset.slotId = '';
+        player.addEventListener('pointerdown', event => {
+            event.preventDefault();
+            const rect = player.getBoundingClientRect();
+            dragState = {
+                player,
+                fromSlotId: player.dataset.slotId || '',
+                targetSlot: null,
+                targetBench: null,
+                offsetX: event.clientX - rect.left,
+                offsetY: event.clientY - rect.top
+            };
+            clearSlotOccupancy(dragState.fromSlotId);
+            player.classList.add('is-dragging');
+            player.style.width = rect.width + 'px';
+            player.style.height = rect.height + 'px';
+            player.style.position = 'fixed';
+            player.style.left = rect.left + 'px';
+            player.style.top = rect.top + 'px';
+            player.style.transform = '';
+            player.style.zIndex = '1300';
+            player.style.pointerEvents = 'none';
+            document.body.appendChild(player);
+            document.addEventListener('pointermove', onDragMove);
+            document.addEventListener('pointerup', onDragEnd);
+        });
+    });
+
+    window.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && teamLineupModal.classList.contains('is-open')) {
+            closeTeamModal();
+        }
+    });
+</script>
+</body>
+</html>
