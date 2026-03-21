@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.example.football_tourament_web.FootballTouramentWebApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.316 s -- in com.example.football_tourament_web.FootballTouramentWebApplicationTests

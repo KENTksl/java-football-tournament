@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SPORT TOURNAMENT - Giới thiệu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/assets/css/user-home.css}" />
+  </head>
+  <body>
+    <header th:replace="~{user/fragments/header :: header('about')}"></header>
+
+    <main>
+      <section class="banner">
+        <div class="container">
+          <h1>GIỚI THIỆU</h1>
+          <p class="crumb">Home / ABOUT</p>
+        </div>
+      </section>
+
+      <section class="about">
+        <div class="container">
+          <div class="about-grid">
+            <div>
+              <h2>NỀN TẢNG TỔ CHỨC GIẢI ĐẤU BÓNG ĐÁ TRỰC TUYẾN</h2>
+              <p>
+                Website cung cấp thông tin và nội dung liên quan đến các hoạt động thể thao, giải đấu và sự kiện.
+                Giao diện được thiết kế hiện đại, đơn giản và thân thiện, giúp người dùng dễ dàng theo dõi và tiếp
+                cận các thông tin thể thao cần thiết.
+              </p>
+              <p>
+                Nền tảng được xây dựng nhằm giới thiệu và cập nhật thông tin về các hoạt động thể thao và giải đấu.
+                Người dùng có thể theo dõi tin tức, lịch trình và các nội dung liên quan đến thể thao trong một giao
+                diện trực quan và dễ sử dụng.
+              </p>
+            </div>
+            <div class="about-hero" aria-hidden="true">
+              <img src="/assets/figma/home-hero.png" alt="" />
+            </div>
+          </div>
+
+          <div class="features">
+            <h3>Điểm nổi bật</h3>
+            <div class="feature-grid">
+              <div class="feature">
+                <h4 class="title">Tin tức & sự kiện</h4>
+                <p class="desc">Tổng hợp thông tin mới nhất về thể thao, giải đấu, và hoạt động cộng đồng.</p>
+              </div>
+              <div class="feature">
+                <h4 class="title">Trải nghiệm đơn giản</h4>
+                <p class="desc">Giao diện trực quan, thân thiện, dễ theo dõi và dễ sử dụng trên nhiều thiết bị.</p>
+              </div>
+              <div class="feature">
+                <h4 class="title">Kết nối cộng đồng</h4>
+                <p class="desc">Tạo cầu nối giữa những người yêu thể thao thông qua nội dung và cập nhật liên tục.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer th:replace="~{user/fragments/footer :: footer('about')}"></footer>
+  </body>
+</html>
