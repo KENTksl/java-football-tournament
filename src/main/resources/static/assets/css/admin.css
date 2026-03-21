@@ -859,7 +859,8 @@ img {
 }
 
 #addTournamentModal .modal-content,
-#editTournamentModal .modal-content {
+#editTournamentModal .modal-content,
+#editTeamModal .modal-content {
   background: #fff;
   width: 100%;
   max-width: 700px;
@@ -870,7 +871,8 @@ img {
 }
 
 #addTournamentModal .modal-header,
-#editTournamentModal .modal-header {
+#editTournamentModal .modal-header,
+#editTeamModal .modal-header {
   padding: 20px;
   border-bottom: 1px solid #ccc;
   display: flex;
@@ -880,7 +882,8 @@ img {
 }
 
 #addTournamentModal .modal-title,
-#editTournamentModal .modal-title {
+#editTournamentModal .modal-title,
+#editTeamModal .modal-title {
   margin: 0;
   font-size: 24px;
   font-weight: 800;
@@ -888,7 +891,8 @@ img {
 }
 
 #addTournamentModal .btn-close-box,
-#editTournamentModal .btn-close-box {
+#editTournamentModal .btn-close-box,
+#editTeamModal .btn-close-box {
   position: absolute;
   right: 20px;
   top: 20px;
@@ -906,17 +910,20 @@ img {
 }
 
 #addTournamentModal .tournament-form,
-#editTournamentModal .tournament-form {
+#editTournamentModal .tournament-form,
+#editTeamModal .tournament-form {
   padding: 40px 80px;
 }
 
 #addTournamentModal .form-group,
-#editTournamentModal .form-group {
+#editTournamentModal .form-group,
+#editTeamModal .form-group {
   margin-bottom: 30px;
 }
 
 #addTournamentModal .form-group label,
-#editTournamentModal .form-group label {
+#editTournamentModal .form-group label,
+#editTeamModal .form-group label {
   display: block;
   font-size: 17px;
   font-weight: 700;
@@ -927,7 +934,9 @@ img {
 #addTournamentModal .form-group input,
 #addTournamentModal .form-group textarea,
 #editTournamentModal .form-group input,
-#editTournamentModal .form-group textarea {
+#editTournamentModal .form-group textarea,
+#editTeamModal .form-group input,
+#editTeamModal .form-group textarea {
   width: 100%;
   padding: 12px 16px;
   border: 1px solid #999;
@@ -937,19 +946,22 @@ img {
 }
 
 #addTournamentModal .form-group textarea,
-#editTournamentModal .form-group textarea {
+#editTournamentModal .form-group textarea,
+#editTeamModal .form-group textarea {
   resize: none;
 }
 
 #addTournamentModal .form-actions-center,
-#editTournamentModal .form-actions-center {
+#editTournamentModal .form-actions-center,
+#editTeamModal .form-actions-center {
   display: flex;
   justify-content: center;
   margin-top: 20px;
 }
 
 #addTournamentModal .btn-save-figma,
-#editTournamentModal .btn-save-figma {
+#editTournamentModal .btn-save-figma,
+#editTeamModal .btn-save-figma {
   background: #009cff;
   color: #fff;
   border: none;
@@ -962,7 +974,8 @@ img {
 }
 
 #addTournamentModal .btn-save-figma:hover,
-#editTournamentModal .btn-save-figma:hover {
+#editTournamentModal .btn-save-figma:hover,
+#editTeamModal .btn-save-figma:hover {
   background: #0076a3;
   transform: translateY(-1px);
 }
