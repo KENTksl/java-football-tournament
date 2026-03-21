@@ -55,28 +55,30 @@
         }
 
         /* HERO SECTION */
-        /* HERO SECTION */
 .hero {
     background: var(--brand);
-    color: #000000; /* Äá»•i sang mÃ u Ä‘en cho giá»‘ng áº£nh */
-    padding: 80px 0;
-    text-align: -webkit-center; /* CÄƒn lá» trÃ¡i náº¿u muá»‘n giá»‘ng áº£nh hÆ¡n */
+    color: #000000;
+    min-height: 476px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 54px 0;
 }
 
 .hero__title {
-    margin: 0;
-    font-size: 45px;
-    font-weight: 800; /* Äáº­m hÆ¡n */
+    margin: 0 0 18px;
+    font-weight: 700;
+    font-size: 50px;
+    line-height: 1.22;
     text-transform: uppercase;
-    line-height: 1.1;
-    max-width: 600px;
 }
 
 .hero__crumb {
-    margin: 15px 0 0;
-    font-size: 18px;
+    margin: 0;
     font-weight: 700;
-    letter-spacing: 1px;
+    font-size: 20px;
+    line-height: 1.22;
+    letter-spacing: 0;
 }
 
         /* MAIN CONTENT */
@@ -166,6 +168,6 @@
 
         @media (max-width: 768px) {
             .tournament-grid { grid-template-columns: 1fr; }
-            .hero__title { font-size: 32px; }
+            .hero__title { font-size: 38px; }
         }
 
