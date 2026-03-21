@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -231,12 +231,12 @@
     <div class="container top-nav__inner">
         <div class="brand">SPORT TOURNAMENT</div>
         <nav class="menu">
-            <a href="#" class="menu__item">TRANG CHỦ</a>
-            <a href="#" class="menu__item">TIN TỨC</a>
-            <a href="#" class="menu__item menu__item--active">GIẢI ĐẤU</a>
-            <a href="#" class="menu__item">GIỚI THIỆU</a>
-            <a href="#" class="menu__item">LIÊN HỆ</a>
-            <a href="#" class="menu__item">ĐĂNG NHẬP</a>
+            <a th:href="@{/}" class="menu__item">TRANG CHỦ</a>
+            <a th:href="@{/tin-tuc}" class="menu__item">TIN TỨC</a>
+            <a th:href="@{/user/tournament}" class="menu__item menu__item--active">GIẢI ĐẤU</a>
+            <a th:href="@{/gioi-thieu}" class="menu__item">GIỚI THIỆU</a>
+            <a th:href="@{/lien-he}" class="menu__item">LIÊN HỆ</a>
+            <a th:href="@{/dang-nhap}" class="menu__item">ĐĂNG NHẬP</a>
         </nav>
     </div>
 </header>
@@ -324,8 +324,8 @@
         <div>
             <div style="font-weight: 700; margin-bottom: 15px;">LIÊN KẾT NHANH</div>
             <div style="font-size: 13px; display: flex; flex-direction: column; gap: 8px;">
-                <a href="#" style="color:#ccc; text-decoration: none;">Trang chủ</a>
-                <a href="#" style="color:#ccc; text-decoration: none;">Giải đấu</a>
+                <a th:href="@{/}" style="color:#ccc; text-decoration: none;">Trang chủ</a>
+                <a th:href="@{/user/tournament}" style="color:#ccc; text-decoration: none;">Giải đấu</a>
             </div>
         </div>
     </div>

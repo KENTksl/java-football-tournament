@@ -14,7 +14,7 @@
     <link rel="stylesheet" th:href="@{/assets/css/user-pages.css}" />
   </head>
   <body>
-    <header th:replace="~{fragments/header :: header('login')}"></header>
+    <header th:replace="~{user/fragments/header :: header('login')}"></header>
     <main>
       <section class="profile-hero">
         <div class="container">
@@ -82,6 +82,6 @@
         </div>
       </section>
     </main>
-    <footer th:replace="~{fragments/footer :: footer('home')}"></footer>
+    <footer th:replace="~{user/fragments/footer :: footer('home')}"></footer>
   </body>
 </html>
