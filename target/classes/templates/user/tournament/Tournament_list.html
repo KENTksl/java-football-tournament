@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -7,291 +7,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #ffffff;
-            --text: #1e1e1e;
-            --surface: #f3f3f3;
-            --surface-muted: #c8c8c8;
-            --brand: #e8b931;
-            --dark: #171717;
-            --status-live: #67d86f;
-            --status-upcoming: #e8b931;
-            --status-finished: #525252;
-        }
+    <link rel="stylesheet" th:href="@{/assets/css/user-home.css}">
+    <link rel="stylesheet" th:href="@{/assets/css/user-pages.css}">
+        <link rel="stylesheet" th:href="@{/assets/css/tournament-list.css}">
 
-        * {
-            box-sizing: border-box;
-        }
-
-        /* --- GIẢI PHÁP FOOTER Ở ĐÁY MÀN HÌNH --- */
-        html, body {
-            height: 100%;
-            margin: 0;
-        }
-
-        body {
-            display: flex;
-            flex-direction: column;
-            font-family: 'Inter', sans-serif;
-            color: var(--text);
-            background: var(--bg);
-        }
-
-        main {
-            flex: 1 0 auto; /* Đẩy footer xuống bằng cách chiếm hết chỗ trống */
-        }
-
-        .footer {
-            flex-shrink: 0; /* Đảm bảo footer không bị co lại */
-        }
-        /* -------------------------------------- */
-
-        .container {
-            width: min(1170px, calc(100% - 48px));
-            margin: 0 auto;
-        }
-
-        /* HEADER */
-        .top-nav {
-            background: var(--dark);
-            color: #ffffff;
-        }
-
-        .top-nav__inner {
-            height: 96px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 24px;
-        }
-
-        .brand {
-            font-size: 30px;
-            font-weight: 600;
-            letter-spacing: 0.01em;
-            white-space: nowrap;
-        }
-
-        .menu {
-            display: flex;
-            align-items: center;
-            gap: 36px;
-            font-size: 18px;
-        }
-
-        .menu__item {
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: 400;
-        }
-
-        .menu__item--active {
-            color: var(--brand);
-            font-weight: 600;
-        }
-
-        /* HERO SECTION */
-        .hero {
-            background: var(--brand);
-            color: #ffffff;
-            padding: 100px 0;
-            text-align: center;
-        }
-
-        .hero__title {
-            margin: 0;
-            font-size: 48px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .hero__crumb {
-            margin: 12px 0 0;
-            font-size: 24px;
-            font-weight: 400;
-            opacity: 0.9;
-        }
-
-        /* MAIN CONTENT */
-        .section {
-            padding: 60px 0 100px;
-        }
-
-        .section__title {
-            margin: 0 0 40px;
-            font-size: 40px;
-            font-weight: 500;
-            text-transform: uppercase;
-        }
-
-        .tournament-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
-        }
-
-        .tournament-card {
-            background: var(--surface);
-            display: flex;
-            flex-direction: column;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .tournament-card__cover {
-            height: 160px;
-            background: var(--surface-muted);
-        }
-
-        .tournament-card__content {
-            padding: 20px;
-            flex-grow: 1;
-        }
-
-        .tournament-card__title {
-            margin: 0 0 12px;
-            font-size: 22px;
-            font-weight: 600;
-        }
-
-        .tournament-card__meta {
-            margin: 4px 0;
-            font-size: 15px;
-            color: #555;
-        }
-
-        .card-bottom {
-            margin-top: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .status {
-            font-size: 14px;
-            font-weight: 500;
-            padding: 8px 14px;
-            border-radius: 4px;
-        }
-
-        .status--live { background: var(--status-live); color: #000; }
-        .status--upcoming { background: var(--status-upcoming); color: #000; }
-        .status--finished { background: var(--status-finished); color: #fff; }
-
-        .detail-btn {
-            background: var(--brand);
-            color: #000;
-            text-decoration: none;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border: 1px solid #000;
-        }
-
-        /* FOOTER */
-        .footer {
-            background: var(--dark);
-            color: #ffffff;
-            padding: 60px 0 20px;
-        }
-
-        .footer__grid {
-            display: grid;
-            grid-template-columns: 1fr 1.5fr 1fr;
-            gap: 60px;
-            padding-bottom: 40px;
-        }
-
-        .footer__brand {
-            font-size: 24px;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-
-        .footer__col-title {
-            font-size: 16px;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-bottom: 20px;
-            letter-spacing: 0.05em;
-        }
-
-        .footer__text {
-            font-size: 14px;
-            color: #ccc;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .footer__contact-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-            color: #eee;
-            margin-bottom: 10px;
-        }
-
-        .footer__links {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .footer__link {
-            color: #ccc;
-            text-decoration: none;
-            font-size: 14px;
-            transition: color 0.2s;
-        }
-
-        .footer__link:hover {
-            color: var(--brand);
-        }
-
-        .footer__bottom {
-            border-top: 1px solid #333;
-            padding-top: 20px;
-            text-align: center;
-            font-size: 13px;
-            color: #888;
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 1024px) {
-            .tournament-grid { grid-template-columns: repeat(2, 1fr); }
-            .footer__grid { grid-template-columns: 1fr 1fr; }
-        }
-
-        @media (max-width: 768px) {
-            .top-nav__inner { height: auto; padding: 20px 0; flex-direction: column; }
-            .menu { gap: 15px; flex-wrap: wrap; justify-content: center; }
-            .tournament-grid { grid-template-columns: 1fr; }
-            .footer__grid { grid-template-columns: 1fr; gap: 40px; }
-            .hero__title { font-size: 32px; }
-        }
-    </style>
 </head>
 <body>
 
-<header class="top-nav">
-    <div class="container top-nav__inner">
-        <div class="brand">SPORT<br>TOURNAMENT</div>
-        <nav class="menu">
-            <a th:href="@{/}" class="menu__item">TRANG CHỦ</a>
-            <a th:href="@{/tin-tuc}" class="menu__item">TIN TỨC</a>
-            <a th:href="@{/user/tournament}" class="menu__item menu__item--active">GIẢI ĐẤU</a>
-            <a th:href="@{/gioi-thieu}" class="menu__item">GIỚI THIỆU</a>
-            <a th:href="@{/lien-he}" class="menu__item">LIÊN HỆ</a>
-            <a th:href="@{/dang-nhap}" class="menu__item">ĐĂNG NHẬP</a>
-        </nav>
-    </div>
-</header>
+<th:block th:replace="~{user/fragments/header :: header('tournament')}"></th:block>
 
 <main>
     <section class="hero">
@@ -314,7 +37,7 @@
                         <p class="tournament-card__meta">Số đội: 4</p>
                         <div class="card-bottom">
                             <span class="status status--live">Đang đá</span>
-                            <a th:href="@{/user/tournament/match-schedule}" class="detail-btn">Xem chi tiết <span>→</span></a>
+                            <a href="/user/tournament/match-schedule" class="detail-btn">Xem chi tiết <span>→</span></a>
                         </div>
                     </div>
                 </article>
@@ -328,7 +51,7 @@
                         <p class="tournament-card__meta">Số đội: 4</p>
                         <div class="card-bottom">
                             <span class="status status--upcoming">Sắp diễn ra</span>
-                            <a th:href="@{/user/tournament/match-schedule}" class="detail-btn">Xem chi tiết <span>→</span></a>
+                            <a href="/user/tournament/match-schedule" class="detail-btn">Xem chi tiết <span>→</span></a>
                         </div>
                     </div>
                 </article>
@@ -342,7 +65,7 @@
                         <p class="tournament-card__meta">Số đội: 4</p>
                         <div class="card-bottom">
                             <span class="status status--finished">Đã kết thúc</span>
-                            <a th:href="@{/user/tournament/match-schedule}" class="detail-btn">Xem chi tiết <span>→</span></a>
+                            <a href="/user/tournament/match-schedule" class="detail-btn">Xem chi tiết <span>→</span></a>
                         </div>
                     </div>
                 </article>
@@ -355,7 +78,7 @@
                         <p class="tournament-card__meta">Số đội: 4</p>
                         <div class="card-bottom">
                             <span class="status status--finished">Đã kết thúc</span>
-                            <a th:href="@{/user/tournament/match-schedule}" class="detail-btn">Xem chi tiết <span>→</span></a>
+                            <a href="/user/tournament/match-schedule" class="detail-btn">Xem chi tiết <span>→</span></a>
                         </div>
                     </div>
                 </article>
@@ -368,7 +91,7 @@
                         <p class="tournament-card__meta">Số đội: 4</p>
                         <div class="card-bottom">
                             <span class="status status--finished">Đã kết thúc</span>
-                            <a th:href="@{/user/tournament/match-schedule}" class="detail-btn">Xem chi tiết <span>→</span></a>
+                            <a href="/user/tournament/match-schedule" class="detail-btn">Xem chi tiết <span>→</span></a>
                         </div>
                     </div>
                 </article>
@@ -381,7 +104,7 @@
                         <p class="tournament-card__meta">Số đội: 4</p>
                         <div class="card-bottom">
                             <span class="status status--finished">Đã kết thúc</span>
-                            <a th:href="@{/user/tournament/match-schedule}" class="detail-btn">Xem chi tiết <span>→</span></a>
+                            <a href="/user/tournament/match-schedule" class="detail-btn">Xem chi tiết <span>→</span></a>
                         </div>
                     </div>
                 </article>
@@ -390,35 +113,8 @@
     </section>
 </main>
 
-<footer class="footer">
-    <div class="container">
-        <div class="footer__grid">
-            <div class="footer__brand">
-                SPORT<br>TOURNAMENT
-            </div>
-            <div>
-                <div class="footer__col-title">LIÊN HỆ</div>
-                <p class="footer__text">Nếu bạn cần hỗ trợ hoặc muốn góp ý cho nền tảng,<br>hãy liên hệ với chúng tôi qua thông tin bên dưới.</p>
-                <div class="footer__contact-item">📍 TP. Thủ Đức, TP. HCM</div>
-                <div class="footer__contact-item">📞 0123456789</div>
-                <div class="footer__contact-item">✉️ sporttournament@example.com</div>
-            </div>
-            <div>
-                <div class="footer__col-title">LIÊN KẾT NHANH</div>
-                <nav class="footer__links">
-                    <a th:href="@{/}" class="footer__link">TRANG CHỦ</a>
-                    <a th:href="@{/user/tournament}" class="footer__link">GIẢI ĐẤU</a>
-                    <a th:href="@{/tin-tuc}" class="footer__link">TIN TỨC</a>
-                    <a th:href="@{/gioi-thieu}" class="footer__link">GIỚI THIỆU</a>
-                    <a th:href="@{/lien-he}" class="footer__link">LIÊN HỆ</a>
-                </nav>
-            </div>
-        </div>
-        <div class="footer__bottom">
-            © SPORT TOURNAMENT. All Rights Reserved.
-        </div>
-    </div>
-</footer>
+<th:block th:replace="~{user/fragments/footer :: footer('tournament')}"></th:block>
 
 </body>
 </html>
+

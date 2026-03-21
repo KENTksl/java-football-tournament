@@ -1,10 +1,6 @@
-<<<<<<< Updated upstream
 <!DOCTYPE html>
-<html lang="vi">
-=======
-﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
->>>>>>> Stashed changes
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,48 +8,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<<<<<<< Updated upstream
-    <style>
-        :root {
-            --bg: #ffffff;
-            --text: #1e1e1e;
-            --surface: #f3f3f3;
-            --surface-muted: #d5d5d5;
-            --brand: #e8b931;
-            --dark: #171717;
-            --line: #d9d9d9;
-            --muted: #5a5a5a;
-            --chip: #f0f0f0;
-        }
-=======
     <link rel="stylesheet" th:href="@{/assets/css/user-home.css}">
     <link rel="stylesheet" th:href="@{/assets/css/user-pages.css}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <link rel="stylesheet" th:href="@{/assets/css/tournament-match-schedule.css}">
->>>>>>> Stashed changes
 
 </head>
 <body>
 
 <!-- TOP NAV -->
-<<<<<<< Updated upstream
-<header class="top-nav">
-    <div class="container top-nav__inner">
-        <div class="brand">SPORT TOURNAMENT</div>
-        <nav class="menu">
-            <a href="#" class="menu__item">TRANG CHỦ</a>
-            <a href="#" class="menu__item menu__item--active">GIẢI ĐẤU</a>
-            <a href="#" class="menu__item">TIN TỨC</a>
-            <a href="#" class="menu__item">GIỚI THIỆU</a>
-            <a href="#" class="menu__item">LIÊN HỆ</a>
-            <a href="#" class="menu__item">ĐĂNG NHẬP</a>
-        </nav>
-    </div>
-</header>
-=======
 <th:block th:replace="~{user/fragments/header :: header('tournament')}"></th:block>
->>>>>>> Stashed changes
 
  
 <section class="hero">
@@ -109,16 +74,16 @@
 
             <!-- TABS -->
             <div class="tabs">
-                <button class="tab tab--active">Lịch đấu</button>
-                <button class="tab">BXH</button>
-                <button class="tab">Thống kê</button>
-                <button class="tab">Biểu đồ</button>
-                <button class="tab">Bracket</button>
-                <a class="tab" href="/user/tournament/competing-teams">Các đội</a>
+                <button type="button" class="tab tab--active" data-tab-target="schedule">Lịch đấu</button>
+                <button type="button" class="tab" data-tab-target="fragment" th:attr="data-fragment-url=@{/user/tournament/standing-fragment}">BXH</button>
+                <button type="button" class="tab" data-tab-target="fragment" th:attr="data-fragment-url=@{/user/tournament/statistics-fragment}">Thống kê</button>
+                <button type="button" class="tab" data-tab-target="fragment" th:attr="data-fragment-url=@{/user/tournament/charts-fragment}">Biểu đồ</button>
+                <button type="button" class="tab" data-tab-target="fragment" th:attr="data-fragment-url=@{/user/tournament/bracket-fragment}">Bracket</button>
+                <button type="button" class="tab" data-tab-target="fragment" th:attr="data-fragment-url=@{/user/tournament/teams-fragment}">Các đội</button>
             </div>
         </div>
 
-        <!-- MATCHES LIST -->
+        <div data-tab-panel="schedule">
         <div class="matches-section">
             <!-- Group 1 -->
             <div class="match-group">
@@ -228,46 +193,13 @@
                 </div>
             </div>
         </div>
-        <!-- end matches -->
+        </div>
+        <div data-tab-panel="fragment" hidden></div>
 
-    </div>
 </div>
 </main>
 
-<<<<<<< Updated upstream
-<!-- FOOTER -->
-<footer class="footer">
-    <div class="container">
-        <div class="footer__grid">
-            <div>
-                <div class="footer__brand">SPORT<br>TOURNAMENT</div>
-            </div>
-            <div>
-                <div class="footer__col-title">LIÊN HỆ</div>
-                <p class="footer__contact">Nếu bạn cần hỗ trợ hoặc muốn góp ý cho nền tảng,<br>hãy liên hệ với chúng tôi qua thông tin bên dưới.</p>
-                <div class="footer__contact-item">📍 TP. Thủ Đức, TP. HCM</div>
-                <div class="footer__contact-item">📞 0123456789</div>
-                <div class="footer__contact-item">✉️ sporttournament@example.com</div>
-            </div>
-            <div>
-                <div class="footer__col-title">LIÊN KẾT NHANH</div>
-                <div class="footer__links">
-                    <a href="#" class="footer__link">TRANG CHỦ</a>
-                    <a href="#" class="footer__link">GIẢI ĐẤU</a>
-                    <a href="#" class="footer__link">TIN TỨC</a>
-                    <a href="#" class="footer__link">GIỚI THIỆU</a>
-                    <a href="#" class="footer__link">LIÊN HỆ</a>
-                </div>
-            </div>
-        </div>
-        <div class="footer__bottom">
-            © SPORT TOURNAMENT. All Rights Reserved.
-        </div>
-    </div>
-</footer>
-=======
 <th:block th:replace="~{user/fragments/footer :: footer('tournament')}"></th:block>
->>>>>>> Stashed changes
 
 <div class="modal" id="matchDetailModal" aria-hidden="true">
     <div class="modal__backdrop" data-close-match-modal></div>
@@ -324,10 +256,70 @@
 </div>
 
 <script>
-    document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('tab--active'));
-            this.classList.add('tab--active');
+    const tabs = document.querySelectorAll('.tabs .tab');
+    const schedulePanel = document.querySelector('[data-tab-panel="schedule"]');
+    const fragmentPanel = document.querySelector('[data-tab-panel="fragment"]');
+    const fragmentCache = new Map();
+
+    const executeInlineScripts = container => {
+        const scripts = container.querySelectorAll('script');
+        scripts.forEach(oldScript => {
+            const newScript = document.createElement('script');
+            Array.from(oldScript.attributes).forEach(attribute => {
+                newScript.setAttribute(attribute.name, attribute.value);
+            });
+            newScript.textContent = oldScript.textContent;
+            oldScript.replaceWith(newScript);
+        });
+    };
+
+    const setActiveTab = activeTab => {
+        tabs.forEach(tab => tab.classList.remove('tab--active'));
+        activeTab.classList.add('tab--active');
+    };
+
+    const showSchedulePanel = activeTab => {
+        setActiveTab(activeTab);
+        schedulePanel.hidden = false;
+        fragmentPanel.hidden = true;
+    };
+
+    const showFragmentPanel = async activeTab => {
+        const fragmentUrl = activeTab.dataset.fragmentUrl;
+        if (!fragmentUrl) {
+            return;
+        }
+        setActiveTab(activeTab);
+        schedulePanel.hidden = true;
+        fragmentPanel.hidden = false;
+        if (!fragmentCache.has(fragmentUrl)) {
+            const response = await fetch(fragmentUrl, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Không tải được nội dung tab');
+            }
+            fragmentCache.set(fragmentUrl, await response.text());
+        }
+        fragmentPanel.innerHTML = fragmentCache.get(fragmentUrl);
+        executeInlineScripts(fragmentPanel);
+    };
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', async event => {
+            event.preventDefault();
+            if (tab.dataset.tabTarget === 'schedule') {
+                showSchedulePanel(tab);
+                return;
+            }
+            try {
+                await showFragmentPanel(tab);
+            } catch (error) {
+                fragmentPanel.innerHTML = '<div style="padding:16px;">Không thể tải dữ liệu tab.</div>';
+                fragmentPanel.hidden = false;
+            }
         });
     });
 

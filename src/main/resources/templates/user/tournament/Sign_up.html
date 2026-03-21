@@ -1,10 +1,5 @@
-<<<<<<< Updated upstream
-<!DOCTYPE html>
-<html lang="vi">
-=======
 ﻿<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
->>>>>>> Stashed changes
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,23 +12,7 @@
 </head>
 <body>
 
-<<<<<<< Updated upstream
-<header class="top-nav">
-    <div class="container top-nav__inner">
-        <div class="brand">SPORT TOURNAMENT</div>
-        <nav class="menu">
-            <a href="#" class="menu__item">TRANG CHỦ</a>
-            <a href="#" class="menu__item">TIN TỨC</a>
-            <a href="#" class="menu__item menu__item--active">GIẢI ĐẤU</a>
-            <a href="#" class="menu__item">GIỚI THIỆU</a>
-            <a href="#" class="menu__item">LIÊN HỆ</a>
-            <a href="#" class="menu__item">ĐĂNG NHẬP</a>
-        </nav>
-    </div>
-</header>
-=======
 <th:block th:replace="~{user/fragments/header :: header('tournament')}"></th:block>
->>>>>>> Stashed changes
 
 <section class="hero-banner">
     <div class="container hero-content">
@@ -108,26 +87,7 @@
     </div>
 </main>
 
-<<<<<<< Updated upstream
-<footer class="footer">
-    <div class="container footer-grid">
-        <div style="font-size: 24px; font-weight: 700;">SPORT<br>TOURNAMENT</div>
-        <div>
-            <div style="font-weight: 700; margin-bottom: 15px;">LIÊN HỆ</div>
-            <p style="font-size: 13px; color: #ccc;">📍 TP. Thủ Đức, TP. HCM<br>📞 0123456789<br>✉️ sporttournament@example.com</p>
-        </div>
-        <div>
-            <div style="font-weight: 700; margin-bottom: 15px;">LIÊN KẾT NHANH</div>
-            <div style="font-size: 13px; display: flex; flex-direction: column; gap: 8px;">
-                <a href="#" style="color:#ccc; text-decoration: none;">Trang chủ</a>
-                <a href="#" style="color:#ccc; text-decoration: none;">Giải đấu</a>
-            </div>
-        </div>
-    </div>
-</footer>
-=======
 <th:block th:replace="~{user/fragments/footer :: footer('tournament')}"></th:block>
->>>>>>> Stashed changes
 
 <script>
     function addPlayer() {
