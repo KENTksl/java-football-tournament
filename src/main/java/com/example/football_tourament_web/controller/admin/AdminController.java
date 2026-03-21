@@ -22,6 +22,17 @@ public class AdminController {
 		return "admin/manage/manage-tournament";
 	}
 
+	@GetMapping({"/admin/manage", "/admin/manage-user", "/admin/manage/user"})
+	public String manageUser() {
+		return "admin/manage/manage-user";
+	}
+
+	@GetMapping({"/admin/manage", "admin/manage/user-detail", "/admin/manage/user-detail"})
+	public String manageUserDetail() {
+		return "admin/manage/user-detail";
+	}
+
+
 	@GetMapping("/admin/general-information")
 	public String adminInformation(Model model) {
 		model.addAttribute("activePage", "info");
