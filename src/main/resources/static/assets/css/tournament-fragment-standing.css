@@ -1,0 +1,125 @@
+.standing-section {
+    padding: 24px 0;
+    background: #fff;
+    border-radius: 12px;
+    margin-top: 8px;
+}
+
+.standing-table-container {
+    overflow-x: auto;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.standing-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    min-width: 600px;
+}
+
+.standing-table thead {
+    background: #171717;
+    color: #fff;
+}
+
+.standing-table th {
+    padding: 16px;
+    text-align: center;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 12px;
+}
+
+.standing-table th:nth-child(2) {
+    text-align: left;
+}
+
+.standing-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.standing-table tr:last-child td {
+    border-bottom: none;
+}
+
+.standing-table tr:hover {
+    background-color: #fcfcfc;
+}
+
+.rank-cell {
+    font-weight: 700;
+    color: #171717;
+    width: 50px;
+}
+
+.team-cell {
+    text-align: left !important;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+}
+
+.team-logo-standing {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid #eee;
+}
+
+.team-logo-standing img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pts-cell {
+    font-weight: 700;
+    color: #e8b931;
+    background: rgba(232, 185, 49, 0.05);
+}
+
+.form-cell {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.form-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.form-w {
+    background: #2c9e49;
+}
+
+.form-d {
+    background: #999;
+}
+
+.form-l {
+    background: #dc3545;
+}
+
+.rank-top {
+    border-left: 4px solid #e8b931;
+}

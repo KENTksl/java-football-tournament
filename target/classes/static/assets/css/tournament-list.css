@@ -1,0 +1,171 @@
+﻿:root {
+    --bg: #ffffff;
+    --text: #000000; 
+    --surface: #f2f2f7; 
+    --surface-muted: #e5e5ea;
+    --brand: #ffaa17; 
+    --dark: #222429;  
+    --status-live: #4cd964;
+    --status-upcoming: var(--brand);
+    --status-finished: #8e8e93;
+}
+
+        * {
+            box-sizing: border-box;
+        }
+
+        /* --- GIáº¢I PHÃP FOOTER á»ž ÄÃY MÃ€N HÃŒNH --- */
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        main {
+            flex: 1 0 auto; /* Äáº©y footer xuá»‘ng báº±ng cÃ¡ch chiáº¿m háº¿t chá»— trá»‘ng */
+        }
+
+        .footer {
+            flex-shrink: 0; /* Äáº£m báº£o footer khÃ´ng bá»‹ co láº¡i */
+        }
+        /* -------------------------------------- */
+
+        .container {
+            width: min(1170px, calc(100% - 48px));
+            margin: 0 auto;
+        }
+
+        .header .container {
+            max-width: 1366px;
+            width: 100%;
+            padding: 0 24px;
+        }
+
+        .header .brand {
+            font-weight: 700;
+            font-size: 35px;
+            letter-spacing: 0.2px;
+        }
+
+        /* HERO SECTION */
+        /* HERO SECTION */
+.hero {
+    background: var(--brand);
+    color: #000000; /* Äá»•i sang mÃ u Ä‘en cho giá»‘ng áº£nh */
+    padding: 80px 0;
+    text-align: -webkit-center; /* CÄƒn lá» trÃ¡i náº¿u muá»‘n giá»‘ng áº£nh hÆ¡n */
+}
+
+.hero__title {
+    margin: 0;
+    font-size: 45px;
+    font-weight: 800; /* Äáº­m hÆ¡n */
+    text-transform: uppercase;
+    line-height: 1.1;
+    max-width: 600px;
+}
+
+.hero__crumb {
+    margin: 15px 0 0;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+        /* MAIN CONTENT */
+        .section {
+            padding: 60px 0 100px;
+        }
+
+        .section__title {
+            margin: 0 0 40px;
+            font-size: 40px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .tournament-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .tournament-card {
+            background: var(--surface);
+            display: flex;
+            flex-direction: column;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .tournament-card__cover {
+            height: 160px;
+            background: var(--surface-muted);
+        }
+
+        .tournament-card__content {
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        .tournament-card__title {
+            margin: 0 0 12px;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .tournament-card__meta {
+            margin: 4px 0;
+            font-size: 15px;
+            color: #555;
+        }
+
+        .card-bottom {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .status {
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 14px;
+            border-radius: 4px;
+        }
+
+        .status--live { background: var(--status-live); color: #000; }
+        .status--upcoming { background: var(--status-upcoming); color: #000; }
+        .status--finished { background: var(--status-finished); color: #fff; }
+
+        .detail-btn {
+            background: var(--brand);
+            color: #000;
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #000;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .tournament-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .tournament-grid { grid-template-columns: 1fr; }
+            .hero__title { font-size: 32px; }
+        }
+

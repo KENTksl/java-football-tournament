@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chi tiết đội</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/css/admin.css" />
+    <style>
+      :root {
+        --bg: #ffffff;
+        --surface: #f3f6f9;
+        --border: #d9d9d9;
+        --text: #111827;
+        --muted: #6b7280;
+        --muted-2: #b3b3b3;
+        --brand: #009cff;
+        --radius-xl: 25px;
+        --radius-lg: 20px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        color: var(--text);
+        background: var(--bg);
+      }
+
+      .app {
+        min-height: 100vh;
+        display: flex;
+      }
+
+      .sidebar {
+        width: 300px;
+        padding: 24px 18px;
+        border-right: 1px solid rgba(17, 24, 39, 0.06);
+        background: var(--bg);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sidebar__brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 14px;
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        margin: 0 6px 18px;
+      }
+
+      .sidebar__brandIcon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(0, 156, 255, 0.18), rgba(0, 156, 255, 0.06));
+        display: grid;
+        place-items: center;
+      }
+
+      .sidebar__brandIcon svg {
+        width: 26px;
+        height: 26px;
+      }
+
+      .sidebar__brandTitle {
+        font-weight: 700;
+        font-size: 18px;
+        line-height: 1.2;
+      }
+
+      .nav {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 0 6px;
+      }
+
+      .nav__item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 12px;
+        border-radius: var(--radius-lg);
+        text-decoration: none;
+        color: var(--text);
+      }
+
+      .nav__item:hover {
+        background: rgba(243, 246, 249, 0.8);
+      }
+
+      .nav__item--active {
+        background: var(--surface);
+      }
+
+      .nav__icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        overflow: hidden;
+        flex: 0 0 auto;
+        background: rgba(17, 24, 39, 0.06);
+        display: grid;
+        place-items: center;
+      }
+
+      .nav__icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+      }
+
+      .nav__label {
+        font-weight: 500;
+        font-size: 16px;
+      }
+
+      .nav__item--large {
+        padding: 10px 12px;
+      }
+
+      .nav__icon--large {
+        width: 71px;
+        height: 71px;
+        border-radius: 20px;
+        background: var(--surface);
+      }
+
+      .nav__label--large {
+        font-weight: 600;
+        font-size: 18px;
+      }
+
+      .nav__chevron {
+        margin-left: auto;
+        width: 18px;
+        height: 18px;
+        opacity: 0.55;
+      }
+
+      .sidebar__footer {
+        margin-top: auto;
+        padding: 0 6px;
+      }
+
+      .content {
+        flex: 1 1 auto;
+        padding: 28px 32px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 26px;
+      }
+
+      .topbar__menuBtn {
+        width: 44px;
+        height: 44px;
+        border: 0;
+        background: transparent;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        cursor: pointer;
+      }
+
+      .topbar__menuBtn img {
+        width: 30px;
+        height: 30px;
+        display: block;
+      }
+
+      .search {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        width: 320px;
+        height: 62px;
+        border-radius: 9999px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+      }
+
+      .search svg {
+        width: 18px;
+        height: 18px;
+        color: var(--muted-2);
+      }
+
+      .search input {
+        border: 0;
+        outline: none;
+        background: transparent;
+        width: 100%;
+        font-size: 16px;
+        color: var(--text);
+      }
+
+      .search input::placeholder {
+        color: var(--muted-2);
+      }
+
+      .topbar__right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+
+      .pill {
+        font-weight: 500;
+        font-size: 16px;
+        color: var(--text);
+      }
+
+      .iconBtn {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: var(--surface);
+        border: 0;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+      }
+
+      .iconBtn img {
+        width: 20px;
+        height: 20px;
+        display: block;
+      }
+
+      .profile {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        border-radius: 9999px;
+        background: transparent;
+      }
+
+      .profile__avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 9999px;
+        overflow: hidden;
+        background: linear-gradient(135deg, rgba(0, 156, 255, 0.22), rgba(17, 24, 39, 0.08));
+      }
+
+      .profile__avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .profile__name {
+        font-weight: 600;
+        font-size: 16px;
+        white-space: nowrap;
+      }
+
+      .profile__dropdown {
+        width: 18px;
+        height: 18px;
+        display: block;
+        opacity: 0.65;
+      }
+
+      .page {
+        display: grid;
+        gap: 18px;
+      }
+
+      .page__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .page__title {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 800;
+      }
+
+      .btn-back {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 44px;
+        padding: 0 18px;
+        border-radius: 12px;
+        background: var(--surface);
+        border: 1px solid rgba(17, 24, 39, 0.08);
+        color: var(--text);
+        font-weight: 600;
+        font-size: 14px;
+        text-decoration: none;
+      }
+
+      .card {
+        background: #fff;
+        border-radius: var(--radius-xl);
+        border: 1px solid rgba(17, 24, 39, 0.08);
+        padding: 24px;
+      }
+
+      .team-grid {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 24px;
+        align-items: start;
+      }
+
+      .section-title {
+        margin: 0 0 16px;
+        font-size: 18px;
+        font-weight: 700;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px 24px;
+      }
+
+      .info-item__label {
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 6px;
+        font-weight: 600;
+      }
+
+      .info-item__value {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        height: 28px;
+        border-radius: 9999px;
+        padding: 0 12px;
+        font-size: 13px;
+        font-weight: 700;
+        background: rgba(0, 156, 255, 0.12);
+        color: #0074be;
+      }
+
+      .table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 16px;
+        border: 1px solid rgba(17, 24, 39, 0.08);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 620px;
+        background: #fff;
+      }
+
+      thead {
+        background: var(--surface);
+      }
+
+      th,
+      td {
+        padding: 14px 16px;
+        text-align: left;
+        border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+        font-size: 14px;
+      }
+
+      th {
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      tbody tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .footer {
+        margin-top: 24px;
+        padding: 18px 0 4px;
+        border-top: 1px solid rgba(17, 24, 39, 0.06);
+        font-size: 13px;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .footer a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      @media (max-width: 1100px) {
+        .team-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app" th:with="activePage='manage', activeSubPage='user'">
+      <aside th:replace="~{admin/fragments_admin/sidebar :: sidebar}"></aside>
+      <main class="content">
+        <header th:replace="~{admin/fragments_admin/header :: header}"></header>
+
+        <section class="page">
+          <div class="page__header">
+            <h1 class="page__title">CHI TIẾT ĐỘI</h1>
+            <a class="btn-back" th:href="@{/admin/manage/user-detail}">Quay lại</a>
+          </div>
+
+          <div class="team-grid">
+            <section class="card" aria-label="Thông tin đội">
+              <h2 class="section-title">Thông tin chung</h2>
+              <div class="info-grid">
+                <div class="info-item">
+                  <div class="info-item__label">Tên đội</div>
+                  <div class="info-item__value" th:text="${teamName ?: '22DTHC3'}">22DTHC3</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-item__label">Trạng thái</div>
+                  <div class="info-item__value"><span class="badge" th:text="${teamStatus ?: 'Đang hoạt động'}">Đang hoạt động</span></div>
+                </div>
+                <div class="info-item">
+                  <div class="info-item__label">Trưởng đội</div>
+                  <div class="info-item__value" th:text="${captainName ?: 'Huỳnh Văn A'}">Huỳnh Văn A</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-item__label">Ngày tạo</div>
+                  <div class="info-item__value" th:text="${createdAt ?: 'dd/mm/yyyy'}">dd/mm/yyyy</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-item__label">Số lượng thành viên</div>
+                  <div class="info-item__value" th:text="${memberCount ?: 0}">0</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-item__label">Giải tham gia</div>
+                  <div class="info-item__value" th:text="${tournamentCount ?: 0}">0</div>
+                </div>
+              </div>
+
+              <h2 class="section-title" style="margin-top: 22px;">Danh sách thành viên</h2>
+              <div class="table-wrap" role="region" aria-label="Danh sách thành viên" tabindex="0">
+                <table>
+                  <thead>
+                    <tr>
+                      <th style="width: 70px;">#</th>
+                      <th>Họ và tên</th>
+                      <th style="width: 120px;">Số áo</th>
+                      <th style="width: 140px;">Vai trò</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="m, stat : ${members}">
+                      <td th:text="${stat.count}">1</td>
+                      <td th:text="${m.fullName ?: '---'}">---</td>
+                      <td th:text="${m.number ?: '--'}">--</td>
+                      <td th:text="${m.role ?: 'Cầu thủ'}">Cầu thủ</td>
+                    </tr>
+                    <tr th:if="${members == null or #lists.isEmpty(members)}">
+                      <td colspan="4" style="color: var(--muted); font-weight: 600;">Chưa có dữ liệu thành viên.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <aside class="card" aria-label="Ảnh đội">
+              <h2 class="section-title">Hình ảnh</h2>
+              <div style="display: grid; place-items: center; padding: 10px 0 6px;">
+                <div style="width: 180px; height: 180px; border-radius: 9999px; overflow: hidden; border: 4px solid var(--surface); background: rgba(0, 156, 255, 0.08);">
+                  <img src="/assets/figma/avatar.jpg" alt="Team Avatar" style="width: 100%; height: 100%; object-fit: cover; display: block;" />
+                </div>
+              </div>
+              <div style="margin-top: 12px; color: var(--muted); font-size: 14px; font-weight: 600; text-align: center;">
+                Ảnh đội / Logo
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <footer th:replace="~{admin/fragments_admin/footer :: footer}"></footer>
+      </main>
+    </div>
+  </body>
+</html>

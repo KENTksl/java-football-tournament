@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,625 +8,25 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/assets/css/user-home.css}">
+    <link rel="stylesheet" th:href="@{/assets/css/user-pages.css}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --bg: #ffffff;
-            --text: #1e1e1e;
-            --surface: #f3f3f3;
-            --surface-muted: #d5d5d5;
-            --brand: #e8b931;
-            --dark: #171717;
-            --line: #d9d9d9;
-            --muted: #5a5a5a;
-            --chip: #f0f0f0;
-        }
+        <link rel="stylesheet" th:href="@{/assets/css/tournament-match-schedule.css}">
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: Inter, system-ui, -apple-system, sans-serif;
-            color: var(--text);
-            background: var(--bg);
-        }
-
-        .container {
-            width: min(1170px, calc(100% - 48px));
-            margin: 0 auto;
-        }
-
-        /* TOP NAV */
-        .top-nav { background: var(--dark); color: #fff; }
-        .top-nav__inner {
-            height: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 24px;
-        }
-        .brand { font-size: 22px; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
-        .menu { display: flex; align-items: center; gap: 28px; font-size: 15px; font-weight: 500; }
-        .menu__item { color: #fff; text-decoration: none; white-space: nowrap; }
-        .menu__item--active { color: var(--brand); }
-
-        /* HERO BANNER */
-         .hero {
-            background: var(--brand);
-            color: #ffffff;
-            padding: 100px 0;
-            text-align: center;
-        }
-
-        .hero__title {
-            margin: 0;
-            font-size: 48px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .hero__crumb {
-            margin: 12px 0 0;
-            font-size: 24px;
-            font-weight: 400;
-            opacity: 0.9;
-        }
-        .hero__sub { font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 400; }
-        .hero__img {
-            height: 160px;
-            object-fit: cover;
-            width: 100%;
-            display: block;
-        }
-        .hero__img-placeholder {
-            height: 160px;
-            background: linear-gradient(135deg, #2a7a3b 0%, #1a5c28 40%, #0d3d1a 100%);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .hero__img-placeholder::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='120'%3E%3Ccircle cx='100' cy='60' r='55' fill='none' stroke='rgba(255,255,255,0.15)' stroke-width='2'/%3E%3Ccircle cx='100' cy='60' r='40' fill='none' stroke='rgba(255,255,255,0.1)' stroke-width='1'/%3E%3Cline x1='45' y1='60' x2='155' y2='60' stroke='rgba(255,255,255,0.1)' stroke-width='1'/%3E%3C/svg%3E") center/cover;
-        }
-        .trophy-icon { font-size: 64px; z-index: 1; }
-
-        /* BACK LINK */
-        .back-link-bar {
-            padding: 16px 0;
-            border-bottom: 1px solid var(--line);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 14px;
-        }
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 15px;
-            color: var(--text);
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .back-link__icon {
-            width: 28px; height: 28px;
-            border: 1.5px solid #ccc;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-        .register-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            min-height: 42px;
-            padding: 10px 18px;
-            border: 1px solid #000000;
-            border-radius: 8px;
-            background: #e8b931;
-            color: #111111;
-            text-decoration: none;
-            font-size: 15px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        /* TOURNAMENT INFO */
-        .tournament-section { padding: 28px 0 0; }
-        .tournament-info { display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: start; margin-bottom: 28px; }
-        .tournament-logo {
-            width: 140px; height: 140px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            background: #f5f5f5;
-            display: flex; align-items: center; justify-content: center;
-            overflow: hidden;
-        }
-        .tournament-logo__img {
-            width: 110px; height: 110px;
-            object-fit: contain;
-        }
-        /* SVG club logo placeholder */
-        .club-logo-svg { width: 110px; height: 110px; }
-
-        .tournament-details { padding-top: 4px; }
-        .tournament-name { font-size: 22px; font-weight: 600; margin-bottom: 10px; }
-        .tournament-meta { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #333; }
-        .tournament-meta span { display: flex; align-items: center; gap: 6px; }
-        .status-badge {
-            display: inline-block;
-            background: #e8b931;
-            color: #111;
-            font-size: 12px;
-            font-weight: 600;
-            padding: 3px 10px;
-            border-radius: 4px;
-        }
-
-        /* TABS */
-        .tabs {
-            display: flex;
-            gap: 4px;
-            border-bottom: 2px solid var(--line);
-            margin-bottom: 0;
-            overflow-x: auto;
-        }
-        .tab {
-            border: none;
-            background: transparent;
-            color: var(--muted);
-            font-size: 14px;
-            font-weight: 500;
-            padding: 10px 18px;
-            cursor: pointer;
-            white-space: nowrap;
-            border-bottom: 2px solid transparent;
-            margin-bottom: -2px;
-            font-family: inherit;
-        }
-        .tab--active {
-            color: #fff;
-            background: var(--brand);
-            border-radius: 6px 6px 0 0;
-            border-bottom-color: var(--brand);
-        }
-
-        /* MATCHES */
-        .matches-section { padding: 0; }
-        .match-group { margin-bottom: 0; }
-        .match-group-label {
-            font-size: 12px;
-            color: var(--muted);
-            padding: 12px 16px 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .match-group-label span { color: #999; }
-
-        .match-row {
-            background: #f7f7f7;
-            border-bottom: 1px solid #ebebeb;
-            display: grid;
-            grid-template-columns: 1fr auto 1fr auto;
-            align-items: center;
-            padding: 14px 16px;
-            gap: 12px;
-        }
-        .match-row:hover { background: #f0f0f0; }
-
-        .match-team {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .match-team--right { justify-content: flex-end; }
-
-        .team-logo-sm {
-            width: 36px; height: 36px;
-            border-radius: 50%;
-            overflow: hidden;
-            flex: 0 0 auto;
-            background: #ddd;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .team-logo-sm img { width: 100%; height: 100%; object-fit: cover; }
-
-        .score-badge {
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 6px 14px;
-            font-size: 15px;
-            font-weight: 700;
-            text-align: center;
-            min-width: 70px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-        }
-        .score-badge__score { font-size: 17px; color: #111; }
-        .score-badge__type { font-size: 10px; color: var(--brand); font-weight: 600; letter-spacing: 0.05em; }
-
-        .view-btn {
-            width: 32px; height: 32px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
-            color: #555;
-            border: 0;
-            background: transparent;
-        }
-        .view-btn svg { width: 20px; height: 20px; }
-
-        .modal {
-            position: fixed;
-            inset: 0;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1200;
-        }
-
-        .modal.is-open {
-            display: flex;
-        }
-
-        .modal__backdrop {
-            position: absolute;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.58);
-        }
-
-        .modal__dialog {
-            position: relative;
-            width: min(1100px, calc(100% - 28px));
-            background: #ffffff;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 18px 60px rgba(0, 0, 0, 0.25);
-        }
-
-        .modal__top {
-            background: var(--brand);
-            color: #ffffff;
-            padding: 22px 26px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-        }
-
-        .modal__title {
-            margin: 0;
-            font-size: 26px;
-            font-weight: 700;
-            line-height: 1.2;
-            text-transform: uppercase;
-        }
-
-        .modal__close {
-            width: 34px;
-            height: 34px;
-            border: 0;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.16);
-            color: #ffffff;
-            font-size: 22px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            line-height: 1;
-        }
-
-        .modal__body {
-            padding: 22px 26px 26px;
-        }
-
-        .score-strip {
-            margin-bottom: 14px;
-            border: 1px solid #ece1b6;
-            border-radius: 12px;
-            background: #fff8dd;
-            padding: 10px 14px;
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .score-strip__team {
-            font-size: 18px;
-            font-weight: 600;
-            color: #202020;
-            white-space: nowrap;
-        }
-
-        .score-strip__team--right {
-            text-align: right;
-        }
-
-        .score-strip__score {
-            min-width: 120px;
-            text-align: center;
-            border: 1px solid #171717;
-            border-radius: 10px;
-            background: #ffffff;
-            font-size: 20px;
-            font-weight: 700;
-            color: #171717;
-            padding: 8px 12px;
-        }
-
-        .lineup-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 16px;
-        }
-
-        .lineup-card {
-            border: 1px solid #e8e8e8;
-            border-radius: 12px;
-            padding: 12px;
-            background: #fcfcfc;
-        }
-
-        .lineup-card__title {
-            margin: 0 0 10px;
-            font-size: 16px;
-            font-weight: 600;
-            color: #2e2e2e;
-            text-align: center;
-        }
-
-        .formation-pitch {
-            position: relative;
-            height: 340px;
-            border-radius: 12px;
-            background:
-                linear-gradient(to right, rgba(255,255,255,0.26) 1px, transparent 1px) 0 0 / 34px 34px,
-                linear-gradient(to bottom, rgba(255,255,255,0.26) 1px, transparent 1px) 0 0 / 34px 34px,
-                linear-gradient(180deg, #2c9e49 0%, #2a9142 45%, #24793a 100%);
-            border: 2px solid rgba(255,255,255,0.75);
-            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
-        }
-
-        .formation-pitch::before {
-            content: "";
-            position: absolute;
-            inset: 12px;
-            border: 2px solid rgba(255, 255, 255, 0.9);
-            border-radius: 8px;
-            pointer-events: none;
-        }
-
-        .formation-pitch::after {
-            content: "";
-            position: absolute;
-            left: 50%;
-            top: 12px;
-            bottom: 12px;
-            width: 2px;
-            transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.9);
-            pointer-events: none;
-        }
-
-        .formation-pitch.is-target {
-            box-shadow: inset 0 0 0 2px #e8b931, 0 0 0 2px rgba(232,185,49,0.35);
-        }
-
-        .position-slot {
-            position: absolute;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            border: 2px dashed rgba(255, 255, 255, 0.9);
-            background: rgba(255, 255, 255, 0.14);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: rgba(255, 255, 255, 0.58);
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.04em;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.25);
-            transform: translate(-50%, -50%);
-            transition: box-shadow 0.15s ease, border-color 0.15s ease;
-            z-index: 1;
-        }
-
-        .position-slot.is-target {
-            border-color: #e8b931;
-            box-shadow: 0 0 0 3px rgba(232,185,49,0.4);
-            background: rgba(232, 185, 49, 0.25);
-        }
-
-        .position-slot.is-filled {
-            border-style: solid;
-            border-color: rgba(232, 185, 49, 0.95);
-            background: rgba(232, 185, 49, 0.14);
-            color: rgba(255, 255, 255, 0.22);
-        }
-
-        .position-slot--fw {
-            left: 50%;
-            top: 18%;
-        }
-
-        .position-slot--df {
-            left: 50%;
-            top: 50%;
-        }
-
-        .position-slot--gk {
-            left: 50%;
-            top: 82%;
-        }
-
-        .bench-title {
-            margin: 10px 0 8px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #3c3c3c;
-        }
-
-        .bench {
-            min-height: 54px;
-            border: 1px dashed #d5d5d5;
-            border-radius: 10px;
-            padding: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            background: #ffffff;
-        }
-
-        .bench.is-target {
-            border-color: #e8b931;
-            box-shadow: 0 0 0 2px rgba(232,185,49,0.28);
-            background: #fffdf2;
-        }
-
-        .player-token {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #f7f7f7, #cfcfcf);
-            border: 2px solid #ffffff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-            color: #1f1f1f;
-            font-size: 11px;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: grab;
-            user-select: none;
-            touch-action: none;
-            position: relative;
-            z-index: 2;
-        }
-
-        .player-token.is-dragging {
-            cursor: grabbing;
-            opacity: 0.95;
-        }
-
-        .formation-pitch .player-token {
-            position: absolute;
-            transform: translate(-50%, -50%);
-        }
-
-        .modal__foot {
-            margin-top: 18px;
-            display: flex;
-            justify-content: flex-end;
-        }
-
-        .modal__action {
-            border: 1px solid #000000;
-            border-radius: 8px;
-            background: var(--brand);
-            color: #111111;
-            font-size: 15px;
-            padding: 10px 16px;
-            text-decoration: none;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        /* FOOTER */
-        .footer { background: var(--dark); color: #fff; padding: 40px 0 0; margin-top: 40px; }
-        .footer__grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 40px;
-            padding-bottom: 32px;
-        }
-        .footer__brand { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-        .footer__col-title { font-size: 14px; font-weight: 700; text-transform: uppercase; margin-bottom: 14px; letter-spacing: 0.05em; }
-        .footer__contact { font-size: 13px; color: #bbb; line-height: 1.6; margin-bottom: 12px; }
-        .footer__contact-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: #ccc; margin-bottom: 8px; }
-        .footer__links { display: flex; flex-direction: column; gap: 8px; }
-        .footer__link { color: #ccc; text-decoration: none; font-size: 13px; }
-        .footer__link:hover { color: var(--brand); }
-        .footer__bottom { border-top: 1px solid #333; padding: 16px 0; text-align: center; font-size: 12px; color: #777; }
-
-        @media (max-width: 768px) {
-            .container { width: calc(100% - 24px); }
-            .hero { grid-template-columns: 1fr; }
-            .hero__img-placeholder { display: none; }
-            .top-nav__inner { height: auto; padding: 14px 0; flex-direction: column; align-items: flex-start; }
-            .menu { flex-wrap: wrap; gap: 10px 16px; font-size: 13px; }
-            .back-link-bar {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .tournament-info { grid-template-columns: 1fr; }
-            .match-row { grid-template-columns: 1fr auto 1fr; }
-            .match-row .view-btn { display: flex; }
-            .footer__grid { grid-template-columns: 1fr; gap: 24px; }
-            .modal__title { font-size: 20px; }
-            .modal__body { padding: 16px; }
-            .modal__top { padding: 14px 16px; }
-            .score-strip {
-                grid-template-columns: 1fr;
-                gap: 8px;
-            }
-            .score-strip__team,
-            .score-strip__team--right {
-                text-align: center;
-                font-size: 16px;
-            }
-            .lineup-grid {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-        }
-    </style>
 </head>
 <body>
 
 <!-- TOP NAV -->
-<header class="top-nav">
-    <div class="container top-nav__inner">
-        <div class="brand">SPORT TOURNAMENT</div>
-        <nav class="menu">
-            <a th:href="@{/}" class="menu__item">TRANG CHỦ</a>
-            <a th:href="@{/user/tournament}" class="menu__item menu__item--active">GIẢI ĐẤU</a>
-            <a th:href="@{/tin-tuc}" class="menu__item">TIN TỨC</a>
-            <a th:href="@{/gioi-thieu}" class="menu__item">GIỚI THIỆU</a>
-            <a th:href="@{/lien-he}" class="menu__item">LIÊN HỆ</a>
-            <a th:href="@{/dang-nhap}" class="menu__item">ĐĂNG NHẬP</a>
-        </nav>
-    </div>
-</header>
+<th:block th:replace="~{user/fragments/header :: header('tournament')}"></th:block>
 
-<!-- HERO BANNER -->
-<div class="hero">
-    <div class="container" style="grid-column: 1/-1; display: grid; grid-template-columns: 1fr 1fr; align-items: center;">
-        <div class="hero__text">
-            <h1 class="hero__title">CHI TIẾT GIẢI ĐẤU</h1>
-            <p class="hero__sub">Thông tin chi tiết, lịch thi đấu và kết quả.</p>
-        </div>
-        <div class="hero__img-placeholder">
-            <span class="trophy-icon">🏆</span>
-        </div>
+ 
+<section class="hero">
+    <div class="container">
+        <h1 class="hero__title">CHI TIẾT GIẢI ĐẤU</h1>
+        <p class="hero__crumb">HOME / TOURNAMENT DETAIL</p>
     </div>
-</div>
+</section>
 
 <!-- MAIN CONTENT -->
 <main>
@@ -633,11 +34,11 @@
 
         <!-- BACK LINK -->
         <div class="back-link-bar">
-            <a href="/user/tournament" class="back-link">
+            <a th:href="@{/user/tournament}" class="back-link">
                 <span class="back-link__icon">←</span>
                 Quay lại danh sách
             </a>
-            <a href="/user/tournament/sign-up" class="register-btn">Đăng kí giải đấu</a>
+            <a th:href="@{/user/tournament/sign-up}" class="register-btn">Đăng kí giải đấu</a>
         </div>
 
         <!-- TOURNAMENT INFO -->
@@ -673,21 +74,19 @@
 
             <!-- TABS -->
             <div class="tabs">
-                <button class="tab tab--active" onclick="loadTab('match-schedule')">Lịch đấu</button>
-                <button class="tab" onclick="loadTab('standing')">BXH</button>
-                <button class="tab" onclick="loadTab('statistics')">Thống kê</button>
-                <button class="tab" onclick="loadTab('charts')">Biểu đồ</button>
-                <button class="tab" onclick="loadTab('bracket')">Bracket</button>
-                <button class="tab" onclick="loadTab('teams')">Các đội</button>
+                <button type="button" class="tab tab--active" data-tab-target="schedule">Lịch đấu</button>
+                <button type="button" class="tab" data-tab-target="fragment" th:attr="data-fragment-url=@{/user/tournament/standing-fragment}">BXH</button>
+                <button type="button" class="tab" data-tab-target="fragment" th:attr="data-fragment-url=@{/user/tournament/statistics-fragment}">Thống kê</button>
+                <button type="button" class="tab" data-tab-target="fragment" th:attr="data-fragment-url=@{/user/tournament/charts-fragment}">Biểu đồ</button>
+                <button type="button" class="tab" data-tab-target="fragment" th:attr="data-fragment-url=@{/user/tournament/bracket-fragment}">Bracket</button>
+                <button type="button" class="tab" data-tab-target="fragment" th:attr="data-fragment-url=@{/user/tournament/teams-fragment}">Các đội</button>
             </div>
         </div>
 
-        <!-- TAB CONTENT AREA -->
-        <div id="tab-content">
-            <!-- MATCHES LIST -->
-            <div class="matches-section" th:fragment="match-schedule">
-                <!-- Group 1 -->
-                <div class="match-group">
+        <div data-tab-panel="schedule">
+        <div class="matches-section">
+            <!-- Group 1 -->
+            <div class="match-group">
                 <div class="match-group-label">
                     Bán Kết | Bán Kết - Trận 1 20:00
                 </div>
@@ -794,41 +193,13 @@
                 </div>
             </div>
         </div>
-        <!-- end tab content -->
+        </div>
+        <div data-tab-panel="fragment" hidden></div>
 
-    </div>
+</div>
 </main>
 
-<!-- FOOTER -->
-<footer class="footer">
-    <div class="container">
-        <div class="footer__grid">
-            <div>
-                <div class="footer__brand">SPORT<br>TOURNAMENT</div>
-            </div>
-            <div>
-                <div class="footer__col-title">LIÊN HỆ</div>
-                <p class="footer__contact">Nếu bạn cần hỗ trợ hoặc muốn góp ý cho nền tảng,<br>hãy liên hệ với chúng tôi qua thông tin bên dưới.</p>
-                <div class="footer__contact-item">📍 TP. Thủ Đức, TP. HCM</div>
-                <div class="footer__contact-item">📞 0123456789</div>
-                <div class="footer__contact-item">✉️ sporttournament@example.com</div>
-            </div>
-            <div>
-                <div class="footer__col-title">LIÊN KẾT NHANH</div>
-                <div class="footer__links">
-                    <a th:href="@{/}" class="footer__link">TRANG CHỦ</a>
-                    <a th:href="@{/user/tournament}" class="footer__link">GIẢI ĐẤU</a>
-                    <a th:href="@{/tin-tuc}" class="footer__link">TIN TỨC</a>
-                    <a th:href="@{/gioi-thieu}" class="footer__link">GIỚI THIỆU</a>
-                    <a th:href="@{/lien-he}" class="footer__link">LIÊN HỆ</a>
-                </div>
-            </div>
-        </div>
-        <div class="footer__bottom">
-            © SPORT TOURNAMENT. All Rights Reserved.
-        </div>
-    </div>
-</footer>
+<th:block th:replace="~{user/fragments/footer :: footer('tournament')}"></th:block>
 
 <div class="modal" id="matchDetailModal" aria-hidden="true">
     <div class="modal__backdrop" data-close-match-modal></div>
@@ -885,52 +256,70 @@
 </div>
 
 <script>
-    function loadTab(tabName) {
-        const tabContent = document.getElementById('tab-content');
-        let url = '';
-        if (tabName === 'standing') url = '/user/tournament/standing-fragment';
-        else if (tabName === 'statistics') url = '/user/tournament/statistics-fragment';
-        else if (tabName === 'charts') url = '/user/tournament/charts-fragment';
-        else if (tabName === 'bracket') url = '/user/tournament/bracket-fragment';
-        else if (tabName === 'teams') url = '/user/tournament/teams-fragment';
-        else url = '/user/tournament/match-schedule-fragment';
+    const tabs = document.querySelectorAll('.tabs .tab');
+    const schedulePanel = document.querySelector('[data-tab-panel="schedule"]');
+    const fragmentPanel = document.querySelector('[data-tab-panel="fragment"]');
+    const fragmentCache = new Map();
 
-        fetch(url)
-            .then(response => response.text())
-            .then(html => {
-                tabContent.innerHTML = html;
-                // Execute any scripts within the fragment manually
-                const scripts = tabContent.querySelectorAll('script');
-                scripts.forEach(script => {
-                    const newScript = document.createElement('script');
-                    newScript.textContent = script.textContent;
-                    document.body.appendChild(newScript);
-                    document.body.removeChild(newScript);
-                });
-
-                // Force a resize event to help Chart.js and other layout-sensitive components
-                window.dispatchEvent(new Event('resize'));
-
-                // Re-initialize any JS needed for the new content if necessary
-                if (tabName === 'match-schedule') {
-                    reattachMatchModalEvents();
-                }
-            })
-            .catch(error => console.error('Error loading tab:', error));
-    }
-
-    function reattachMatchModalEvents() {
-        const openModalButtons = document.querySelectorAll('[data-open-match-modal]');
-        openModalButtons.forEach(button => {
-            button.addEventListener('click', openMatchModal);
+    const executeInlineScripts = container => {
+        const scripts = container.querySelectorAll('script');
+        scripts.forEach(oldScript => {
+            const newScript = document.createElement('script');
+            Array.from(oldScript.attributes).forEach(attribute => {
+                newScript.setAttribute(attribute.name, attribute.value);
+            });
+            newScript.textContent = oldScript.textContent;
+            oldScript.replaceWith(newScript);
         });
-    }
+    };
 
-    document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            if (this.tagName === 'A') return; // Don't prevent default for links
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('tab--active'));
-            this.classList.add('tab--active');
+    const setActiveTab = activeTab => {
+        tabs.forEach(tab => tab.classList.remove('tab--active'));
+        activeTab.classList.add('tab--active');
+    };
+
+    const showSchedulePanel = activeTab => {
+        setActiveTab(activeTab);
+        schedulePanel.hidden = false;
+        fragmentPanel.hidden = true;
+    };
+
+    const showFragmentPanel = async activeTab => {
+        const fragmentUrl = activeTab.dataset.fragmentUrl;
+        if (!fragmentUrl) {
+            return;
+        }
+        setActiveTab(activeTab);
+        schedulePanel.hidden = true;
+        fragmentPanel.hidden = false;
+        if (!fragmentCache.has(fragmentUrl)) {
+            const response = await fetch(fragmentUrl, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Không tải được nội dung tab');
+            }
+            fragmentCache.set(fragmentUrl, await response.text());
+        }
+        fragmentPanel.innerHTML = fragmentCache.get(fragmentUrl);
+        executeInlineScripts(fragmentPanel);
+    };
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', async event => {
+            event.preventDefault();
+            if (tab.dataset.tabTarget === 'schedule') {
+                showSchedulePanel(tab);
+                return;
+            }
+            try {
+                await showFragmentPanel(tab);
+            } catch (error) {
+                fragmentPanel.innerHTML = '<div style="padding:16px;">Không thể tải dữ liệu tab.</div>';
+                fragmentPanel.hidden = false;
+            }
         });
     });
 
@@ -943,17 +332,17 @@
     const playerTokens = document.querySelectorAll('.player-token');
     let dragState = null;
 
-    function openMatchModal() {
+    const openMatchModal = () => {
         matchDetailModal.classList.add('is-open');
         matchDetailModal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
-    }
+    };
 
-    function closeMatchModal() {
+    const closeMatchModal = () => {
         matchDetailModal.classList.remove('is-open');
         matchDetailModal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
-    }
+    };
 
     openModalButtons.forEach(button => {
         button.addEventListener('click', openMatchModal);
@@ -1182,3 +571,4 @@
 </script>
 </body>
 </html>
+
