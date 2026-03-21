@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết đội tuyển</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --surface: #f3f6f9;
+            --border: #d9d9d9;
+            --text: #111827;
+            --muted: #6b7280;
+            --muted-2: #b3b3b3;
+            --brand: #009cff;
+            --radius-xl: 25px;
+            --radius-lg: 20px;
+        }
+
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .app {
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar Styles from general-overview */
+        .sidebar {
+            width: 300px;
+            padding: 24px 18px;
+            border-right: 1px solid rgba(17, 24, 39, 0.06);
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar__brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 14px;
+            border-radius: var(--radius-lg);
+            background: var(--surface);
+            margin: 0 6px 18px;
+        }
+
+        .sidebar__brandIcon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(0, 156, 255, 0.18), rgba(0, 156, 255, 0.06));
+            display: grid;
+            place-items: center;
+        }
+
+        .sidebar__brandIcon svg { width: 26px; height: 26px; }
+
+        .sidebar__brandTitle {
+            font-weight: 700;
+            font-size: 18px;
+            line-height: 1.2;
+        }
+
+        .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 0 6px;
+        }
+
+        .nav__item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 12px;
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        .nav__item:hover {
+            background: rgba(243, 246, 249, 0.8);
+        }
+
+        .nav__item--active {
+            background: var(--surface);
+        }
+
+        .nav__icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            overflow: hidden;
+            flex: 0 0 auto;
+            background: rgba(17, 24, 39, 0.06);
+            display: grid;
+            place-items: center;
+        }
+
+        .nav__icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .nav__label {
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .nav__item--large {
+            padding: 10px 12px;
+        }
+
+        .nav__icon--large {
+            width: 71px;
+            height: 71px;
+            border-radius: 20px;
+            background: var(--surface);
+        }
+
+        .nav__label--large {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .nav__chevron {
+            margin-left: auto;
+            width: 18px;
+            height: 18px;
+            opacity: 0.55;
+        }
+
+        .sidebar__footer {
+            margin-top: auto;
+            padding: 0 6px;
+        }
+
+        /* Topbar Styles from general-overview */
+        .content {
+            flex: 1 1 auto;
+            padding: 28px 32px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 26px;
+        }
+
+        .topbar__menuBtn {
+            width: 44px;
+            height: 44px;
+            border: 0;
+            background: transparent;
+            display: grid;
+            place-items: center;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .topbar__menuBtn img {
+            width: 30px;
+            height: 30px;
+            display: block;
+        }
+
+        .search {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            width: 320px;
+            height: 62px;
+            border-radius: 9999px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+        }
+
+        .search svg { width: 18px; height: 18px; color: var(--muted-2); }
+
+        .search input {
+            border: 0;
+            outline: none;
+            background: transparent;
+            width: 100%;
+            font-size: 16px;
+            color: var(--text);
+        }
+
+        .topbar__right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .pill {
+            font-weight: 500;
+            font-size: 16px;
+            color: var(--text);
+        }
+
+        .iconBtn {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: var(--surface);
+            border: 0;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+        }
+
+        .iconBtn img { width: 20px; height: 20px; display: block; }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 9999px;
+            background: transparent;
+        }
+
+        .profile__avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 9999px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(0, 156, 255, 0.22), rgba(17, 24, 39, 0.08));
+        }
+
+        .profile__avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .profile__name {
+            font-weight: 600;
+            font-size: 16px;
+            white-space: nowrap;
+        }
+
+        .profile__dropdown {
+            width: 18px;
+            height: 18px;
+            display: block;
+            opacity: 0.65;
+        }
+
+        /* Team Detail Main Content Styles */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        /* Left Card Info */
+        .team-card {
+            background: #fff;
+            border: 1.5px solid #111827;
+            border-radius: 40px;
+            padding: 0;
+            overflow: hidden;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            min-height: 600px;
+        }
+
+        .team-card__header {
+            background: #3f3d99;
+            height: 140px;
+            position: relative;
+        }
+
+        .team-card__logo-container {
+            width: 120px;
+            height: 120px;
+            background: #fff;
+            border: 2px solid #000;
+            border-radius: 50%;
+            position: absolute;
+            bottom: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+        }
+
+        .team-card__logo-container img {
+            width: 80%;
+            height: auto;
+        }
+
+        .team-card__body {
+            padding: 80px 20px 30px;
+            flex-grow: 1;
+        }
+
+        .team-card__name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .team-card__status {
+            background: #fbc02d;
+            color: #000;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .team-card__tournament {
+            background: #00e5ff;
+            color: #000;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 16px;
+            border-radius: 4px;
+            display: block;
+            margin: 0 auto 40px;
+            width: fit-content;
+        }
+
+        .team-card__actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: auto;
+            padding-bottom: 40px;
+        }
+
+        .btn-action {
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            border: 1px solid #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            min-width: 100px;
+        }
+
+        .btn-action--approve {
+            background: #2e7d32;
+            color: #fff;
+        }
+
+        .btn-action--reject {
+            background: #d32f2f;
+            color: #fff;
+        }
+
+        .btn-action svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Right Stats and Table */
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #d9d9d9;
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-card__info h3 {
+            font-size: 14px;
+            margin: 0 0 5px;
+            font-weight: 500;
+        }
+
+        .stat-card__value {
+            font-size: 36px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .stat-card__icon {
+            width: 48px;
+            height: 48px;
+            background: #fff;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            opacity: 0.8;
+        }
+
+        .stat-card__icon svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .list-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .search-player {
+            position: relative;
+            width: 280px;
+        }
+
+        .search-player input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border-radius: 20px;
+            border: 1.5px solid #000;
+            font-size: 14px;
+        }
+
+        .search-player svg {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+        }
+
+        .members-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .members-table th {
+            text-align: left;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #000;
+            font-size: 16px;
+            font-weight: 600;
+            width: 25%;
+            text-align: center;
+        }
+
+        .members-table td {
+            padding: 15px 0;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .player-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #d9d9d9;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .player-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .row-separator {
+            height: 2px;
+            background: #000;
+            position: relative;
+        }
+
+        .row-separator::before, .row-separator::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #000;
+            top: 50%;
+            transform: translateY(-50%) rotate(45deg);
+        }
+
+        .row-separator::before { left: 0; }
+        .row-separator::after { right: 0; }
+
+        @media (max-width: 1200px) {
+            .main-layout { grid-template-columns: 1fr; }
+            .team-card { min-height: auto; max-width: 400px; margin: 0 auto; }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <!-- Sidebar from general-overview -->
+    <aside class="sidebar">
+        <div class="sidebar__brand">
+            <div class="sidebar__brandIcon">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M4 12.5l4.5 4.5L20 5.5" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div>
+                <div class="sidebar__brandTitle">Admin Space</div>
+                <div class="muted" style="font-size: 13px; margin-top: 2px;">Bảng điều khiển</div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <a class="nav__item nav__item--large" href="/admin/general-overview" th:href="@{/admin/general-overview}">
+                <span class="nav__icon nav__icon--large">
+                    <img src="../../static/assets/general-overview/nav-dashboard.png" th:src="@{/assets/general-overview/nav-dashboard.png}" alt="">
+                </span>
+                <span class="nav__label nav__label--large">Bảng điều khiển</span>
+            </a>
+            <a class="nav__item nav__item--large" href="#">
+                <span class="nav__icon nav__icon--large">
+                    <img src="../../static/assets/general-overview/nav-profile.png" th:src="@{/assets/general-overview/nav-profile.png}" alt="">
+                </span>
+                <span class="nav__label nav__label--large">Hồ sơ của tôi</span>
+            </a>
+            <a class="nav__item nav__item--large nav__item--active" href="#">
+                <span class="nav__icon nav__icon--large">
+                    <img src="../../static/assets/general-overview/tournament.jpg" th:src="@{/assets/general-overview/tournament.jpg}" alt="">
+                </span>
+                <span class="nav__label nav__label--large">Quản lý</span>
+                <img class="nav__chevron" src="../../static/assets/general-overview/sidebar-arrow.png" th:src="@{/assets/general-overview/sidebar-arrow.png}" alt="">
+            </a>
+        </nav>
+
+        <nav class="nav">
+            <a class="nav__item" href="#">
+                <span class="nav__label">Giải đấu</span>
+            </a>
+            <a class="nav__item" href="#">
+                <span class="nav__label">Người dùng</span>
+            </a>
+            <a class="nav__item nav__item--active" href="/admin/team-management" th:href="@{/admin/team-management}">
+                <span class="nav__label">Đội tuyển</span>
+            </a>
+        </nav>
+
+        <a class="nav__item nav__item--large" href="#">
+            <span class="nav__icon nav__icon--large">
+                <img src="../../static/assets/general-overview/sidebar-stats.png" th:src="@{/assets/general-overview/sidebar-stats.png}" alt="">
+            </span>
+            <span class="nav__label nav__label--large">Thống kê</span>
+            <img class="nav__chevron" src="../../static/assets/general-overview/sidebar-arrow.png" th:src="@{/assets/general-overview/sidebar-arrow.png}" alt="">
+        </a>
+
+        <div class="sidebar__footer">
+            <a class="nav__item nav__item--large" href="#">
+                <span class="nav__icon nav__icon--large">
+                    <img src="../../static/assets/general-overview/sidebar-logout.png" th:src="@{/assets/general-overview/sidebar-logout.png}" alt="">
+                </span>
+                <span class="nav__label nav__label--large">Đăng xuất</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="content">
+        <!-- Topbar from general-overview -->
+        <header class="topbar">
+            <button class="topbar__menuBtn" type="button">
+                <img src="../../static/assets/general-overview/menu.svg" th:src="@{/assets/general-overview/menu.svg}" alt="">
+            </button>
+
+            <div class="search">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2"/>
+                    <path d="M16.3 16.3 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <input type="text" placeholder="Tìm kiếm">
+            </div>
+
+            <div class="topbar__right">
+                <div class="pill">Tin nhắn</div>
+                <button class="iconBtn">
+                    <img src="../../static/assets/general-overview/top-mail.png" th:src="@{/assets/general-overview/top-mail.png}" alt="">
+                </button>
+
+                <div class="pill">Thông báo</div>
+                <button class="iconBtn">
+                    <img src="../../static/assets/general-overview/top-notification.png" th:src="@{/assets/general-overview/top-notification.png}" alt="">
+                </button>
+
+                <div class="profile">
+                    <div class="profile__avatar">
+                        <img src="../../static/assets/general-overview/top-avatar.png" th:src="@{/assets/general-overview/top-avatar.png}" alt="">
+                    </div>
+                    <div class="profile__name">Quang Minh</div>
+                    <img class="profile__dropdown" src="../../static/assets/general-overview/top-dropdown.png" th:src="@{/assets/general-overview/top-dropdown.png}" alt="">
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content: Team Detail -->
+        <div class="main-layout">
+            <!-- Left: Team Info Card -->
+            <div class="team-card">
+                <div class="team-card__header">
+                    <div class="team-card__logo-container">
+                        <img src="../../static/assets/general-overview/tenclub.svg" th:src="@{/assets/general-overview/tenclub.svg}" alt="Logo">
+                    </div>
+                </div>
+                <div class="team-card__body">
+                    <h2 class="team-card__name">22DTHC3</h2>
+                    <span class="team-card__status">Đang chờ duyệt</span>
+                    <span class="team-card__tournament">Đăng ký giải: HUTECH mở rộng lần 31</span>
+                </div>
+                <div class="team-card__actions">
+                    <button class="btn-action btn-action--approve">
+                        Duyệt
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </button>
+                    <button class="btn-action btn-action--reject">
+                        Từ chối
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right: Stats and Members -->
+            <div class="members-section">
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-card__info">
+                            <h3>Tổng thành viên</h3>
+                            <p class="stat-card__value">7</p>
+                        </div>
+                        <div class="stat-card__icon">
+                            <img src="../../static/assets/general-overview/tongthanhvien.svg" th:src="@{/assets/general-overview/tongthanhvien.svg}" alt="Icon" style="width: 28px; height: 28px;">
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card__info">
+                            <h3>Win Rate</h3>
+                            <p class="stat-card__value">...%</p>
+                        </div>
+                        <div class="stat-card__icon">
+                            <img src="../../static/assets/general-overview/winrate.svg" th:src="@{/assets/general-overview/winrate.svg}" alt="Icon" style="width: 28px; height: 28px;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="list-header">
+                    <h2>Danh sách thành viên: (7)</h2>
+                    <div class="search-player">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" placeholder="Search player...">
+                    </div>
+                </div>
+
+                <table class="members-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Avatar</th>
+                            <th>Player</th>
+                            <th>Số áo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><div class="player-avatar"><img src="../../static/assets/general-overview/top-avatar.png" th:src="@{/assets/general-overview/top-avatar.png}" alt=""></div></td>
+                            <td>Antony</td>
+                            <td>7</td>
+                        </tr>
+                        <tr><td colspan="4"><div class="row-separator"></div></td></tr>
+                        <tr>
+                            <td>2</td>
+                            <td><div class="player-avatar"><img src="../../static/assets/general-overview/nav-profile.png" th:src="@{/assets/general-overview/nav-profile.png}" alt=""></div></td>
+                            <td>Lukaku</td>
+                            <td>8</td>
+                        </tr>
+                        <tr><td colspan="4"><div class="row-separator"></div></td></tr>
+                        <tr>
+                            <td>3</td>
+                            <td><div class="player-avatar"><img src="../../static/assets/general-overview/top-avatar.png" th:src="@{/assets/general-overview/top-avatar.png}" alt=""></div></td>
+                            <td>Jackson</td>
+                            <td>9</td>
+                        </tr>
+                        <tr><td colspan="4"><div class="row-separator"></div></td></tr>
+                        <tr>
+                            <td>4</td>
+                            <td><div class="player-avatar"><img src="../../static/assets/general-overview/nav-profile.png" th:src="@{/assets/general-overview/nav-profile.png}" alt=""></div></td>
+                            <td>Harry Maguire</td>
+                            <td>10</td>
+                        </tr>
+                        <tr><td colspan="4"><div class="row-separator"></div></td></tr>
+                        <tr>
+                            <td>5</td>
+                            <td><div class="player-avatar">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 30px; height: 30px; margin-top: 9px; opacity: 0.5;">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div></td>
+                            <td>Palmer</td>
+                            <td>99</td>
+                        </tr>
+                        <tr><td colspan="4"><div class="row-separator"></div></td></tr>
+                        <tr>
+                            <td>6</td>
+                            <td><div class="player-avatar">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 30px; height: 30px; margin-top: 9px; opacity: 0.5;">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div></td>
+                            <td>Kiệt</td>
+                            <td>12</td>
+                        </tr>
+                        <tr><td colspan="4"><div class="row-separator"></div></td></tr>
+                        <tr>
+                            <td>7</td>
+                            <td><div class="player-avatar">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 30px; height: 30px; margin-top: 9px; opacity: 0.5;">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div></td>
+                            <td>Hoàng</td>
+                            <td>41</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

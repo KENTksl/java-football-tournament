@@ -15,5 +15,10 @@ public class AdminController {
 	public String teamManagement() {
 		return "/admin/team-management";
 	}
+
+	@GetMapping("/admin/team-detail")
+	public String teamDetail() {
+		return "/admin/team-detail";
+	}
 }
 
