@@ -45,6 +45,16 @@ public class AdminController {
 		return "admin/manage/user-detail";
 	}
 
+	@GetMapping({"/admin/manage/user-team-detail"})
+	public String manageUserTeamDetail() {
+		return "admin/manage/user-team-detail";
+	}
+
+	@GetMapping({"/admin/manage/user-transaction-history"})
+	public String manageUserTransactionHistory() {
+		return "admin/manage/user-transaction-history";
+	}
+
 
 	@GetMapping("/admin/general-information")
 	public String adminInformation(Model model) {

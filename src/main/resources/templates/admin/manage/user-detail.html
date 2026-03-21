@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/admin.css">
     <style>
         :root {
             --bg: #ffffff;
@@ -580,6 +581,9 @@
             font-size: 11px;
             margin-left: 15px;
             cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
         }
 
         /* Phần ảnh bên phải */
@@ -685,7 +689,7 @@
                         <div class="info-row">
                             <label>Đội:</label>
                             <span>22DTHC3</span>
-                            <button class="btn-team-info">Xem chi tiết đội</button>
+                            <a class="btn-team-info" th:href="@{/admin/manage/user-team-detail}">Xem chi tiết đội</a>
                         </div>
                         <div class="info-row">
                             <label>Trạng thái:</label>
@@ -702,7 +706,11 @@
                 </div>
 
                 <div class="user-detail__actions">
-                    <button class="btn-action btn--blue-dark">Xem lịch sử giao dịch</button>
+                    <a
+                        class="btn-action btn--blue-dark"
+                        th:href="@{/admin/manage/user-transaction-history}"
+                        style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"
+                    >Xem lịch sử giao dịch</a>
 
                     <div class="btn-group-right">
                         <a href="/admin/manage/user" class="btn-action btn--grey" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Quay lại</a>

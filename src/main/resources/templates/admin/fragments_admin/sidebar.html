@@ -1,32 +1,4 @@
 <aside class="sidebar" aria-label="Thanh điều hướng" th:fragment="sidebar">
-    <style>
-        .nav-group {
-            display: flex;
-            flex-direction: column;
-        }
-        .nav-sub {
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            padding-left: 12px;
-            margin-top: 2px;
-        }
-        .nav-group--open .nav-sub {
-            display: flex;
-        }
-        .nav-group--open .nav__chevron {
-            transform: rotate(90deg);
-        }
-        .nav__chevron {
-            transition: transform 0.2s ease;
-        }
-        /* Đảm bảo item trong dropdown có style phù hợp */
-        .nav-sub .nav__item {
-            padding: 10px 12px;
-            border-radius: var(--radius-lg);
-        }
-    </style>
-
     <div class="sidebar__brand">
         <div class="sidebar__brandIcon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none">
