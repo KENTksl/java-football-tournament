@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thanh toán</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/assets/css/user-home.css}" />
+    <link rel="stylesheet" th:href="@{/assets/css/user-pages.css}" />
+  </head>
+  <body>
+    <header th:replace="~{fragments/header :: header('profile')}"></header>
+    <main>
+      <section class="profile-hero">
+        <div class="container">
+          <h1>HỒ SƠ CÁ NHÂN</h1>
+          <p class="crumb">Home / HỒ SƠ</p>
+        </div>
+      </section>
+
+      <section class="profile-page">
+        <div class="container profile-grid">
+          <aside class="profile-card" aria-label="Điều hướng hồ sơ">
+            <div class="profile-user">
+              <div class="profile-avatar" aria-hidden="true">A</div>
+              <div>
+                <p class="name" th:text="${fullName ?: 'Quang'}">Quang</p>
+                <p class="email" th:text="${email ?: 'abcd@gmail.com'}">abcd@gmail.com</p>
+              </div>
+            </div>
+
+            <div class="profile-balance" aria-label="Số dư">
+              <div class="value" th:text="${balanceText ?: 'Số dư: 100.000đ'}">Số dư: 100.000đ</div>
+              <button class="profile-btn" type="button">Nạp tiền</button>
+            </div>
+
+            <nav class="profile-menu" aria-label="Menu hồ sơ">
+              <a th:href="@{/ca-nhan}">
+                <img class="icon" th:src="@{/assets/figma/icon-mail.svg}" alt="" />
+                <span>Thông Tin Cá Nhân</span>
+              </a>
+              <a th:href="@{/thong-tin-doi}">
+                <img class="icon" th:src="@{/assets/figma/icon-map-pin.svg}" alt="" />
+                <span>Thông Tin Đội</span>
+              </a>
+              <a th:href="@{/lich-su-dang-ky}">
+                <img class="icon" th:src="@{/assets/figma/icon-phone.svg}" alt="" />
+                <span>Lịch Sử Đăng Ký</span>
+              </a>
+              <a th:href="@{/lich-su-giao-dich}">
+                <img class="icon" th:src="@{/assets/figma/icon-phone.svg}" alt="" />
+                <span>Lịch Sử Giao Dịch</span>
+              </a>
+              <a th:href="@{/thanh-toan}" aria-current="page">
+                <img class="icon" th:src="@{/assets/figma/icon-mail.svg}" alt="" />
+                <span>Thanh Toán</span>
+              </a>
+            </nav>
+          </aside>
+
+          <section class="profile-card" aria-label="Thanh toán">
+            <h2>Thanh Toán</h2>
+            <div class="profile-form">
+              <div class="profile-field">
+                <label>Thông tin đơn</label>
+                <div class="history-item">
+                  <p class="title">
+                    <span th:text="${orderDescription ?: 'Thanh toán đăng ký giải đấu'}">Thanh toán đăng ký giải đấu</span>
+                  </p>
+                  <p class="meta">
+                    Mã đơn: <span th:text="${orderCode ?: '---'}">---</span> •
+                    Số tiền: <span th:text="${amount ?: '---'}">---</span>
+                  </p>
+                </div>
+              </div>
+
+              <form class="profile-form">
+                <div class="profile-field">
+                  <label for="orderCode">Mã đơn</label>
+                  <input class="profile-input" id="orderCode" name="orderCode" placeholder="Nhập mã đơn" />
+                </div>
+                <div class="profile-field">
+                  <label for="amount">Số tiền</label>
+                  <input class="profile-input" id="amount" name="amount" placeholder="Nhập số tiền" />
+                </div>
+                <div class="profile-field">
+                  <label for="method">Phương thức</label>
+                  <select class="profile-input" id="method" name="method">
+                    <option value="bank">Chuyển khoản</option>
+                    <option value="momo">Ví MoMo</option>
+                    <option value="vnpay">VNPay</option>
+                  </select>
+                </div>
+                <div class="profile-actions">
+                  <button class="profile-btn" type="button">Xác Nhận</button>
+                </div>
+              </form>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+    <footer th:replace="~{fragments/footer :: footer('home')}"></footer>
+  </body>
+</html>

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trang cá nhân</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/assets/css/user-home.css}" />
+    <link rel="stylesheet" th:href="@{/assets/css/user-pages.css}" />
+  </head>
+  <body>
+    <header th:replace="~{fragments/header :: header('profile')}"></header>
+    <main>
+      <section class="profile-hero">
+        <div class="container">
+          <h1>HỒ SƠ CÁ NHÂN</h1>
+          <p class="crumb">Home / HỒ SƠ</p>
+        </div>
+      </section>
+
+      <section class="profile-page">
+        <div class="container profile-grid">
+          <aside class="profile-card" aria-label="Điều hướng hồ sơ">
+            <div class="profile-user">
+              <div class="profile-avatar" aria-hidden="true">A</div>
+              <div>
+                <p class="name" th:text="${fullName ?: 'Quang'}">Quang</p>
+                <p class="email" th:text="${email ?: 'abcd@gmail.com'}">abcd@gmail.com</p>
+              </div>
+            </div>
+
+            <div class="profile-balance" aria-label="Số dư">
+              <div class="value" th:text="${balanceText ?: 'Số dư: 100.000đ'}">Số dư: 100.000đ</div>
+              <button class="profile-btn" type="button">Nạp tiền</button>
+            </div>
+
+            <nav class="profile-menu" aria-label="Menu hồ sơ">
+              <a th:href="@{/ca-nhan}" aria-current="page">
+                <img class="icon" th:src="@{/assets/figma/icon-mail.svg}" alt="" />
+                <span>Thông Tin Cá Nhân</span>
+              </a>
+              <a th:href="@{/thong-tin-doi}">
+                <img class="icon" th:src="@{/assets/figma/icon-map-pin.svg}" alt="" />
+                <span>Thông Tin Đội</span>
+              </a>
+              <a th:href="@{/lich-su-dang-ky}">
+                <img class="icon" th:src="@{/assets/figma/icon-phone.svg}" alt="" />
+                <span>Lịch Sử Đăng Ký</span>
+              </a>
+              <a th:href="@{/lich-su-giao-dich}">
+                <img class="icon" th:src="@{/assets/figma/icon-phone.svg}" alt="" />
+                <span>Lịch Sử Giao Dịch</span>
+              </a>
+              <a th:href="@{/thanh-toan}">
+                <img class="icon" th:src="@{/assets/figma/icon-mail.svg}" alt="" />
+                <span>Thanh Toán</span>
+              </a>
+            </nav>
+          </aside>
+
+          <section class="profile-card" aria-label="Thông tin tài khoản">
+            <h2>Thông tin tài khoản</h2>
+            <form class="profile-form">
+              <div class="profile-field">
+                <label for="fullName">Họ và tên</label>
+                <input
+                  class="profile-input"
+                  id="fullName"
+                  name="fullName"
+                  th:value="${fullName ?: 'Minh Quang'}"
+                />
+              </div>
+
+              <div class="profile-field">
+                <label for="email">Email</label>
+                <input class="profile-input" id="email" name="email" th:value="${email ?: 'abcd@gmail.com'}" />
+              </div>
+
+              <div class="profile-field">
+                <label for="phone">Số Điện Thoại</label>
+                <input class="profile-input" id="phone" name="phone" th:value="${phone ?: '0933333333'}" />
+              </div>
+
+              <div class="profile-field">
+                <label for="address">Địa Chỉ</label>
+                <input
+                  class="profile-input"
+                  id="address"
+                  name="address"
+                  th:value="${address ?: '1/1 đường số 2, TP Thủ Đức'}"
+                />
+              </div>
+
+              <div class="profile-field">
+                <label>Giới tính</label>
+                <div class="profile-radio">
+                  <label><input type="radio" name="gender" value="Nam" checked /> Nam</label>
+                  <label><input type="radio" name="gender" value="Nữ" /> Nữ</label>
+                </div>
+              </div>
+
+              <div class="profile-field">
+                <label for="dob">Ngày sinh</label>
+                <input class="profile-input" id="dob" name="dob" th:value="${dob ?: '28/07/2004'}" />
+              </div>
+
+              <div class="profile-actions">
+                <button class="profile-btn" type="button">Cập Nhật Thông Tin</button>
+                <button class="profile-btn" type="button">Chỉnh Sửa Hồ Sơ</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      </section>
+    </main>
+    <footer th:replace="~{fragments/footer :: footer('home')}"></footer>
+  </body>
+</html>
