@@ -721,6 +721,11 @@
         <!-- Content will be loaded or embedded here -->
         <div th:insert="~{admin/manage/add-tournament}"></div>
     </div>
+
+    <!-- Modal for Editing Tournament -->
+    <div id="editTournamentModal" class="modal-overlay">
+        <div th:insert="~{admin/manage/edit-tournament}"></div>
+    </div>
     <div class="app" th:with="activePage='manage', activeSubPage='tournament'">
     <aside th:replace="~{admin/fragments_admin/sidebar :: sidebar}"></aside>
 
@@ -758,7 +763,7 @@
                                     <div class="action-btns">
                                         <a th:href="@{/admin/general-information}" class="btn-act btn-act--detail">Chi tiết</a>
 
-                                        <button class="btn-act btn-act--edit">Sửa</button>
+                                        <button class="btn-act btn-act--edit" onclick="openEditModal(this)">Sửa</button>
                                         <button class="btn-act btn-act--delete">Xóa</button>
                                     </div>
                                 </td>
@@ -774,7 +779,7 @@
                                     <div class="action-btns">
                                         <a th:href="@{/admin/general-information}" class="btn-act btn-act--detail">Chi tiết</a>
 
-                                        <button class="btn-act btn-act--edit">Sửa</button>
+                                        <button class="btn-act btn-act--edit" onclick="openEditModal(this)">Sửa</button>
                                         <button class="btn-act btn-act--delete">Xóa</button>
                                     </div>
                                 </td>
@@ -790,7 +795,7 @@
                                     <div class="action-btns">
                                         <a th:href="@{/admin/general-information}" class="btn-act btn-act--detail">Chi tiết</a>
 
-                                        <button class="btn-act btn-act--edit">Sửa</button>
+                                        <button class="btn-act btn-act--edit" onclick="openEditModal(this)">Sửa</button>
                                         <button class="btn-act btn-act--delete">Xóa</button>
                                     </div>
                                 </td>
@@ -806,7 +811,7 @@
                                     <div class="action-btns">
                                         <a th:href="@{/admin/general-information}" class="btn-act btn-act--detail">Chi tiết</a>
 
-                                        <button class="btn-act btn-act--edit">Sửa</button>
+                                        <button class="btn-act btn-act--edit" onclick="openEditModal(this)">Sửa</button>
                                         <button class="btn-act btn-act--delete">Xóa</button>
                                     </div>
                                 </td>
@@ -821,21 +826,56 @@
     </div>
 
     <script>
+        // Modal for Adding Tournament
         function openModal() {
             document.getElementById('addTournamentModal').classList.add('active');
-            document.body.style.overflow = 'hidden'; // Ngăn cuộn trang
+            document.body.style.overflow = 'hidden';
         }
 
         function closeModal() {
             document.getElementById('addTournamentModal').classList.remove('active');
-            document.body.style.overflow = 'auto'; // Cho phép cuộn lại
+            document.body.style.overflow = 'auto';
         }
 
-        // Đóng modal khi click ra ngoài vùng modal-content
+        // Modal for Editing Tournament
+        function openEditModal(btn) {
+            const modal = document.getElementById('editTournamentModal');
+            const row = btn.closest('tr');
+            
+            // Get data from table row
+            const id = row.cells[0].innerText;
+            const name = row.cells[1].innerText;
+            const organizer = row.cells[2].innerText;
+            const mode = row.cells[3].innerText;
+            const teams = row.cells[4].innerText;
+            // For description, we might not have it in the table. 
+            // In a real app, you'd fetch it by ID or store it in data-attributes.
+            
+            // Populate form fields
+            document.getElementById('editTournamentId').value = id;
+            document.getElementById('editTournamentName').value = name;
+            document.getElementById('editOrganizer').value = organizer;
+            document.getElementById('editMode').value = mode;
+            document.getElementById('editTeams').value = teams;
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editTournamentModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
         window.onclick = function(event) {
-            const modal = document.getElementById('addTournamentModal');
-            if (event.target == modal) {
+            const addModal = document.getElementById('addTournamentModal');
+            const editModal = document.getElementById('editTournamentModal');
+            
+            if (event.target == addModal) {
                 closeModal();
+            } else if (event.target == editModal) {
+                closeEditModal();
             }
         }
     </script>
