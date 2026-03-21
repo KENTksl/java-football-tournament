@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng ký</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/assets/css/user-home.css}" />
+    <link rel="stylesheet" th:href="@{/assets/css/user-pages.css}" />
+  </head>
+  <body>
+    <header th:replace="~{fragments/header :: header('login')}"></header>
+    <main>
+      <section class="profile-hero">
+        <div class="container">
+          <h1>ĐĂNG KÝ</h1>
+          <p class="crumb">Home / REGISTER</p>
+        </div>
+      </section>
+
+      <section class="auth-page">
+        <div class="container auth-grid">
+          <section class="profile-card auth-side" aria-label="Giới thiệu">
+            <h2>SPORT TOURNAMENT</h2>
+            <p class="lead">
+              Tạo tài khoản để tham gia giải đấu, quản lý đội và theo dõi lịch sử hoạt động.
+            </p>
+            <div class="auth-info" aria-label="Hỗ trợ">
+              <img src="/assets/figma/icon-phone.svg" alt="" />
+              <div>0123456789</div>
+              <img src="/assets/figma/icon-mail.svg" alt="" />
+              <div>sporttournament@example.com</div>
+            </div>
+          </section>
+
+          <section class="profile-card" aria-label="Form đăng ký">
+            <h2>Đăng ký tài khoản</h2>
+            <form class="profile-form" method="post" action="#">
+              <div class="profile-field">
+                <label for="fullName">Họ và tên</label>
+                <input class="profile-input" id="fullName" name="fullName" placeholder="Nhập họ tên" />
+              </div>
+              <div class="profile-field">
+                <label for="email">Email</label>
+                <input class="profile-input" id="email" name="email" type="email" placeholder="Nhập email" />
+              </div>
+              <div class="profile-field">
+                <label for="phone">Số điện thoại</label>
+                <input class="profile-input" id="phone" name="phone" placeholder="Nhập số điện thoại" />
+              </div>
+              <div class="profile-field">
+                <label for="password">Mật khẩu</label>
+                <input class="profile-input" id="password" name="password" type="password" placeholder="Nhập mật khẩu" />
+              </div>
+              <div class="profile-field">
+                <label for="confirmPassword">Nhập lại mật khẩu</label>
+                <input
+                  class="profile-input"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="Nhập lại mật khẩu"
+                />
+              </div>
+              <div class="auth-row" aria-label="Điều khoản">
+                <label for="terms">
+                  <input id="terms" name="terms" type="checkbox" />
+                  <span>Đồng ý điều khoản</span>
+                </label>
+                <span></span>
+              </div>
+              <div class="profile-actions">
+                <button class="profile-btn" type="button">TẠO TÀI KHOẢN</button>
+              </div>
+            </form>
+            <p class="auth-hint">
+              Đã có tài khoản?
+              <a th:href="@{/dang-nhap}"><strong>Đăng nhập</strong></a>
+            </p>
+          </section>
+        </div>
+      </section>
+    </main>
+    <footer th:replace="~{fragments/footer :: footer('home')}"></footer>
+  </body>
+</html>
