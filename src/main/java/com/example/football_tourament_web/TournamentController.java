@@ -10,22 +10,22 @@ public class TournamentController {
 
 	@GetMapping({"", "/"})
 	public String tournamentList() {
-		return "/user/tournament/Tournament_list";
+		return "user/tournament/Tournament_list";
 	}
 
 	@GetMapping("/match-schedule")
 	public String matchSchedule() {
-		return "/user/tournament/Match_schedule";
+		return "user/tournament/Match_schedule";
 	}
 
 	@GetMapping("/sign-up")
 	public String signUp() {
-		return "/user/tournament/Sign_up";
+		return "user/tournament/Sign_up";
 	}
 
 	@GetMapping("/competing-teams")
 	public String competingTeams() {
-		return "/user/tournament/Competing_Teams";
+		return "user/tournament/Competing_Teams";
 	}
 
 	@GetMapping({"/tournament", "/tournament/"})

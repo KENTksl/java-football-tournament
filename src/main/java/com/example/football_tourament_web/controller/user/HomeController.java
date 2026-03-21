@@ -25,4 +25,39 @@ public class HomeController {
 	public String contact() {
 		return "user/home/contact";
 	}
+
+	@GetMapping({"/dang-nhap", "/dang-nhap.html"})
+	public String login() {
+		return "user/auth/login";
+	}
+
+	@GetMapping({"/dang-ky", "/dang-ky.html"})
+	public String register() {
+		return "user/auth/register";
+	}
+
+	@GetMapping({"/ca-nhan", "/ca-nhan.html"})
+	public String profile() {
+		return "user/profile/profile";
+	}
+
+	@GetMapping({"/thong-tin-doi", "/thong-tin-doi.html"})
+	public String teamInfo() {
+		return "user/profile/team-info";
+	}
+
+	@GetMapping({"/lich-su-dang-ky", "/lich-su-dang-ky.html"})
+	public String registrationHistory() {
+		return "user/profile/registration-history";
+	}
+
+	@GetMapping({"/lich-su-giao-dich", "/lich-su-giao-dich.html"})
+	public String transactionHistory() {
+		return "user/profile/transaction-history";
+	}
+
+	@GetMapping({"/thanh-toan", "/thanh-toan.html"})
+	public String payment() {
+		return "user/profile/payment";
+	}
 }

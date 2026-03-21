@@ -24,7 +24,7 @@
           <a th:href="@{/tin-tuc}" th:attr="aria-current=${active == 'news'} ? 'page' : null">TIN TỨC</a>
           <a th:href="@{/gioi-thieu}" th:attr="aria-current=${active == 'about'} ? 'page' : null">GIỚI THIỆU</a>
           <a th:href="@{/lien-he}" th:attr="aria-current=${active == 'contact'} ? 'page' : null">LIÊN HỆ</a>
-          <a href="#">GIẢI ĐẤU</a>
+          <a th:href="@{/user/tournament}" th:attr="aria-current=${active == 'tournament'} ? 'page' : null">GIẢI ĐẤU</a>
         </div>
       </div>
       <div class="container copyright">©_SPORT TOURNAMENT. All Rights Reserved.</div>
