@@ -858,7 +858,8 @@ img {
   }
 }
 
-#addTournamentModal .modal-content {
+#addTournamentModal .modal-content,
+#editTournamentModal .modal-content {
   background: #fff;
   width: 100%;
   max-width: 700px;
@@ -868,7 +869,8 @@ img {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
-#addTournamentModal .modal-header {
+#addTournamentModal .modal-header,
+#editTournamentModal .modal-header {
   padding: 20px;
   border-bottom: 1px solid #ccc;
   display: flex;
@@ -877,14 +879,16 @@ img {
   position: relative;
 }
 
-#addTournamentModal .modal-title {
+#addTournamentModal .modal-title,
+#editTournamentModal .modal-title {
   margin: 0;
   font-size: 24px;
   font-weight: 800;
   color: #000;
 }
 
-#addTournamentModal .btn-close-box {
+#addTournamentModal .btn-close-box,
+#editTournamentModal .btn-close-box {
   position: absolute;
   right: 20px;
   top: 20px;
@@ -901,15 +905,18 @@ img {
   color: #666;
 }
 
-#addTournamentModal .tournament-form {
+#addTournamentModal .tournament-form,
+#editTournamentModal .tournament-form {
   padding: 40px 80px;
 }
 
-#addTournamentModal .form-group {
+#addTournamentModal .form-group,
+#editTournamentModal .form-group {
   margin-bottom: 30px;
 }
 
-#addTournamentModal .form-group label {
+#addTournamentModal .form-group label,
+#editTournamentModal .form-group label {
   display: block;
   font-size: 17px;
   font-weight: 700;
@@ -918,7 +925,9 @@ img {
 }
 
 #addTournamentModal .form-group input,
-#addTournamentModal .form-group textarea {
+#addTournamentModal .form-group textarea,
+#editTournamentModal .form-group input,
+#editTournamentModal .form-group textarea {
   width: 100%;
   padding: 12px 16px;
   border: 1px solid #999;
@@ -927,17 +936,20 @@ img {
   outline: none;
 }
 
-#addTournamentModal .form-group textarea {
+#addTournamentModal .form-group textarea,
+#editTournamentModal .form-group textarea {
   resize: none;
 }
 
-#addTournamentModal .form-actions-center {
+#addTournamentModal .form-actions-center,
+#editTournamentModal .form-actions-center {
   display: flex;
   justify-content: center;
   margin-top: 20px;
 }
 
-#addTournamentModal .btn-save-figma {
+#addTournamentModal .btn-save-figma,
+#editTournamentModal .btn-save-figma {
   background: #009cff;
   color: #fff;
   border: none;
@@ -949,7 +961,8 @@ img {
   transition: all 0.2s ease;
 }
 
-#addTournamentModal .btn-save-figma:hover {
+#addTournamentModal .btn-save-figma:hover,
+#editTournamentModal .btn-save-figma:hover {
   background: #0076a3;
   transform: translateY(-1px);
 }
