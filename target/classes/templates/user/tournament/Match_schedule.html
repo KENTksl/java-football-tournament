@@ -7,6 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg: #ffffff;
@@ -671,19 +673,21 @@
 
             <!-- TABS -->
             <div class="tabs">
-                <button class="tab tab--active">Lịch đấu</button>
-                <button class="tab">BXH</button>
-                <button class="tab">Thống kê</button>
-                <button class="tab">Biểu đồ</button>
-                <button class="tab">Bracket</button>
-                <a class="tab" href="/user/tournament/competing-teams">Các đội</a>
+                <button class="tab tab--active" onclick="loadTab('match-schedule')">Lịch đấu</button>
+                <button class="tab" onclick="loadTab('standing')">BXH</button>
+                <button class="tab" onclick="loadTab('statistics')">Thống kê</button>
+                <button class="tab" onclick="loadTab('charts')">Biểu đồ</button>
+                <button class="tab" onclick="loadTab('bracket')">Bracket</button>
+                <button class="tab" onclick="loadTab('teams')">Các đội</button>
             </div>
         </div>
 
-        <!-- MATCHES LIST -->
-        <div class="matches-section">
-            <!-- Group 1 -->
-            <div class="match-group">
+        <!-- TAB CONTENT AREA -->
+        <div id="tab-content">
+            <!-- MATCHES LIST -->
+            <div class="matches-section" th:fragment="match-schedule">
+                <!-- Group 1 -->
+                <div class="match-group">
                 <div class="match-group-label">
                     Bán Kết | Bán Kết - Trận 1 20:00
                 </div>
@@ -790,7 +794,7 @@
                 </div>
             </div>
         </div>
-        <!-- end matches -->
+        <!-- end tab content -->
 
     </div>
 </main>
@@ -881,8 +885,50 @@
 </div>
 
 <script>
+    function loadTab(tabName) {
+        const tabContent = document.getElementById('tab-content');
+        let url = '';
+        if (tabName === 'standing') url = '/user/tournament/standing-fragment';
+        else if (tabName === 'statistics') url = '/user/tournament/statistics-fragment';
+        else if (tabName === 'charts') url = '/user/tournament/charts-fragment';
+        else if (tabName === 'bracket') url = '/user/tournament/bracket-fragment';
+        else if (tabName === 'teams') url = '/user/tournament/teams-fragment';
+        else url = '/user/tournament/match-schedule-fragment';
+
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                tabContent.innerHTML = html;
+                // Execute any scripts within the fragment manually
+                const scripts = tabContent.querySelectorAll('script');
+                scripts.forEach(script => {
+                    const newScript = document.createElement('script');
+                    newScript.textContent = script.textContent;
+                    document.body.appendChild(newScript);
+                    document.body.removeChild(newScript);
+                });
+
+                // Force a resize event to help Chart.js and other layout-sensitive components
+                window.dispatchEvent(new Event('resize'));
+
+                // Re-initialize any JS needed for the new content if necessary
+                if (tabName === 'match-schedule') {
+                    reattachMatchModalEvents();
+                }
+            })
+            .catch(error => console.error('Error loading tab:', error));
+    }
+
+    function reattachMatchModalEvents() {
+        const openModalButtons = document.querySelectorAll('[data-open-match-modal]');
+        openModalButtons.forEach(button => {
+            button.addEventListener('click', openMatchModal);
+        });
+    }
+
     document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', function() {
+            if (this.tagName === 'A') return; // Don't prevent default for links
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('tab--active'));
             this.classList.add('tab--active');
         });
@@ -897,17 +943,17 @@
     const playerTokens = document.querySelectorAll('.player-token');
     let dragState = null;
 
-    const openMatchModal = () => {
+    function openMatchModal() {
         matchDetailModal.classList.add('is-open');
         matchDetailModal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
-    };
+    }
 
-    const closeMatchModal = () => {
+    function closeMatchModal() {
         matchDetailModal.classList.remove('is-open');
         matchDetailModal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
-    };
+    }
 
     openModalButtons.forEach(button => {
         button.addEventListener('click', openMatchModal);
