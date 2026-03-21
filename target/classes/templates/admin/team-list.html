@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/admin.css">
     <style>
 
         :root {
@@ -657,97 +658,11 @@
     </style>
 </head>
 <body>
-<div class="app">
-    <aside class="sidebar" aria-label="Thanh điều hướng">
-        <div class="sidebar__brand">
-            <div class="sidebar__brandIcon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M4 12.5l4.5 4.5L20 5.5" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round"
-                          stroke-linejoin="round" />
-                </svg>
-            </div>
-            <div>
-                <div class="sidebar__brandTitle">Admin Space</div>
-                <div class="muted" style="font-size: 13px; margin-top: 2px;">Hồ sơ</div>
-            </div>
-        </div>
+<div class="app" th:with="activePage='manage', activeSubPage='tournament', activeTab='teams'">
+    <aside th:replace="~{admin/fragments_admin/sidebar :: sidebar}"></aside>
 
-        <nav class="nav" aria-label="Mục chính">
-            <a class="nav__item nav__item--large" href="/admin/general-overview">
-                    <span class="nav__icon nav__icon--large">
-                        <img src="/assets/general-overview/nav-dashboard.png" alt="">
-                    </span>
-                <span class="nav__label nav__label--large">Bảng điều khiển</span>
-            </a>
-            <a class="nav__item nav__item--large nav__item--active" href="/admin/admin-profile">
-                    <span class="nav__icon nav__icon--large">
-                        <img src="/assets/general-overview/nav-profile.png" alt="">
-                    </span>
-                <span class="nav__label nav__label--large">Hồ sơ của tôi</span>
-            </a>
-            <a class="nav__item nav__item--large" href="/admin/manage">
-                    <span class="nav__icon nav__icon--large">
-                        <img src="/assets/general-overview/tournament.jpg" alt="">
-                    </span>
-                <span class="nav__label nav__label--large">Quản lý</span>
-                <img class="nav__chevron" src="/assets/general-overview/sidebar-arrow.png" alt="">
-            </a>
-        </nav>
-
-        <nav class="nav" aria-label="Danh mục">
-            <a class="nav__item" href="/admin/manage">
-                <span class="nav__label">Giải đấu</span>
-            </a>
-            <a class="nav__item" href="/admin/users">
-                <span class="nav__label">Người dùng</span>
-            </a>
-            <a class="nav__item" href="/admin/teams">
-                <span class="nav__label">Đội tuyển</span>
-            </a>
-        </nav>
-
-        <a class="nav__item nav__item--large" href="/admin/stats">
-                <span class="nav__icon nav__icon--large">
-                    <img src="/assets/general-overview/sidebar-stats.png" alt="">
-                </span>
-            <span class="nav__label nav__label--large">Thống kê</span>
-            <img class="nav__chevron" src="/assets/general-overview/sidebar-arrow.png" alt="">
-        </a>
-        <nav class="nav" aria-label="Khác">
-            <a class="nav__item" href="/admin/billing">
-                <span class="nav__label">Hóa đơn</span>
-            </a>
-        </nav>
-
-        <div class="sidebar__footer">
-            <a class="nav__item nav__item--large" href="/logout">
-                    <span class="nav__icon nav__icon--large">
-                        <img src="/assets/general-overview/sidebar-logout.png" alt="">
-                    </span>
-                <span class="nav__label nav__label--large">Đăng xuất</span>
-            </a>
-        </div>
-    </aside>
-
-  <main class="content">
-        <header class="topbar">
-            <button class="topbar__menuBtn" type="button"><img src="/assets/general-overview/menu.svg" alt=""></button>
-            <div class="search" role="search">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2"/><path d="M16.3 16.3 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                <input type="text" placeholder="Tìm kiếm" aria-label="Tìm kiếm">
-            </div>
-            <div class="topbar__right">
-                <div class="pill">Tin nhắn</div>
-                <button class="iconBtn" type="button"><img src="/assets/general-overview/top-mail.png" alt=""></button>
-                <div class="pill">Thông báo</div>
-                <button class="iconBtn" type="button"><img src="/assets/general-overview/top-notification.png" alt=""></button>
-                <div class="profile">
-                    <div class="profile__avatar"><img src="/assets/general-overview/top-avatar.png" alt=""></div>
-                    <div class="profile__name" th:text="${username} ?: 'Quang Minh'">Quang Minh</div>
-                    <img class="profile__dropdown" src="/assets/general-overview/top-dropdown.png" alt="">
-                </div>
-            </div>
-        </header>
+    <main class="content">
+        <header th:replace="~{admin/fragments_admin/header :: header}"></header>
 
         <div class="tournament-details" style="background-color: #e6ecec;">
             <div class="tournament__header">
@@ -757,19 +672,19 @@
             <div class="tabs">
                 <a th:href="@{/admin/general-information}"
                    class="tab-link"
-                   th:classappend="${activePage == 'info' ? 'active' : ''}">
+                   th:classappend="${activeTab == 'info' ? 'active' : ''}">
                     Thông tin chung
                 </a>
 
                 <a th:href="@{/admin/team-list}"
                    class="tab-link"
-                   th:classappend="${activePage == 'teams' ? 'active' : ''}">
+                   th:classappend="${activeTab == 'teams' ? 'active' : ''}">
                     Danh sách đội
                 </a>
 
                 <a th:href="@{/admin/match-history}"
                    class="tab-link"
-                   th:classappend="${activePage == 'matches' ? 'active' : ''}">
+                   th:classappend="${activeTab == 'matches' ? 'active' : ''}">
                     Lịch thi đấu
                 </a>
 
@@ -816,10 +731,7 @@
             </table>
         </div>
 
-        <div class="footer-copyright">
-            <div>&copy; SPORT TOURNAMENT, All Right Reserved</div>
-            <div>Designed By <span style="color: var(--brand)">7KAH</span></div>
-        </div>
+        <div class="footer-copyright" th:replace="~{admin/fragments_admin/footer :: footer}"></div>
     </main>
 </div>
 
