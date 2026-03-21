@@ -72,7 +72,7 @@
                 <a class="nav__item" th:classappend="${activeSubPage == 'user'} ? 'nav__item--active' : ''" href="/admin/manage/user">
                     <span class="nav__label">Người dùng</span>
                 </a>
-                <a class="nav__item" th:classappend="${activeSubPage == 'team'} ? 'nav__item--active' : ''" href="/admin/manage/team">
+                <a class="nav__item" th:classappend="${activeSubPage == 'team'} ? 'nav__item--active' : ''" href="/admin/team-management">
                     <span class="nav__label">Đội tuyển</span>
                 </a>
             </div>
@@ -88,7 +88,7 @@
                 <img class="nav__chevron" src="/assets/general-overview/sidebar-arrow.png" alt="">
             </a>
             <div class="nav-sub">
-                <a class="nav__item" th:classappend="${activeSubPage == 'billing'} ? 'nav__item--active' : ''" href="/admin/billing">
+                <a class="nav__item" th:classappend="${activeSubPage == 'billing'} ? 'nav__item--active' : ''" href="/admin/invoice-management">
                     <span class="nav__label">Hóa đơn</span>
                 </a>
             </div>

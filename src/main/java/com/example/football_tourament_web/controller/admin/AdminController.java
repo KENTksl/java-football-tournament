@@ -35,6 +35,11 @@ public class AdminController {
 	public String teamDetail() {
 		return "/admin/team-detail";
 	}
+
+	@GetMapping("/admin/invoice-management")
+	public String invoiceManagement() {
+		return "admin/invoice-management";
+	}
 	@GetMapping({"/admin/manage", "admin/manage/user-detail", "/admin/manage/user-detail"})
 	public String manageUserDetail() {
 		return "admin/manage/user-detail";
