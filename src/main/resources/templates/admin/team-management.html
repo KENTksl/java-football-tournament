@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -324,12 +324,15 @@
         }
 
         .badge {
-            display: inline-block;
-            padding: 8px 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 32px;
+            width: 120px;
             border-radius: 6px;
             font-weight: 700;
             font-size: 14px;
-            min-width: 100px;
+            text-align: center;
         }
 
         .badge--approved {
@@ -350,6 +353,9 @@
             font-weight: 700;
             font-size: 14px;
             cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: inline-block;
         }
 
         /* Pagination Styles */
@@ -453,7 +459,7 @@
                         <td>0901234567</td>
                         <td>6</td>
                         <td><span class="badge badge--approved">Đã duyệt</span></td>
-                        <td><button class="btn-detail">Chi tiết</button></td>
+                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
                     </tr>
                     <tr>
                         <td>8/1/2026</td>
@@ -462,7 +468,7 @@
                         <td>0982219370</td>
                         <td>6</td>
                         <td><span class="badge badge--pending">Chờ duyệt</span></td>
-                        <td><button class="btn-detail">Chi tiết</button></td>
+                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
                     </tr>
                     <tr>
                         <td>8/1/2026</td>
@@ -471,7 +477,7 @@
                         <td>0982219370</td>
                         <td>6</td>
                         <td><span class="badge badge--pending">Chờ duyệt</span></td>
-                        <td><button class="btn-detail">Chi tiết</button></td>
+                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
                     </tr>
                     <tr>
                         <td>8/1/2026</td>
@@ -480,7 +486,7 @@
                         <td>0982219370</td>
                         <td>6</td>
                         <td><span class="badge badge--approved">Đã duyệt</span></td>
-                        <td><button class="btn-detail">Chi tiết</button></td>
+                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
                     </tr>
                     <tr>
                         <td>8/1/2026</td>
@@ -489,7 +495,7 @@
                         <td>0982219370</td>
                         <td>6</td>
                         <td><span class="badge badge--approved">Đã duyệt</span></td>
-                        <td><button class="btn-detail">Chi tiết</button></td>
+                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
                     </tr>
                     <tr>
                         <td>8/1/2026</td>
@@ -498,7 +504,7 @@
                         <td>0982219370</td>
                         <td>6</td>
                         <td><span class="badge badge--approved">Đã duyệt</span></td>
-                        <td><button class="btn-detail">Chi tiết</button></td>
+                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
                     </tr>
                     <tr>
                         <td>8/1/2026</td>
@@ -507,7 +513,7 @@
                         <td>0982219370</td>
                         <td>6</td>
                         <td><span class="badge badge--approved">Đã duyệt</span></td>
-                        <td><button class="btn-detail">Chi tiết</button></td>
+                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
                     </tr>
                     <tr>
                         <td>8/1/2026</td>
@@ -516,7 +522,7 @@
                         <td>0982219370</td>
                         <td>6</td>
                         <td><span class="badge badge--approved">Đã duyệt</span></td>
-                        <td><button class="btn-detail">Chi tiết</button></td>
+                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
                     </tr>
                 </tbody>
             </table>

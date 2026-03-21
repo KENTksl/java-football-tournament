@@ -340,13 +340,16 @@
         }
 
         .badge {
-            display: inline-block;
-            padding: 8px 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 32px;
+            width: 160px;
             border-radius: 6px;
             font-weight: 700;
             font-size: 14px;
-            min-width: 140px;
             color: #fff;
+            text-align: center;
         }
 
         .badge--success {
@@ -455,7 +458,6 @@
                         <th>Ngày xuất HĐ</th>
                         <th>Tổng tiền</th>
                         <th>Trạng thái</th>
-                        <th>Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -465,7 +467,6 @@
                         <td>9/12/2024</td>
                         <td>5000000</td>
                         <td><span class="badge badge--success">Thành công</span></td>
-                        <td><button class="btn-detail">Chi tiết</button></td>
                     </tr>
                     <tr>
                         <td>#INV-103</td>
@@ -473,7 +474,6 @@
                         <td>9/12/2024</td>
                         <td>2000000</td>
                         <td><span class="badge badge--success">Thành công</span></td>
-                        <td><button class="btn-detail">Chi tiết</button></td>
                     </tr>
                     <tr>
                         <td>#INV-104</td>
@@ -481,7 +481,6 @@
                         <td>9/12/2024</td>
                         <td>1000000</td>
                         <td><span class="badge badge--fail">Không thành công</span></td>
-                        <td><button class="btn-detail">Chi tiết</button></td>
                     </tr>
                     <tr>
                         <td>#INV-105</td>
@@ -489,7 +488,6 @@
                         <td>9/12/2025</td>
                         <td>4000000</td>
                         <td><span class="badge badge--success">Thành công</span></td>
-                        <td><button class="btn-detail">Chi tiết</button></td>
                     </tr>
                     <tr>
                         <td>#INV-106</td>
@@ -497,7 +495,6 @@
                         <td>9/12/2024</td>
                         <td>2000000</td>
                         <td><span class="badge badge--fail">Không thành công</span></td>
-                        <td><button class="btn-detail">Chi tiết</button></td>
                     </tr>
                     <tr>
                         <td>#INV-107</td>
@@ -505,7 +502,6 @@
                         <td>9/12/2024</td>
                         <td>6000000</td>
                         <td><span class="badge badge--success">Thành công</span></td>
-                        <td><button class="btn-detail">Chi tiết</button></td>
                     </tr>
                     <tr>
                         <td>#INV-108</td>
@@ -513,7 +509,6 @@
                         <td>9/12/2023</td>
                         <td>3000000</td>
                         <td><span class="badge badge--success">Thành công</span></td>
-                        <td><button class="btn-detail">Chi tiết</button></td>
                     </tr>
                     <tr>
                         <td>#INV-109</td>
@@ -521,7 +516,6 @@
                         <td>9/12/2024</td>
                         <td>120000</td>
                         <td><span class="badge badge--success">Thành công</span></td>
-                        <td><button class="btn-detail">Chi tiết</button></td>
                     </tr>
                 </tbody>
             </table>

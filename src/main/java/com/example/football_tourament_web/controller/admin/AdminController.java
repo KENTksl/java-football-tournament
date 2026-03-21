@@ -40,6 +40,11 @@ public class AdminController {
 	public String invoiceManagement() {
 		return "admin/invoice-management";
 	}
+
+	@GetMapping("/admin/tournament-bracket")
+	public String tournamentBracket() {
+		return "admin/tournament-bracket";
+	}
 	@GetMapping({"/admin/manage", "admin/manage/user-detail", "/admin/manage/user-detail"})
 	public String manageUserDetail() {
 		return "admin/manage/user-detail";
