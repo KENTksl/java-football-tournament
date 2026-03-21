@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ thi đấu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --surface: #f3f6f9;
+            --border: #d9d9d9;
+            --text: #111827;
+            --muted: #6b7280;
+            --muted-2: #b3b3b3;
+            --brand: #009cff;
+            --radius-xl: 25px;
+            --radius-lg: 20px;
+        }
+
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        /* Fix giant icons globally */
+        svg { display: block; max-width: 100%; }
+        img { display: block; max-width: 100%; height: auto; }
+
+        .app {
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar Styles from general-overview / team-management */
+        .sidebar {
+            width: 300px;
+            padding: 24px 18px;
+            border-right: 1px solid rgba(17, 24, 39, 0.06);
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar__brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 14px;
+            border-radius: var(--radius-lg);
+            background: var(--surface);
+            margin: 0 6px 18px;
+        }
+
+        .sidebar__brandIcon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(0, 156, 255, 0.18), rgba(0, 156, 255, 0.06));
+            display: grid;
+            place-items: center;
+        }
+
+        .sidebar__brandIcon svg { width: 26px !important; height: 26px !important; }
+
+        .sidebar__brandTitle {
+            font-weight: 700;
+            font-size: 18px;
+            line-height: 1.2;
+        }
+
+        .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 0 6px;
+        }
+
+        .nav__item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 12px;
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        .nav__item:hover {
+            background: rgba(243, 246, 249, 0.8);
+        }
+
+        .nav__item--active {
+            background: var(--surface);
+        }
+
+        .nav__icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            overflow: hidden;
+            flex: 0 0 auto;
+            background: rgba(17, 24, 39, 0.06);
+            display: grid;
+            place-items: center;
+        }
+
+        .nav__icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .nav__label {
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .nav__item--large {
+            padding: 10px 12px;
+        }
+
+        .nav__icon--large {
+            width: 71px !important;
+            height: 71px !important;
+            border-radius: 20px !important;
+            background: var(--surface);
+        }
+
+        .nav__label--large {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .nav__chevron {
+            margin-left: auto;
+            width: 18px !important;
+            height: 18px !important;
+            opacity: 0.55;
+        }
+
+        .sidebar__footer {
+            margin-top: auto;
+            padding: 0 6px;
+        }
+
+        /* Topbar Styles from general-overview / team-management */
+        .content {
+            flex: 1 1 auto;
+            padding: 28px 32px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 26px;
+        }
+
+        .topbar__menuBtn {
+            width: 44px;
+            height: 44px;
+            border: 0;
+            background: transparent;
+            display: grid;
+            place-items: center;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .topbar__menuBtn img {
+            width: 30px !important;
+            height: 30px !important;
+            display: block;
+        }
+
+        .search {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            width: 320px;
+            height: 62px;
+            border-radius: 9999px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+        }
+
+        .search svg { width: 18px !important; height: 18px !important; color: var(--muted-2); flex-shrink: 0; }
+
+        .search input {
+            border: 0;
+            outline: none;
+            background: transparent;
+            width: 100%;
+            font-size: 16px;
+            color: var(--text);
+        }
+
+        .topbar__right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .iconBtn {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: var(--surface);
+            border: 0;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+        }
+
+        .iconBtn img { width: 20px !important; height: 20px !important; display: block; }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 9999px;
+            background: transparent;
+        }
+
+        .profile__avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 9999px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(0, 156, 255, 0.22), rgba(17, 24, 39, 0.08));
+        }
+
+        .profile__avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .profile__name {
+            font-weight: 600;
+            font-size: 16px;
+            white-space: nowrap;
+        }
+
+        .profile__dropdown {
+            width: 18px !important;
+            height: 18px !important;
+            display: block;
+            opacity: 0.65;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #000;
+            text-transform: uppercase;
+        }
+
+        /* Tabs Styles */
+        .tournament-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .tournament-tab {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            font-weight: 500;
+            font-size: 16px;
+            color: #009cff;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .tournament-tab--active {
+            background: #f3f4f6;
+            color: #111827;
+            font-weight: 600;
+            border-bottom: 2px solid #111827;
+        }
+
+        /* Bracket Styles - Refined for perfect connectors */
+        .bracket-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 0;
+            padding: 60px 30px;
+            position: relative;
+        }
+
+        .round {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .round--semis {
+            gap: 100px;
+        }
+
+        .match-pair {
+            display: flex;
+            flex-direction: column;
+            border: 1.5px solid #000;
+            border-radius: 12px;
+            width: 240px;
+            overflow: hidden;
+            background: #fff;
+            position: relative;
+            z-index: 2;
+        }
+
+        .match-team {
+            display: flex;
+            align-items: center;
+            height: 45px;
+            border-bottom: 1px solid #000;
+        }
+
+        /* Connector system */
+        .connectors {
+            width: 60px;
+            height: 235px; /* Distance between center of FC Test 19 (row 1) and 22DTHC3 (row 2) */
+            position: relative;
+            margin-top: 22.5px; /* Start from center of first team row */
+        }
+
+        /* The fork shape */
+        .connector-fork {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 30px;
+            border-right: 2px solid #000;
+            border-top: 2px solid #000;
+            border-bottom: 2px solid #000;
+        }
+
+        /* Horizontal line from the fork to final match */
+        .connector-fork::after {
+            content: '';
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            width: 30px;
+            height: 2px;
+            background: #000;
+            transform: translateY(-50%);
+        }
+
+        .round--final {
+            margin-top: 95px; /* Aligns center of final match (95 + 45 = 140) to center of fork (22.5 + 117.5 = 140) */
+            gap: 60px;
+        }
+
+        .match-team {
+            display: flex;
+            align-items: center;
+            height: 45px;
+            border-bottom: 1px solid #000;
+        }
+
+        .match-team:last-child {
+            border-bottom: none;
+        }
+
+        .team-id {
+            width: 40px;
+            height: 100%;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 13px;
+            border-right: 1px solid #000;
+        }
+
+        .team-name {
+            flex: 1;
+            padding: 0 12px;
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .team-score {
+            width: 40px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            border-left: 1px solid #000;
+        }
+
+        /* Status Colors */
+        .winner {
+            background: #ff8a65; /* Cam cho đội thắng vòng 1 */
+        }
+        
+        .winner-final {
+            background: #d4e157; /* Vàng chanh cho đội thắng chung cuộc */
+        }
+
+        /* Connectors */
+        .connector-line {
+            position: absolute;
+            right: -60px;
+            top: 50%;
+            width: 60px;
+            height: 2px;
+            background: #94a3b8;
+        }
+
+        /* Ranking Badges */
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 30px;
+            border-radius: 6px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 13px;
+            margin-left: 15px;
+        }
+
+        .rank-1st { background: #ff7043; }
+        .rank-2nd { background: #b0bec5; }
+        .rank-3rd { background: #8d6e63; }
+        .rank-4th { background: #455a64; }
+
+        .final-ranking {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+        }
+
+        @media (max-width: 1024px) {
+            .bracket-container {
+                overflow-x: auto;
+                padding-bottom: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app" th:with="activePage='manage', activeSubPage='tournament'">
+    <aside th:replace="~{admin/fragments_admin/sidebar :: sidebar}"></aside>
+
+    <main class="content">
+        <header th:replace="~{admin/fragments_admin/header :: header}"></header>
+
+        <h1 class="section-title">CHI TIẾT GIẢI ĐẤU: Hutech mở rộng lần 31</h1>
+
+        <div class="tournament-tabs">
+            <a th:href="@{/admin/general-information}" class="tournament-tab">Thông tin chung</a>
+            <a th:href="@{/admin/team-list}" class="tournament-tab">Danh sách đội</a>
+            <a th:href="@{/admin/match-history}" class="tournament-tab">Lịch thi đấu</a>
+            <a th:href="@{/admin/tournament-bracket}" class="tournament-tab tournament-tab--active">Sơ đồ thi đấu</a>
+        </div>
+
+        <div class="bracket-container">
+            <!-- Vòng Bán Kết -->
+            <div class="round round--semis">
+                <div class="match-pair">
+                    <div class="match-team winner">
+                        <span class="team-id">T1</span>
+                        <span class="team-name">FC Test 19</span>
+                        <span class="team-score">3</span>
+                    </div>
+                    <div class="match-team">
+                        <span class="team-id">T2</span>
+                        <span class="team-name">FC Test 18</span>
+                        <span class="team-score">1</span>
+                    </div>
+                </div>
+
+                <div class="match-pair">
+                    <div class="match-team">
+                        <span class="team-id">T3</span>
+                        <span class="team-name">FC Test 17</span>
+                        <span class="team-score">1</span>
+                    </div>
+                    <div class="match-team winner">
+                        <span class="team-id">T4</span>
+                        <span class="team-name">22DTHC3</span>
+                        <span class="team-score">4</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connectors -->
+            <div class="connectors">
+                <div class="connector-fork"></div>
+            </div>
+
+            <!-- Vòng Chung Kết & Hạng 3 -->
+            <div class="round round--final">
+                <!-- Trận Chung Kết -->
+                <div class="ranking-item">
+                    <div class="match-pair">
+                        <div class="match-team">
+                            <span class="team-id">T1</span>
+                            <span class="team-name">FC Test 19</span>
+                            <span class="team-score">1</span>
+                        </div>
+                        <div class="match-team winner-final">
+                            <span class="team-id">T4</span>
+                            <span class="team-name">22DTHC3</span>
+                            <span class="team-score">2</span>
+                        </div>
+                    </div>
+                    <div class="final-ranking" style="margin-left: 15px;">
+                        <div class="ranking-item"><span class="rank-badge rank-2nd">2nd</span></div>
+                        <div class="ranking-item"><span class="rank-badge rank-1st">1st</span></div>
+                    </div>
+                </div>
+
+                <!-- Trận Tranh Hạng 3 -->
+                <div class="ranking-item">
+                    <div class="match-pair">
+                        <div class="match-team">
+                            <span class="team-id">T2</span>
+                            <span class="team-name">FC Test 18</span>
+                            <span class="team-score">1</span>
+                        </div>
+                        <div class="match-team">
+                            <span class="team-id">T3</span>
+                            <span class="team-name">FC Test 17</span>
+                            <span class="team-score">1</span>
+                        </div>
+                    </div>
+                    <div class="final-ranking" style="margin-left: 15px;">
+                        <div class="ranking-item"><span class="rank-badge rank-3rd">3rd</span></div>
+                        <div class="ranking-item"><span class="rank-badge rank-4th">4th</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer th:replace="~{admin/fragments_admin/footer :: footer}"></footer>
+    </main>
+</div>
+</body>
+</html>
