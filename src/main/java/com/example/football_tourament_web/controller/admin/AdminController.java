@@ -26,7 +26,15 @@ public class AdminController {
 	public String manageUser() {
 		return "admin/manage/manage-user";
 	}
+	@GetMapping("/admin/team-management")
+	public String teamManagement() {
+		return "/admin/team-management";
+	}
 
+	@GetMapping("/admin/team-detail")
+	public String teamDetail() {
+		return "/admin/team-detail";
+	}
 	@GetMapping({"/admin/manage", "admin/manage/user-detail", "/admin/manage/user-detail"})
 	public String manageUserDetail() {
 		return "admin/manage/user-detail";
@@ -50,5 +58,6 @@ public class AdminController {
 		model.addAttribute("activePage", "matches");
 		return "admin/match-history";
 	}
+
 }
 
