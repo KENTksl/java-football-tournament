@@ -27,16 +27,18 @@
         <div class="container profile-grid">
           <aside class="profile-card" aria-label="Điều hướng hồ sơ">
             <div class="profile-user">
-              <div class="profile-avatar" aria-hidden="true">A</div>
+              <div class="profile-avatar" aria-hidden="true">
+                <img th:src="${avatarSrc}" alt="" />
+              </div>
               <div>
-                <p class="name" th:text="${fullName ?: 'Quang'}">Quang</p>
-                <p class="email" th:text="${email ?: 'abcd@gmail.com'}">abcd@gmail.com</p>
+                <p class="name" th:text="${user.fullName}">Quang</p>
+                <p class="email" th:text="${user.email}">abcd@gmail.com</p>
               </div>
             </div>
 
             <div class="profile-balance" aria-label="Số dư">
-              <div class="value" th:text="${balanceText ?: 'Số dư: 100.000đ'}">Số dư: 100.000đ</div>
-              <button class="profile-btn" type="button">Nạp tiền</button>
+              <div class="value" th:text="${balanceText}">Số dư: 0đ</div>
+              <a class="profile-btn" th:href="@{/thanh-toan}">Nạp tiền</a>
             </div>
 
             <nav class="profile-menu" aria-label="Menu hồ sơ">
@@ -65,59 +67,210 @@
 
           <section class="profile-card" aria-label="Thông tin tài khoản">
             <h2>Thông tin tài khoản</h2>
-            <form class="profile-form">
-              <div class="profile-field">
-                <label for="fullName">Họ và tên</label>
-                <input
-                  class="profile-input"
-                  id="fullName"
-                  name="fullName"
-                  th:value="${fullName ?: 'Minh Quang'}"
-                />
-              </div>
+            <div class="profile-account" data-profile-account>
+              <div class="profile-view" data-profile-view>
+                <div class="profile-info">
+                  <div class="profile-info__row">
+                    <div class="profile-info__label">Họ và tên</div>
+                    <div class="profile-info__value" th:text="${user.fullName}">---</div>
+                  </div>
+                  <div class="profile-info__row">
+                    <div class="profile-info__label">Email</div>
+                    <div class="profile-info__value" th:text="${user.email}">---</div>
+                  </div>
+                  <div class="profile-info__row">
+                    <div class="profile-info__label">Số điện thoại</div>
+                    <div class="profile-info__value" th:text="${user.phone}">---</div>
+                  </div>
+                  <div class="profile-info__row">
+                    <div class="profile-info__label">Địa chỉ</div>
+                    <div class="profile-info__value" th:text="${user.address}">---</div>
+                  </div>
+                  <div class="profile-info__row">
+                    <div class="profile-info__label">Giới tính</div>
+                    <div class="profile-info__value">
+                      <span th:if="${user.gender != null and user.gender.name() == 'MALE'}">Nam</span>
+                      <span th:if="${user.gender != null and user.gender.name() == 'FEMALE'}">Nữ</span>
+                      <span th:if="${user.gender == null or user.gender.name() == 'OTHER'}">Khác</span>
+                    </div>
+                  </div>
+                  <div class="profile-info__row">
+                    <div class="profile-info__label">Ngày sinh</div>
+                    <div class="profile-info__value">
+                      <span th:if="${user.dateOfBirth != null}" th:text="${#temporals.format(user.dateOfBirth, 'dd/MM/yyyy')}">---</span>
+                      <span th:unless="${user.dateOfBirth != null}">Chưa cập nhật</span>
+                    </div>
+                  </div>
+                </div>
 
-              <div class="profile-field">
-                <label for="email">Email</label>
-                <input class="profile-input" id="email" name="email" th:value="${email ?: 'abcd@gmail.com'}" />
-              </div>
-
-              <div class="profile-field">
-                <label for="phone">Số Điện Thoại</label>
-                <input class="profile-input" id="phone" name="phone" th:value="${phone ?: '0933333333'}" />
-              </div>
-
-              <div class="profile-field">
-                <label for="address">Địa Chỉ</label>
-                <input
-                  class="profile-input"
-                  id="address"
-                  name="address"
-                  th:value="${address ?: '1/1 đường số 2, TP Thủ Đức'}"
-                />
-              </div>
-
-              <div class="profile-field">
-                <label>Giới tính</label>
-                <div class="profile-radio">
-                  <label><input type="radio" name="gender" value="Nam" checked /> Nam</label>
-                  <label><input type="radio" name="gender" value="Nữ" /> Nữ</label>
+                <div class="profile-actions profile-actions--view">
+                  <button class="profile-btn" type="button" data-profile-edit-btn>Chỉnh sửa</button>
                 </div>
               </div>
 
-              <div class="profile-field">
-                <label for="dob">Ngày sinh</label>
-                <input class="profile-input" id="dob" name="dob" th:value="${dob ?: '28/07/2004'}" />
-              </div>
+              <div class="profile-edit" data-profile-edit>
+                <div th:object="${profileForm}">
+                  <input type="hidden" data-profile-has-errors th:if="${#fields.hasErrors('*')}" value="true" />
+                  <div th:if="${#fields.hasErrors('*')}" class="auth-hint">
+                    <div th:each="e : ${#fields.errors('*')}" th:text="${e}">Lỗi</div>
+                  </div>
+                  <form class="profile-form" method="post" th:action="@{/ca-nhan}" enctype="multipart/form-data">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <div class="profile-field">
+                    <label for="fullName">Họ và tên</label>
+                    <input class="profile-input" id="fullName" th:field="*{fullName}" />
+                  </div>
 
-              <div class="profile-actions">
-                <button class="profile-btn" type="button">Cập Nhật Thông Tin</button>
-                <button class="profile-btn" type="button">Chỉnh Sửa Hồ Sơ</button>
+                  <div class="profile-field">
+                    <label for="email">Email</label>
+                    <input class="profile-input" id="email" name="email" th:value="${user.email}" readonly />
+                  </div>
+
+                  <div class="profile-field">
+                    <label for="phone">Số Điện Thoại</label>
+                    <input class="profile-input" id="phone" th:field="*{phone}" />
+                  </div>
+
+                  <div class="profile-field">
+                    <label for="address">Địa Chỉ</label>
+                    <input class="profile-input" id="address" th:field="*{address}" />
+                  </div>
+
+                  <div class="profile-field">
+                    <label for="avatarUrl">Ảnh đại diện</label>
+                    <div class="avatar-field" data-avatar-field>
+                      <input
+                        class="profile-input"
+                        id="avatarUrl"
+                        th:field="*{avatarUrl}"
+                        placeholder="Dán URL ảnh (tuỳ chọn)"
+                        autocomplete="off"
+                      />
+                      <div class="avatar-upload" data-avatar-upload>
+                        <input class="avatar-upload__input" id="avatarFile" name="avatarFile" type="file" accept="image/*" />
+                        <div class="avatar-upload__row">
+                          <label class="avatar-upload__btn" for="avatarFile">Chọn ảnh</label>
+                          <span class="avatar-upload__name" data-avatar-filename>Chưa chọn ảnh</span>
+                        </div>
+                        <img class="avatar-upload__preview" data-avatar-preview alt="" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="profile-field">
+                    <label>Giới tính</label>
+                    <div class="profile-radio">
+                      <label>
+                        <input type="radio" th:field="*{gender}" value="MALE" />
+                        Nam
+                      </label>
+                      <label>
+                        <input type="radio" th:field="*{gender}" value="FEMALE" />
+                        Nữ
+                      </label>
+                      <label>
+                        <input type="radio" th:field="*{gender}" value="OTHER" />
+                        Khác
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="profile-field">
+                    <label for="dob">Ngày sinh</label>
+                    <input class="profile-input" id="dob" type="date" th:field="*{dateOfBirth}" />
+                  </div>
+
+                  <div class="profile-actions">
+                    <button class="profile-btn" type="button" data-profile-cancel-btn>Hủy</button>
+                    <button class="profile-btn" type="submit">Lưu thay đổi</button>
+                  </div>
+                  </form>
+                </div>
               </div>
-            </form>
+            </div>
           </section>
         </div>
       </section>
     </main>
     <footer th:replace="~{user/fragments/footer :: footer('home')}"></footer>
+    <script>
+      (() => {
+        const account = document.querySelector("[data-profile-account]");
+        if (account) {
+          const view = account.querySelector("[data-profile-view]");
+          const edit = account.querySelector("[data-profile-edit]");
+          const openBtn = account.querySelector("[data-profile-edit-btn]");
+          const cancelBtn = account.querySelector("[data-profile-cancel-btn]");
+          const hasErrors = !!account.querySelector("[data-profile-has-errors]");
+
+          const setMode = (mode) => {
+            const isEdit = mode === "edit";
+            if (view) view.style.display = isEdit ? "none" : "block";
+            if (edit) edit.style.display = isEdit ? "block" : "none";
+          };
+
+          if (openBtn) {
+            openBtn.addEventListener("click", () => setMode("edit"));
+          }
+          if (cancelBtn) {
+            cancelBtn.addEventListener("click", () => setMode("view"));
+          }
+
+          setMode(hasErrors ? "edit" : "view");
+        }
+
+        const field = document.querySelector("[data-avatar-field]");
+        if (!field) return;
+
+        const urlInput = field.querySelector("#avatarUrl");
+        const upload = field.querySelector("[data-avatar-upload]");
+        const fileInput = field.querySelector("#avatarFile");
+        const fileNameEl = field.querySelector("[data-avatar-filename]");
+        const previewEl = field.querySelector("[data-avatar-preview]");
+        if (!urlInput || !upload) return;
+
+        const resetFileUi = () => {
+          if (fileInput) fileInput.value = "";
+          if (fileNameEl) fileNameEl.textContent = "Chưa chọn ảnh";
+          if (previewEl) {
+            const prevUrl = previewEl.dataset.objectUrl;
+            if (prevUrl) URL.revokeObjectURL(prevUrl);
+            previewEl.removeAttribute("src");
+            previewEl.style.display = "none";
+            delete previewEl.dataset.objectUrl;
+          }
+        };
+
+        const syncFileUi = () => {
+          if (!fileInput) return;
+          const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+          if (!file) {
+            resetFileUi();
+            return;
+          }
+
+          if (fileNameEl) fileNameEl.textContent = file.name;
+          if (previewEl) {
+            const prevUrl = previewEl.dataset.objectUrl;
+            if (prevUrl) URL.revokeObjectURL(prevUrl);
+            const objectUrl = URL.createObjectURL(file);
+            previewEl.src = objectUrl;
+            previewEl.style.display = "block";
+            previewEl.dataset.objectUrl = objectUrl;
+          }
+        };
+
+        const sync = () => {
+          const hasUrl = !!urlInput.value && urlInput.value.trim().length > 0;
+          upload.style.display = hasUrl ? "none" : "block";
+          if (hasUrl) resetFileUi();
+        };
+
+        if (fileInput) fileInput.addEventListener("change", syncFileUi);
+        urlInput.addEventListener("input", sync);
+        sync();
+        syncFileUi();
+      })();
+    </script>
   </body>
 </html>

@@ -24,7 +24,7 @@ public class TournamentRegistrationService {
 
 	@Transactional(readOnly = true)
 	public List<TournamentRegistration> listByUserId(Long userId) {
-		return registrationRepository.findByRegisteredByIdOrderByCreatedAtDesc(userId);
+		return registrationRepository.findByRegisteredByIdWithDetails(userId);
 	}
 
 	@Transactional(readOnly = true)

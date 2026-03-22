@@ -27,16 +27,18 @@
         <div class="container profile-grid">
           <aside class="profile-card" aria-label="Điều hướng hồ sơ">
             <div class="profile-user">
-              <div class="profile-avatar" aria-hidden="true">A</div>
+              <div class="profile-avatar" aria-hidden="true">
+                <img th:src="${avatarSrc}" alt="" />
+              </div>
               <div>
-                <p class="name" th:text="${fullName ?: 'Quang'}">Quang</p>
-                <p class="email" th:text="${email ?: 'abcd@gmail.com'}">abcd@gmail.com</p>
+                <p class="name" th:text="${user.fullName}">Quang</p>
+                <p class="email" th:text="${user.email}">abcd@gmail.com</p>
               </div>
             </div>
 
             <div class="profile-balance" aria-label="Số dư">
-              <div class="value" th:text="${balanceText ?: 'Số dư: 100.000đ'}">Số dư: 100.000đ</div>
-              <button class="profile-btn" type="button">Nạp tiền</button>
+              <div class="value" th:text="${balanceText}">Số dư: 0đ</div>
+              <a class="profile-btn" th:href="@{/thanh-toan}">Nạp tiền</a>
             </div>
 
             <nav class="profile-menu" aria-label="Menu hồ sơ">
@@ -68,22 +70,25 @@
             <div class="profile-form">
               <div class="profile-field">
                 <label>Tên đội</label>
-                <div class="profile-input" th:text="${teamName ?: '---'}">---</div>
+                <div class="profile-input" th:text="${teamName}">---</div>
               </div>
               <div class="profile-field">
                 <label>Trưởng đội</label>
-                <div class="profile-input" th:text="${captainName ?: '---'}">---</div>
+                <div class="profile-input" th:text="${captainName}">---</div>
               </div>
               <div class="profile-field">
                 <label>Số thành viên</label>
-                <div class="profile-input" th:text="${memberCount ?: 0}">0</div>
+                <div class="profile-input" th:text="${memberCount}">0</div>
               </div>
               <div class="profile-field">
                 <label>Danh sách thành viên</label>
                 <div class="history-grid">
                   <div class="history-item" th:each="m : ${members}">
-                    <p class="title" th:text="${m}">---</p>
-                    <p class="meta">Thành viên đội.</p>
+                    <p class="title" th:text="${m.fullName}">---</p>
+                    <p class="meta">
+                      Số áo: <span th:text="${m.jerseyNumber}">-</span> • Vị trí:
+                      <span th:text="${m.position}">-</span>
+                    </p>
                   </div>
                   <div class="history-item" th:if="${members == null or #lists.isEmpty(members)}">
                     <p class="title">Chưa có dữ liệu</p>

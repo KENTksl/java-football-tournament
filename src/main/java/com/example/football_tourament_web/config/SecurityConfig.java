@@ -55,6 +55,7 @@ public class SecurityConfig {
 		http.authorizeHttpRequests(auth -> auth
 				.requestMatchers(
 						"/assets/**",
+						"/uploads/**",
 						"/",
 						"/home",
 						"/gioi-thieu",
@@ -74,6 +75,7 @@ public class SecurityConfig {
 				.requestMatchers(
 						"/ca-nhan",
 						"/ca-nhan.html",
+						"/ca-nhan/**",
 						"/thong-tin-doi",
 						"/thong-tin-doi.html",
 						"/lich-su-dang-ky",

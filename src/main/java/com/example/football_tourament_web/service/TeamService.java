@@ -32,6 +32,11 @@ public class TeamService {
 		return teamRepository.findByNameIgnoreCase(name);
 	}
 
+	@Transactional(readOnly = true)
+	public Optional<Team> findCaptainTeam(Long captainUserId) {
+		return teamRepository.findFirstByCaptainId(captainUserId);
+	}
+
 	@Transactional
 	public Team save(Team team) {
 		return teamRepository.save(team);

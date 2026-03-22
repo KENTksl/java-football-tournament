@@ -2,11 +2,13 @@ package com.example.football_tourament_web.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.math.BigDecimal;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.football_tourament_web.model.entity.Transaction;
+import com.example.football_tourament_web.model.enums.TransactionStatus;
 import com.example.football_tourament_web.repository.TransactionRepository;
 
 @Service
@@ -25,6 +27,15 @@ public class TransactionService {
 	@Transactional(readOnly = true)
 	public List<Transaction> listByUserId(Long userId) {
 		return transactionRepository.findByUserIdOrderByCreatedAtDesc(userId);
+	}
+
+	@Transactional(readOnly = true)
+	public BigDecimal calculateBalance(Long userId) {
+		return transactionRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
+				.filter(t -> t.getStatus() == TransactionStatus.SUCCESS)
+				.map(Transaction::getAmount)
+				.filter(a -> a != null)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	@Transactional

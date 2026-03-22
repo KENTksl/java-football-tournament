@@ -30,7 +30,11 @@ public class CurrentUserAdvice {
 		userService.findByEmail(email).ifPresent(user -> {
 			model.addAttribute("currentUserEmail", user.getEmail());
 			model.addAttribute("currentUserFullName", user.getFullName());
-			model.addAttribute("currentUserAvatarUrl", user.getAvatarUrl());
+			String avatarSrc = user.getAvatarUrl();
+			if (avatarSrc == null || avatarSrc.isBlank()) {
+				avatarSrc = user.getAvatar();
+			}
+			model.addAttribute("currentUserAvatarUrl", avatarSrc);
 		});
 	}
 }
