@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +41,7 @@ public class DataSeeder implements CommandLineRunner {
 	private final TournamentRegistrationRepository registrationRepository;
 	private final MatchRepository matchRepository;
 	private final TransactionRepository transactionRepository;
+	private final PasswordEncoder passwordEncoder;
 
 	public DataSeeder(
 		AppUserRepository userRepository,
@@ -48,7 +50,8 @@ public class DataSeeder implements CommandLineRunner {
 		TournamentRepository tournamentRepository,
 		TournamentRegistrationRepository registrationRepository,
 		MatchRepository matchRepository,
-		TransactionRepository transactionRepository
+		TransactionRepository transactionRepository,
+		PasswordEncoder passwordEncoder
 	) {
 		this.userRepository = userRepository;
 		this.teamRepository = teamRepository;
@@ -57,6 +60,7 @@ public class DataSeeder implements CommandLineRunner {
 		this.registrationRepository = registrationRepository;
 		this.matchRepository = matchRepository;
 		this.transactionRepository = transactionRepository;
+		this.passwordEncoder = passwordEncoder;
 	}
 
 	@Override
@@ -69,14 +73,13 @@ public class DataSeeder implements CommandLineRunner {
 		var admin = new AppUser("Admin HUTECH", "admin@example.com");
 		admin.setRole(UserRole.ADMIN);
 		admin.setGender(Gender.OTHER);
-		admin.setPhone("0123456789");
-		admin.setAddress("HUTECH, Bình Thạnh, TPHCM");
-		admin.setDateOfBirth(LocalDate.of(1990, 1, 1));
+		admin.setPasswordHash(passwordEncoder.encode("admin123"));
 		userRepository.save(admin);
 
 		var userA = new AppUser("Huỳnh Văn A", "a@example.com");
 		userA.setGender(Gender.MALE);
 		userA.setAddress("Thủ Đức, TPHCM");
+		userA.setPasswordHash(passwordEncoder.encode("user123"));
 		userRepository.save(userA);
 
 		var team1 = new Team("FC Test 19");

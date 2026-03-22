@@ -39,6 +39,8 @@ public class AppUser {
 
 	private String phone;
 
+	private String avatarUrl;
+
 	private String address;
 
 	private String avatar;
@@ -123,6 +125,14 @@ public class AppUser {
 
 	public void setPhone(String phone) {
 		this.phone = phone;
+	}
+
+	public String getAvatarUrl() {
+		return avatarUrl;
+	}
+
+	public void setAvatarUrl(String avatarUrl) {
+		this.avatarUrl = avatarUrl;
 	}
 
 	public String getAddress() {

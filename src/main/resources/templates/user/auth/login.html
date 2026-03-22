@@ -40,7 +40,11 @@
 
           <section class="profile-card" aria-label="Form đăng nhập">
             <h2>Thông tin đăng nhập</h2>
-            <form class="profile-form" method="post" action="#">
+            <p th:if="${param.registered}" class="auth-hint">Đăng ký thành công. Vui lòng đăng nhập.</p>
+            <p th:if="${param.error}" class="auth-hint">Email hoặc mật khẩu không đúng.</p>
+            <p th:if="${param.logout}" class="auth-hint">Bạn đã đăng xuất.</p>
+            <form class="profile-form" method="post" th:action="@{/dang-nhap}">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
               <div class="profile-field">
                 <label for="email">Email</label>
                 <input
@@ -71,7 +75,7 @@
                 <a href="#">Quên mật khẩu?</a>
               </div>
               <div class="profile-actions">
-                <button class="profile-btn" type="button">ĐĂNG NHẬP</button>
+                <button class="profile-btn" type="submit">ĐĂNG NHẬP</button>
               </div>
             </form>
             <p class="auth-hint">

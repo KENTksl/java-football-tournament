@@ -6,12 +6,21 @@ import org.springframework.stereotype.Controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.football_tourament_web.model.dto.NewsItem;
 import com.example.football_tourament_web.service.CbsSportsNewsService;
+import com.example.football_tourament_web.service.UserService;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -25,13 +34,15 @@ import java.util.regex.Pattern;
 @Controller
 public class HomeController {
 	private final CbsSportsNewsService cbsSportsNewsService;
+	private final UserService userService;
 	private final HttpClient httpClient;
 	private static final Pattern LAT_PATTERN = Pattern.compile("\"lat\"\\s*:\\s*\"([^\"]+)\"");
 	private static final Pattern LON_PATTERN = Pattern.compile("\"lon\"\\s*:\\s*\"([^\"]+)\"");
 	private static final Pattern DISPLAY_NAME_PATTERN = Pattern.compile("\"display_name\"\\s*:\\s*\"([^\"]+)\"");
 
-	public HomeController(CbsSportsNewsService cbsSportsNewsService) {
+	public HomeController(CbsSportsNewsService cbsSportsNewsService, UserService userService) {
 		this.cbsSportsNewsService = cbsSportsNewsService;
+		this.userService = userService;
 		this.httpClient = HttpClient.newBuilder()
 				.followRedirects(HttpClient.Redirect.NORMAL)
 				.connectTimeout(Duration.ofSeconds(10))
@@ -131,8 +142,32 @@ public class HomeController {
 	}
 
 	@GetMapping({"/dang-ky", "/dang-ky.html"})
-	public String register() {
+	public String register(Model model) {
+		if (!model.containsAttribute("form")) {
+			model.addAttribute("form", new RegisterForm());
+		}
 		return "user/auth/register";
+	}
+
+	@PostMapping("/dang-ky")
+	public String registerSubmit(@Valid RegisterForm form, BindingResult bindingResult, Model model) {
+		if (!form.password.equals(form.confirmPassword)) {
+			bindingResult.rejectValue("confirmPassword", "confirmPassword.mismatch", "Mật khẩu nhập lại không khớp");
+		}
+
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("form", form);
+			return "user/auth/register";
+		}
+
+		try {
+			userService.registerUser(form.fullName, form.email, form.phone, form.password);
+			return "redirect:/dang-nhap?registered";
+		} catch (IllegalArgumentException ex) {
+			bindingResult.rejectValue("email", "email.exists", ex.getMessage());
+			model.addAttribute("form", form);
+			return "user/auth/register";
+		}
 	}
 
 	@GetMapping({"/ca-nhan", "/ca-nhan.html"})
@@ -174,5 +209,75 @@ public class HomeController {
 				.replace("\\n", " ")
 				.replace("\\r", " ")
 				.replace("\\t", " ");
+	}
+
+	public static class RegisterForm {
+		@NotBlank(message = "Vui lòng nhập họ tên")
+		private String fullName;
+
+		@NotBlank(message = "Vui lòng nhập email")
+		@Email(message = "Email không hợp lệ")
+		private String email;
+
+		@NotBlank(message = "Vui lòng nhập số điện thoại")
+		private String phone;
+
+		@NotBlank(message = "Vui lòng nhập mật khẩu")
+		@Size(min = 6, message = "Mật khẩu tối thiểu 6 ký tự")
+		private String password;
+
+		@NotBlank(message = "Vui lòng nhập lại mật khẩu")
+		private String confirmPassword;
+
+		@AssertTrue(message = "Bạn cần đồng ý điều khoản")
+		private boolean terms;
+
+		public String getFullName() {
+			return fullName;
+		}
+
+		public void setFullName(String fullName) {
+			this.fullName = fullName;
+		}
+
+		public String getEmail() {
+			return email;
+		}
+
+		public void setEmail(String email) {
+			this.email = email;
+		}
+
+		public String getPhone() {
+			return phone;
+		}
+
+		public void setPhone(String phone) {
+			this.phone = phone;
+		}
+
+		public String getPassword() {
+			return password;
+		}
+
+		public void setPassword(String password) {
+			this.password = password;
+		}
+
+		public String getConfirmPassword() {
+			return confirmPassword;
+		}
+
+		public void setConfirmPassword(String confirmPassword) {
+			this.confirmPassword = confirmPassword;
+		}
+
+		public boolean isTerms() {
+			return terms;
+		}
+
+		public void setTerms(boolean terms) {
+			this.terms = terms;
+		}
 	}
 }
