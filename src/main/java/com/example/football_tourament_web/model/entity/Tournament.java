@@ -13,9 +13,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -61,6 +64,10 @@ public class Tournament {
 
 	@OneToMany(mappedBy = "tournament", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Match> matches = new ArrayList<>();
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "winner_id")
+	private Team winner;
 
 	public Tournament() {
 	}
@@ -155,6 +162,14 @@ public class Tournament {
 
 	public Instant getUpdatedAt() {
 		return updatedAt;
+	}
+
+	public Team getWinner() {
+		return winner;
+	}
+
+	public void setWinner(Team winner) {
+		this.winner = winner;
 	}
 }
 

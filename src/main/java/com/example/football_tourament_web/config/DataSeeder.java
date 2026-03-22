@@ -70,7 +70,7 @@ public class DataSeeder implements CommandLineRunner {
 			return;
 		}
 
-		var admin = new AppUser("Admin", "admin@example.com");
+		var admin = new AppUser("Admin HUTECH", "admin@example.com");
 		admin.setRole(UserRole.ADMIN);
 		admin.setGender(Gender.OTHER);
 		admin.setPasswordHash(passwordEncoder.encode("admin123"));
@@ -142,6 +142,11 @@ public class DataSeeder implements CommandLineRunner {
 		finalMatch.setStatus(MatchStatus.FINISHED);
 
 		matchRepository.saveAll(List.of(semi1, semi2, finalMatch));
+
+		// Set winner for tournament
+		tournament.setWinner(team4);
+		tournament.setStatus(TournamentStatus.FINISHED);
+		tournamentRepository.save(tournament);
 
 		var tx1 = new Transaction("TXN-0001", "Nạp tiền ví", new BigDecimal("200000.00"), userA);
 		tx1.setStatus(TransactionStatus.SUCCESS);
