@@ -35,7 +35,7 @@
                 <a class="tournament-list__card" th:each="t : ${tournaments}" th:href="@{/user/tournament/match-schedule(id=${t.id})}">
                     <div class="tournament-list__media" aria-hidden="true">
                         <img th:if="${t.imageUrl != null and !#strings.isEmpty(t.imageUrl)}" th:src="${t.imageUrl}" alt="" />
-                        <img th:unless="${t.imageUrl != null and !#strings.isEmpty(t.imageUrl)}" th:src="@{/assets/general-overview/tournament.jpg}" alt="" />
+                        <img th:unless="${t.imageUrl != null and !#strings.isEmpty(t.imageUrl)}" th:src="@{/assets/figma/home-hero.png}" alt="" />
                     </div>
                     <div class="tournament-list__body">
                         <div class="tournament-list__top">
