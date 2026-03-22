@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
@@ -383,12 +383,16 @@
             overflow: hidden;
             background: #fff;
             margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .profile-avatar-circle img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
         }
 
         .btn-change-avatar {
@@ -474,44 +478,57 @@
             <section class="profile-container">
                 <h2 class="profile-container__title">Hồ sơ cá nhân</h2>
 
-                <div class="profile-layout">
+                <form class="profile-layout" th:action="@{/admin/profile/save}" method="post" enctype="multipart/form-data">
                     <div class="profile-avatar-col">
                         <span>Ảnh đại diện</span>
                         <div class="profile-avatar-circle">
-                            <img src="/assets/figma/avatar.jpg" alt="Avatar">
+                            <img id="avatar-preview" th:src="${admin != null && admin.avatar != null} ? @{${admin.avatar}} : @{/assets/figma/avatar.jpg}" alt="">
                         </div>
-                        <button class="btn-change-avatar">Đổi ảnh đại diện</button>
+                        <button type="button" class="btn-change-avatar" onclick="document.getElementById('avatar-file').click()">Đổi ảnh đại diện</button>
+                        <input type="file" id="avatar-file" name="avatarFile" style="display: none;" accept="image/*" onchange="previewImage(this)">
                     </div>
 
-                    <form class="profile-form-col">
+                    <div class="profile-form-col">
                         <div class="form-group">
-                            <label for="username">Tên người dùng</label>
-                            <input type="text" id="username" name="username">
+                            <label for="fullName">Họ và tên</label>
+                            <input type="text" id="fullName" name="fullName" th:value="${admin != null ? admin.fullName : ''}">
                         </div>
 
                         <div class="form-group">
                             <label for="phone">Số điện thoại</label>
-                            <input type="text" id="phone" name="phone" class="input-short">
+                            <input type="text" id="phone" name="phone" class="input-short" th:value="${admin != null ? admin.phone : ''}">
                         </div>
 
                         <div class="form-group">
                             <label for="address">Địa chỉ</label>
-                            <textarea id="address" name="address"></textarea>
+                            <textarea id="address" name="address" th:text="${admin != null ? admin.address : ''}"></textarea>
                         </div>
 
                         <div class="form-group">
                             <label for="dob">Ngày sinh</label>
-                            <input type="date" id="dob" name="dob" class="input-short">
+                            <input type="date" id="dob" name="dob" class="input-short" th:value="${admin != null ? admin.dateOfBirth : ''}">
                         </div>
 
                         <button type="submit" class="btn-save">Lưu</button>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </section>
 
             <footer th:replace="~{admin/fragments_admin/footer :: footer}"></footer>
         </main>
     </div>
+
+    <script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('avatar-preview').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
 </body>
 
 </html>

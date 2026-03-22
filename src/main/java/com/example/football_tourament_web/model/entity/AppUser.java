@@ -43,6 +43,8 @@ public class AppUser {
 
 	private String address;
 
+	private String avatar;
+
 	private LocalDate dateOfBirth;
 
 	@Enumerated(EnumType.STRING)
@@ -139,6 +141,14 @@ public class AppUser {
 
 	public void setAddress(String address) {
 		this.address = address;
+	}
+
+	public String getAvatar() {
+		return avatar;
+	}
+
+	public void setAvatar(String avatar) {
+		this.avatar = avatar;
 	}
 
 	public LocalDate getDateOfBirth() {
