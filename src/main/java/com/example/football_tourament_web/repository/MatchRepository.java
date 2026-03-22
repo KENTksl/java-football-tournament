@@ -15,5 +15,27 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
 
 	@Query("SELECT COUNT(m) FROM Match m WHERE m.scheduledAt >= :start AND m.scheduledAt < :end")
 	long countMatchesByScheduledAtBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+	@Query("""
+			select m
+			from Match m
+			join fetch m.tournament t
+			join fetch m.homeTeam ht
+			join fetch m.awayTeam at
+			where ht.id = :teamId or at.id = :teamId
+			order by m.scheduledAt asc
+			""")
+	List<Match> findByTeamIdWithDetails(@Param("teamId") Long teamId);
+
+	@Query("""
+			select m
+			from Match m
+			join fetch m.tournament t
+			join fetch m.homeTeam ht
+			join fetch m.awayTeam at
+			where (ht.id = :teamId or at.id = :teamId) and t.id = :tournamentId
+			order by m.scheduledAt asc
+			""")
+	List<Match> findByTeamIdAndTournamentIdWithDetails(@Param("teamId") Long teamId, @Param("tournamentId") Long tournamentId);
 }
 

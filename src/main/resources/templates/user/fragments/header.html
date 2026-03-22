@@ -62,6 +62,12 @@
           </nav>
         </div>
       </header>
+      <div class="page-loader" data-page-loader aria-hidden="true">
+        <div class="page-loader__box">
+          <div class="page-loader__spinner" aria-hidden="true"></div>
+          <div class="page-loader__text">Đang tải...</div>
+        </div>
+      </div>
       <script>
         (() => {
           if (window.__userMenuInit) return;
@@ -95,6 +101,65 @@
 
           document.addEventListener("keydown", (e) => {
             if (e.key === "Escape") closeAll();
+          });
+        })();
+      </script>
+      <script>
+        (() => {
+          if (window.__pageTransitionInit) return;
+          window.__pageTransitionInit = true;
+
+          const loader = document.querySelector("[data-page-loader]");
+          const showLoader = () => {
+            if (!loader) return;
+            loader.classList.add("is-visible");
+            loader.setAttribute("aria-hidden", "false");
+          };
+          const hideLoader = () => {
+            if (!loader) return;
+            loader.classList.remove("is-visible");
+            loader.setAttribute("aria-hidden", "true");
+          };
+
+          window.addEventListener("pageshow", () => {
+            document.documentElement.classList.remove("is-leaving");
+            hideLoader();
+          });
+
+          document.addEventListener("click", (e) => {
+            if (e.defaultPrevented) return;
+            if (e.button !== 0) return;
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+            const a = e.target instanceof Element ? e.target.closest("a[href]") : null;
+            if (!a) return;
+            if (a.getAttribute("target") === "_blank") return;
+            if (a.hasAttribute("download")) return;
+
+            const href = a.getAttribute("href");
+            if (!href || href.startsWith("#")) return;
+
+            let url;
+            try {
+              url = new URL(href, window.location.href);
+            } catch {
+              return;
+            }
+            if (url.origin !== window.location.origin) return;
+
+            e.preventDefault();
+            document.documentElement.classList.add("is-leaving");
+            showLoader();
+            window.setTimeout(() => {
+              window.location.href = url.href;
+            }, 80);
+          });
+
+          document.addEventListener("submit", (e) => {
+            const form = e.target instanceof HTMLFormElement ? e.target : null;
+            if (!form) return;
+            if (form.getAttribute("target") === "_blank") return;
+            showLoader();
           });
         })();
       </script>

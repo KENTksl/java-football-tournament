@@ -26,6 +26,8 @@ public class Player {
 
 	private String position;
 
+	private String avatarUrl;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "team_id", nullable = false)
 	private Team team;
@@ -72,6 +74,14 @@ public class Player {
 
 	public void setPosition(String position) {
 		this.position = position;
+	}
+
+	public String getAvatarUrl() {
+		return avatarUrl;
+	}
+
+	public void setAvatarUrl(String avatarUrl) {
+		this.avatarUrl = avatarUrl;
 	}
 
 	public Team getTeam() {

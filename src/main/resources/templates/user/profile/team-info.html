@@ -12,6 +12,7 @@
     />
     <link rel="stylesheet" th:href="@{/assets/css/user-home.css}" />
     <link rel="stylesheet" th:href="@{/assets/css/user-pages.css}" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <header th:replace="~{user/fragments/header :: header('profile')}"></header>
@@ -27,16 +28,18 @@
         <div class="container profile-grid">
           <aside class="profile-card" aria-label="Điều hướng hồ sơ">
             <div class="profile-user">
-              <div class="profile-avatar" aria-hidden="true">A</div>
+              <div class="profile-avatar" aria-hidden="true">
+                <img th:src="${avatarSrc}" alt="" />
+              </div>
               <div>
-                <p class="name" th:text="${fullName ?: 'Quang'}">Quang</p>
-                <p class="email" th:text="${email ?: 'abcd@gmail.com'}">abcd@gmail.com</p>
+                <p class="name" th:text="${user.fullName}">Quang</p>
+                <p class="email" th:text="${user.email}">abcd@gmail.com</p>
               </div>
             </div>
 
             <div class="profile-balance" aria-label="Số dư">
-              <div class="value" th:text="${balanceText ?: 'Số dư: 100.000đ'}">Số dư: 100.000đ</div>
-              <button class="profile-btn" type="button">Nạp tiền</button>
+              <div class="value" th:text="${balanceText}">Số dư: 0đ</div>
+              <a class="profile-btn" th:href="@{/thanh-toan}">Nạp tiền</a>
             </div>
 
             <nav class="profile-menu" aria-label="Menu hồ sơ">
@@ -64,32 +67,415 @@
           </aside>
 
           <section class="profile-card" aria-label="Thông tin đội">
-            <h2>Thông Tin Đội</h2>
-            <div class="profile-form">
-              <div class="profile-field">
-                <label>Tên đội</label>
-                <div class="profile-input" th:text="${teamName ?: '---'}">---</div>
-              </div>
-              <div class="profile-field">
-                <label>Trưởng đội</label>
-                <div class="profile-input" th:text="${captainName ?: '---'}">---</div>
-              </div>
-              <div class="profile-field">
-                <label>Số thành viên</label>
-                <div class="profile-input" th:text="${memberCount ?: 0}">0</div>
-              </div>
-              <div class="profile-field">
-                <label>Danh sách thành viên</label>
-                <div class="history-grid">
-                  <div class="history-item" th:each="m : ${members}">
-                    <p class="title" th:text="${m}">---</p>
-                    <p class="meta">Thành viên đội.</p>
-                  </div>
-                  <div class="history-item" th:if="${members == null or #lists.isEmpty(members)}">
-                    <p class="title">Chưa có dữ liệu</p>
-                    <p class="meta">Danh sách thành viên sẽ hiển thị tại đây.</p>
+            <div class="team-header">
+              <h2>Đội Của Tôi</h2>
+              <a class="profile-btn" th:if="${canCreateTeam}" th:href="@{/thong-tin-doi(create=1)}">Thêm đội</a>
+              <span class="team-limit" th:unless="${canCreateTeam}">Tối đa 2 đội</span>
+            </div>
+
+            <p th:if="${param.limitReached}" class="auth-hint">Bạn chỉ được tạo tối đa 2 đội.</p>
+            <p th:if="${param.logoInvalidType}" class="auth-hint">Logo chỉ hỗ trợ JPG/PNG/WebP.</p>
+            <p th:if="${param.logoTooLarge}" class="auth-hint">Logo quá lớn (tối đa 2MB).</p>
+            <p th:if="${param.logoError}" class="auth-hint">Upload logo thất bại. Vui lòng thử lại.</p>
+
+            <div class="team-cards" th:if="${teams != null and !#lists.isEmpty(teams)}">
+              <a class="team-card" th:each="t : ${teams}" th:href="@{/thong-tin-doi(teamId=${t.id})}">
+                <div class="team-card__img">
+                  <img
+                    th:if="${t.logoUrl != null and !#strings.isEmpty(t.logoUrl)}"
+                    th:src="${t.logoUrl}"
+                    alt=""
+                  />
+                  <img
+                    th:unless="${t.logoUrl != null and !#strings.isEmpty(t.logoUrl)}"
+                    th:src="@{/assets/figma/home-hero.png}"
+                    alt=""
+                  />
+                </div>
+                <div class="team-card__body">
+                  <div class="team-card__name" th:text="${t.name}">Team name</div>
+                  <div class="team-card__meta">
+                    Thành viên:
+                    <span th:text="${t.memberCount}">0</span>/10
                   </div>
                 </div>
+              </a>
+            </div>
+
+            <div class="history-item" th:if="${teams == null or #lists.isEmpty(teams)}">
+              <p class="title">Bạn chưa có đội nào</p>
+              <p class="meta">Tạo đội hình sẵn để đăng ký giải đấu nhanh hơn.</p>
+            </div>
+
+            <div th:if="${isCreate}">
+              <h3 class="team-subtitle">Tạo đội mới</h3>
+              <div th:object="${teamForm}">
+                <div th:if="${#fields.hasErrors('*')}" class="auth-hint">
+                  <div th:each="e : ${#fields.errors('*')}" th:text="${e}">Lỗi</div>
+                </div>
+                <form class="profile-form" method="post" th:action="@{/thong-tin-doi/tao-doi}" enctype="multipart/form-data">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                  <div class="profile-field">
+                    <label for="teamName">Tên đội</label>
+                    <input class="profile-input" id="teamName" th:field="*{teamName}" placeholder="VD: FC Thủ Đức" />
+                  </div>
+
+                  <div class="profile-field">
+                    <label for="teamLogo">Logo đội (tuỳ chọn)</label>
+                    <div class="team-logo-preview team-logo-preview--empty" data-team-logo-preview></div>
+                    <div class="avatar-upload">
+                      <input class="avatar-upload__input" id="teamLogo" name="teamLogo" type="file" accept="image/*" />
+                      <div class="avatar-upload__row">
+                        <label class="avatar-upload__btn" for="teamLogo">Chọn logo</label>
+                        <span class="avatar-upload__name">Tối đa 2MB</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="profile-field">
+                    <label>Thành viên (tối đa 10)</label>
+                    <div class="members-form">
+                      <div class="member-row" th:each="slot, stat : ${memberSlots}">
+                        <input class="profile-input" name="memberName" placeholder="Tên cầu thủ" th:value="${slot.name}" />
+                        <input class="profile-input" name="memberJersey" type="number" min="0" max="99" placeholder="Số áo" th:value="${slot.jerseyNumber}" />
+                        <div class="member-upload">
+                          <div class="member-thumb" data-member-preview style="display:none"></div>
+                          <input class="avatar-upload__input" th:id="${'mAvatar' + stat.index}" name="memberAvatar" type="file" accept="image/*" />
+                          <label class="avatar-upload__btn" th:for="${'mAvatar' + stat.index}">Ảnh</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="profile-actions">
+                    <a class="profile-btn" th:href="@{/thong-tin-doi}">Hủy</a>
+                    <button class="profile-btn" type="submit">Tạo đội</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <div th:if="${isEdit and selectedTeam != null}">
+              <div class="team-header team-header--sub">
+                <h3 class="team-subtitle">Chỉnh sửa đội</h3>
+              </div>
+              <div th:object="${teamForm}">
+                <div th:if="${#fields.hasErrors('*')}" class="auth-hint">
+                  <div th:each="e : ${#fields.errors('*')}" th:text="${e}">Lỗi</div>
+                </div>
+                <form class="profile-form" method="post" th:action="@{/thong-tin-doi/cap-nhat-doi}" enctype="multipart/form-data">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <input type="hidden" name="teamId" th:value="${selectedTeam.id}" />
+                  <input type="hidden" name="existingLogoUrl" th:value="${selectedTeam.logoUrl}" />
+
+                  <div class="profile-field">
+                    <label for="teamNameEdit">Tên đội</label>
+                    <input class="profile-input" id="teamNameEdit" th:field="*{teamName}" />
+                  </div>
+
+                  <div class="profile-field">
+                    <label for="teamLogoEdit">Logo đội (tuỳ chọn)</label>
+                    <div
+                      class="team-logo-preview"
+                      data-team-logo-preview
+                      th:if="${selectedTeam.logoUrl != null and !#strings.isEmpty(selectedTeam.logoUrl)}"
+                    >
+                      <img th:src="${selectedTeam.logoUrl}" alt="" />
+                    </div>
+                    <div
+                      class="team-logo-preview team-logo-preview--empty"
+                      data-team-logo-preview
+                      th:unless="${selectedTeam.logoUrl != null and !#strings.isEmpty(selectedTeam.logoUrl)}"
+                    ></div>
+                    <div class="avatar-upload">
+                      <input class="avatar-upload__input" id="teamLogoEdit" name="teamLogo" type="file" accept="image/*" />
+                      <div class="avatar-upload__row">
+                        <label class="avatar-upload__btn" for="teamLogoEdit">Đổi logo</label>
+                        <span class="avatar-upload__name">Tối đa 2MB</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="profile-field">
+                    <label>Thành viên (tối đa 10)</label>
+                    <div class="members-form">
+                      <div class="member-row" th:each="slot, stat : ${memberSlots}">
+                        <input class="profile-input" name="memberName" placeholder="Tên cầu thủ" th:value="${slot.name}" />
+                        <input class="profile-input" name="memberJersey" type="number" min="0" max="99" placeholder="Số áo" th:value="${slot.jerseyNumber}" />
+                        <input type="hidden" name="existingMemberAvatar" th:value="${slot.avatarUrl}" />
+                        <div class="member-upload">
+                          <div class="member-thumb" data-member-preview th:if="${slot.avatarUrl != null and !#strings.isEmpty(slot.avatarUrl)}">
+                            <img th:src="${slot.avatarUrl}" alt="" />
+                          </div>
+                          <div class="member-thumb" data-member-preview style="display:none" th:unless="${slot.avatarUrl != null and !#strings.isEmpty(slot.avatarUrl)}"></div>
+                          <input class="avatar-upload__input" th:id="${'eAvatar' + stat.index}" name="memberAvatar" type="file" accept="image/*" />
+                          <label class="avatar-upload__btn" th:for="${'eAvatar' + stat.index}">Ảnh</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="profile-actions">
+                    <a class="profile-btn" th:href="@{/thong-tin-doi(teamId=${selectedTeam.id})}">Hủy</a>
+                    <button class="profile-btn" type="submit">Lưu thay đổi</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <div th:if="${!isCreate and !isEdit and selectedTeam != null}">
+              <div class="team-header team-header--sub">
+                <h3 class="team-subtitle" th:text="${selectedTeam.name}">Đội</h3>
+                <a class="profile-btn" th:href="@{/thong-tin-doi(teamId=${selectedTeam.id}, edit=1)}">Chỉnh sửa</a>
+              </div>
+              <div
+                class="team-detail"
+                data-team-detail
+                th:attr="data-active-tab=${activeTeamTab != null and !#strings.isEmpty(activeTeamTab) ? activeTeamTab : 'info'}"
+              >
+                <div class="team-tabs" role="tablist" aria-label="Chi tiết đội">
+                  <button class="team-tab" type="button" data-tab="info">Thông tin</button>
+                  <button class="team-tab" type="button" data-tab="schedule">Lịch đấu</button>
+                  <button class="team-tab" type="button" data-tab="results">Kết quả</button>
+                  <button class="team-tab" type="button" data-tab="analysis">Phân tích</button>
+                </div>
+
+                <section class="team-panel" data-panel="info">
+                  <div class="team-overview">
+                    <div class="team-overview__logo">
+                      <img
+                        th:if="${selectedTeam.logoUrl != null and !#strings.isEmpty(selectedTeam.logoUrl)}"
+                        th:src="${selectedTeam.logoUrl}"
+                        alt=""
+                      />
+                      <img
+                        th:unless="${selectedTeam.logoUrl != null and !#strings.isEmpty(selectedTeam.logoUrl)}"
+                        th:src="@{/assets/figma/home-hero.png}"
+                        alt=""
+                      />
+                    </div>
+                    <div class="team-overview__body">
+                      <div class="team-overview__name" th:text="${selectedTeam.name}">---</div>
+                      <div class="team-overview__metaGrid">
+                        <div class="team-meta">
+                          <div class="team-meta__label">Ngày tạo</div>
+                          <div class="team-meta__value" th:text="${#temporals.format(selectedTeam.createdAt, 'dd/MM/yyyy HH:mm')}">---</div>
+                        </div>
+                        <div class="team-meta">
+                          <div class="team-meta__label">Trưởng đội</div>
+                          <div class="team-meta__value" th:text="${user.fullName}">---</div>
+                        </div>
+                        <div class="team-meta">
+                          <div class="team-meta__label">Thành viên</div>
+                          <div class="team-meta__value">
+                            <span th:text="${members != null ? #lists.size(members) : 0}">0</span>/10
+                          </div>
+                        </div>
+                        <div class="team-meta">
+                          <div class="team-meta__label">Giải tham gia</div>
+                          <div class="team-meta__value" th:text="${tournamentOptions != null ? #lists.size(tournamentOptions) : 0}">0</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <h4 class="team-section-title">Danh sách thành viên</h4>
+                  <div class="team-roster">
+                    <div class="roster-card" th:each="m : ${members}">
+                      <div class="roster-avatar">
+                        <img
+                          th:if="${m.avatarUrl != null and !#strings.isEmpty(m.avatarUrl)}"
+                          th:src="${m.avatarUrl}"
+                          alt=""
+                        />
+                        <img
+                          th:unless="${m.avatarUrl != null and !#strings.isEmpty(m.avatarUrl)}"
+                          th:src="@{/assets/figma/avatar.jpg}"
+                          alt=""
+                        />
+                      </div>
+                      <div class="roster-body">
+                        <div class="roster-name" th:text="${m.fullName}">---</div>
+                        <div class="roster-meta">
+                          Số áo:
+                          <span th:text="${m.jerseyNumber}">-</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="history-item" th:if="${members == null or #lists.isEmpty(members)}">
+                      <p class="title">Chưa có thành viên</p>
+                      <p class="meta">Bạn có thể tạo đội mới với danh sách thành viên.</p>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="team-panel" data-panel="schedule">
+                  <div class="history-item" th:if="${!hasTeamRegistrations}">
+                    <p class="title">Chưa có lịch đấu</p>
+                    <p class="meta">Lịch đấu sẽ hiển thị khi đội đã đăng ký và được duyệt tham gia giải đấu.</p>
+                  </div>
+
+                  <div th:if="${hasTeamRegistrations}">
+                    <div class="table-wrap team-tableWrap" role="region" aria-label="Lịch đấu" tabindex="0">
+                      <table class="team-table">
+                        <thead>
+                          <tr>
+                            <th>Ngày</th>
+                            <th>Giờ</th>
+                            <th>Giải</th>
+                            <th>Đối thủ</th>
+                            <th>Vòng</th>
+                            <th>Trạng thái</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr th:each="r : ${scheduleRows}">
+                            <td th:text="${r.date}">--/--/----</td>
+                            <td th:text="${r.time}">--:--</td>
+                            <td th:text="${r.tournamentName}">---</td>
+                            <td th:text="${r.opponentName}">---</td>
+                            <td th:text="${r.round}">---</td>
+                            <td>
+                              <span
+                                class="badge"
+                                th:classappend="${r.status == 'Sắp diễn ra'} ? 'badge--upcoming' : (${r.status == 'Đang diễn ra'} ? 'badge--live' : 'badge--finished')"
+                                th:text="${r.status}"
+                              >---</span>
+                            </td>
+                          </tr>
+                          <tr th:if="${scheduleRows == null or #lists.isEmpty(scheduleRows)}">
+                            <td colspan="6" class="team-table__empty">Chưa có trận nào.</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="team-panel" data-panel="results">
+                  <div class="history-item" th:if="${!hasTeamRegistrations}">
+                    <p class="title">Chưa có kết quả</p>
+                    <p class="meta">Kết quả sẽ hiển thị khi đội đã thi đấu trong giải đấu.</p>
+                  </div>
+
+                  <div th:if="${hasTeamRegistrations}">
+                    <div class="table-wrap team-tableWrap" role="region" aria-label="Kết quả thi đấu" tabindex="0">
+                      <table class="team-table">
+                        <thead>
+                          <tr>
+                            <th>Ngày</th>
+                            <th>Giải</th>
+                            <th>Đối thủ</th>
+                            <th>Tỷ số</th>
+                            <th>Vòng</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr th:each="r : ${resultRows}">
+                            <td th:text="${r.date}">--/--/----</td>
+                            <td th:text="${r.tournamentName}">---</td>
+                            <td th:text="${r.opponentName}">---</td>
+                            <td class="team-score" th:text="${r.score}">-</td>
+                            <td th:text="${r.round}">---</td>
+                          </tr>
+                          <tr th:if="${resultRows == null or #lists.isEmpty(resultRows)}">
+                            <td colspan="5" class="team-table__empty">Chưa có trận nào.</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div class="team-split">
+                      <section class="team-panelCard">
+                        <div class="team-panelCard__title">Kết quả gần đây</div>
+                        <div class="results-list">
+                          <div class="result-item" th:each="r : ${recentResults}">
+                            <div class="result-item__top">
+                              <span class="result-item__date" th:text="${r.date}">--/--/----</span>
+                              <span class="result-item__tournament" th:text="${r.tournamentName}">---</span>
+                            </div>
+                            <div class="result-item__main">
+                              <span class="result-item__opponent" th:text="${r.opponentName}">---</span>
+                              <span class="result-item__score" th:text="${r.score}">-</span>
+                            </div>
+                            <div class="result-item__round" th:text="${r.round}">---</div>
+                          </div>
+                          <div class="team-panelCard__empty" th:if="${recentResults == null or #lists.isEmpty(recentResults)}">Chưa có dữ liệu.</div>
+                        </div>
+                      </section>
+
+                      <section class="team-panelCard">
+                        <div class="team-panelCard__title">Kết quả mùa giải</div>
+                        <div class="season-list">
+                          <div class="season-item" th:each="c : ${seasonCards}">
+                            <div class="season-item__name" th:text="${c.tournamentName}">---</div>
+                            <div class="season-item__badges">
+                              <span class="badge" th:classappend="${c.statusClass}" th:text="${c.statusLabel}">---</span>
+                              <span class="badge" th:classappend="${c.achievementClass}" th:text="${c.achievementLabel}">---</span>
+                            </div>
+                          </div>
+                          <div class="team-panelCard__empty" th:if="${seasonCards == null or #lists.isEmpty(seasonCards)}">Chưa có dữ liệu.</div>
+                        </div>
+                      </section>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="team-panel" data-panel="analysis">
+                  <div class="history-item" th:if="${!hasTeamRegistrations}">
+                    <p class="title">Chưa có dữ liệu phân tích</p>
+                    <p class="meta">Dữ liệu phân tích sẽ hiển thị khi đội đã thi đấu trong giải đấu.</p>
+                  </div>
+
+                  <div th:if="${hasTeamRegistrations}">
+                    <form class="team-filter" method="get" th:action="@{/thong-tin-doi}">
+                      <input type="hidden" name="teamId" th:value="${selectedTeam.id}" />
+                      <input type="hidden" name="tab" value="analysis" />
+                      <select class="profile-input" name="tournamentId">
+                        <option value="">Tất cả giải</option>
+                        <option
+                          th:each="opt : ${tournamentOptions}"
+                          th:value="${opt.id}"
+                          th:selected="${selectedTournamentId != null and selectedTournamentId == opt.id}"
+                          th:text="${opt.name}"
+                        >---</option>
+                      </select>
+                      <button class="profile-btn" type="submit">Lọc</button>
+                    </form>
+
+                    <div class="analysis-grid">
+                      <section class="team-panelCard">
+                        <div class="team-panelCard__title">Tỉ lệ thắng/hòa/thua</div>
+                        <div class="chart-box">
+                          <canvas id="teamWdlChart"></canvas>
+                        </div>
+                        <div class="analysis-stats">
+                          <div class="analysis-stat">
+                            <span class="analysis-stat__label">Thắng</span>
+                            <span class="analysis-stat__value" th:text="${analysisWin}">0</span>
+                          </div>
+                          <div class="analysis-stat">
+                            <span class="analysis-stat__label">Hòa</span>
+                            <span class="analysis-stat__value" th:text="${analysisDraw}">0</span>
+                          </div>
+                          <div class="analysis-stat">
+                            <span class="analysis-stat__label">Thua</span>
+                            <span class="analysis-stat__value" th:text="${analysisLoss}">0</span>
+                          </div>
+                        </div>
+                      </section>
+
+                      <section class="team-panelCard">
+                        <div class="team-panelCard__title">Bàn thắng ghi / thủng</div>
+                        <div class="chart-box">
+                          <canvas id="teamGoalsChart"></canvas>
+                        </div>
+                      </section>
+                    </div>
+                  </div>
+                </section>
               </div>
             </div>
           </section>
@@ -97,5 +483,153 @@
       </section>
     </main>
     <footer th:replace="~{user/fragments/footer :: footer('home')}"></footer>
+    <script>
+      (() => {
+        const initTeamLogoPreview = (inputId) => {
+          const input = document.getElementById(inputId);
+          if (!input) return;
+          const field = input.closest(".profile-field");
+          if (!field) return;
+          const previewBox = field.querySelector("[data-team-logo-preview]");
+          if (!previewBox) return;
+
+          input.addEventListener("change", () => {
+            const file = input.files && input.files[0] ? input.files[0] : null;
+            if (!file) return;
+
+            const img = document.createElement("img");
+            const url = URL.createObjectURL(file);
+            img.src = url;
+            img.onload = () => URL.revokeObjectURL(url);
+
+            previewBox.innerHTML = "";
+            previewBox.classList.remove("team-logo-preview--empty");
+            previewBox.appendChild(img);
+          });
+        };
+
+        const initMemberPreviews = () => {
+          document.querySelectorAll(".member-row").forEach((row) => {
+            const input = row.querySelector("input[type='file']");
+            const holder = row.querySelector("[data-member-preview]");
+            if (!input || !holder) return;
+
+            input.addEventListener("change", () => {
+              const file = input.files && input.files[0] ? input.files[0] : null;
+              if (!file) return;
+
+              const img = document.createElement("img");
+              const url = URL.createObjectURL(file);
+              img.src = url;
+              img.onload = () => URL.revokeObjectURL(url);
+
+              holder.innerHTML = "";
+              holder.style.display = "block";
+              holder.appendChild(img);
+            });
+          });
+        };
+
+        initTeamLogoPreview("teamLogo");
+        initTeamLogoPreview("teamLogoEdit");
+        initMemberPreviews();
+      })();
+    </script>
+    <script th:if="${!isCreate and !isEdit and selectedTeam != null}" th:inline="javascript">
+      (() => {
+        const root = document.querySelector("[data-team-detail]");
+        if (!root) return;
+
+        const analysis = {
+          win: /*[[${analysisWin}]]*/ 0,
+          draw: /*[[${analysisDraw}]]*/ 0,
+          loss: /*[[${analysisLoss}]]*/ 0,
+          labels: /*[[${analysisLabels}]]*/ [],
+          goalsFor: /*[[${analysisGoalsFor}]]*/ [],
+          goalsAgainst: /*[[${analysisGoalsAgainst}]]*/ [],
+        };
+
+        const tabs = Array.from(root.querySelectorAll("[data-tab]"));
+        const panels = Array.from(root.querySelectorAll("[data-panel]"));
+
+        let chartsReady = false;
+        const initCharts = () => {
+          if (chartsReady) return;
+          if (!window.Chart) return;
+
+          const wdlEl = document.getElementById("teamWdlChart");
+          const goalsEl = document.getElementById("teamGoalsChart");
+          if (!wdlEl || !goalsEl) return;
+
+          const ex1 = Chart.getChart(wdlEl);
+          if (ex1) ex1.destroy();
+          const ex2 = Chart.getChart(goalsEl);
+          if (ex2) ex2.destroy();
+
+          new Chart(wdlEl.getContext("2d"), {
+            type: "doughnut",
+            data: {
+              labels: ["Thắng", "Hòa", "Thua"],
+              datasets: [
+                {
+                  data: [analysis.win, analysis.draw, analysis.loss],
+                  backgroundColor: ["#2c9e49", "#ffb000", "#da291c"],
+                  borderWidth: 2,
+                  borderColor: "#ffffff",
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { position: "bottom", labels: { usePointStyle: true, padding: 14 } },
+              },
+              cutout: "65%",
+            },
+          });
+
+          new Chart(goalsEl.getContext("2d"), {
+            type: "bar",
+            data: {
+              labels: analysis.labels,
+              datasets: [
+                { label: "Ghi bàn", data: analysis.goalsFor, backgroundColor: "rgba(255, 170, 23, 0.9)", borderRadius: 8 },
+                { label: "Thủng lưới", data: analysis.goalsAgainst, backgroundColor: "rgba(17, 24, 39, 0.2)", borderRadius: 8 },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { position: "bottom", labels: { usePointStyle: true } } },
+              scales: {
+                y: { beginAtZero: true, grid: { color: "rgba(17, 24, 39, 0.08)" } },
+                x: { grid: { display: false } },
+              },
+            },
+          });
+
+          chartsReady = true;
+        };
+
+        const activate = (name) => {
+          const target = (name || "info").toString();
+          let has = false;
+          tabs.forEach((btn) => {
+            const isActive = btn.getAttribute("data-tab") === target;
+            btn.classList.toggle("is-active", isActive);
+            if (isActive) has = true;
+          });
+          const finalName = has ? target : "info";
+          tabs.forEach((btn) => btn.classList.toggle("is-active", btn.getAttribute("data-tab") === finalName));
+          panels.forEach((p) => p.classList.toggle("is-active", p.getAttribute("data-panel") === finalName));
+          if (finalName === "analysis") initCharts();
+        };
+
+        const initial = root.getAttribute("data-active-tab");
+        activate(initial);
+        tabs.forEach((btn) => btn.addEventListener("click", () => activate(btn.getAttribute("data-tab"))));
+      })();
+    </script>
   </body>
 </html>

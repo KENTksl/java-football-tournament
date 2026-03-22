@@ -106,5 +106,13 @@ public class TournamentRegistration {
 	public void setStatus(RegistrationStatus status) {
 		this.status = status;
 	}
+
+	public Instant getCreatedAt() {
+		return createdAt;
+	}
+
+	public Instant getUpdatedAt() {
+		return updatedAt;
+	}
 }
 

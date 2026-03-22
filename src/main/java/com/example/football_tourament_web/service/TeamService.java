@@ -32,10 +32,27 @@ public class TeamService {
 		return teamRepository.findByNameIgnoreCase(name);
 	}
 
+	@Transactional(readOnly = true)
+	public Optional<Team> findCaptainTeam(Long captainUserId) {
+		return teamRepository.findFirstByCaptainId(captainUserId);
+	}
+
+	@Transactional(readOnly = true)
+	public List<Team> listByCaptain(Long captainUserId) {
+		return teamRepository.findByCaptainIdOrderByCreatedAtDesc(captainUserId);
+	}
+
+	@Transactional(readOnly = true)
+	public long countByCaptain(Long captainUserId) {
+		return teamRepository.countByCaptainId(captainUserId);
+	}
+
 	@Transactional
 	public Team save(Team team) {
 		return teamRepository.save(team);
 	}
+
+
 
 	@Transactional(readOnly = true)
 	public long countTeams() {
