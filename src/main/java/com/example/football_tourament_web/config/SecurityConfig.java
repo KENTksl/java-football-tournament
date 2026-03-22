@@ -53,6 +53,7 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationSuccessHandler successHandler)
 			throws Exception {
+		http.csrf(csrf -> csrf.ignoringRequestMatchers("/thanh-toan/momo/**", "/order/momo-*"));
 		// Bỏ qua CSRF cho toàn bộ các API quản lý giải đấu để tránh lỗi 413 khi parse multipart
 		http.csrf(csrf -> csrf
 				.ignoringRequestMatchers("/admin/manage/tournament/**")
@@ -75,7 +76,9 @@ public class SecurityConfig {
 						"/dang-nhap.html",
 						"/dang-ky",
 						"/dang-ky.html",
-						"/api/geocode"
+						"/api/geocode",
+						"/thanh-toan/momo/**",
+						"/order/momo-*"
 				).permitAll()
 				.requestMatchers("/admin/**").hasRole("ADMIN")
 				.requestMatchers(

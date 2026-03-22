@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
 import java.util.ArrayList;
+import java.util.Map;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.http.HttpStatus;
@@ -42,6 +43,7 @@ import com.example.football_tourament_web.model.enums.TournamentStatus;
 import com.example.football_tourament_web.repository.MatchRepository;
 import com.example.football_tourament_web.repository.PlayerRepository;
 import com.example.football_tourament_web.service.CbsSportsNewsService;
+import com.example.football_tourament_web.service.MomoPaymentService;
 import com.example.football_tourament_web.service.TeamService;
 import com.example.football_tourament_web.service.TournamentRegistrationService;
 import com.example.football_tourament_web.service.TransactionService;
@@ -67,6 +69,7 @@ public class HomeController {
 	private final CbsSportsNewsService cbsSportsNewsService;
 	private final UserService userService;
 	private final TransactionService transactionService;
+	private final MomoPaymentService momoPaymentService;
 	private final TournamentRegistrationService tournamentRegistrationService;
 	private final TeamService teamService;
 	private final MatchRepository matchRepository;
@@ -80,6 +83,7 @@ public class HomeController {
 			CbsSportsNewsService cbsSportsNewsService,
 			UserService userService,
 			TransactionService transactionService,
+			MomoPaymentService momoPaymentService,
 			TournamentRegistrationService tournamentRegistrationService,
 			TeamService teamService,
 			MatchRepository matchRepository,
@@ -88,6 +92,7 @@ public class HomeController {
 		this.cbsSportsNewsService = cbsSportsNewsService;
 		this.userService = userService;
 		this.transactionService = transactionService;
+		this.momoPaymentService = momoPaymentService;
 		this.tournamentRegistrationService = tournamentRegistrationService;
 		this.teamService = teamService;
 		this.matchRepository = matchRepository;
@@ -594,12 +599,11 @@ public class HomeController {
 
 		attachCommonProfileModel(model, user);
 		var transactions = transactionService.listByUserId(user.getId()).stream()
-				.map(t -> new TransactionView(
-						t.getCode(),
-						t.getDescription(),
-						formatVnd(t.getAmount()),
+				.map(t -> new TransactionHistoryRow(
 						formatInstant(t.getCreatedAt()),
-						t.getStatus().name()
+						formatVnd(t.getAmount()),
+						transactionStatusLabel(t.getStatus()),
+						transactionStatusClass(t.getStatus())
 				))
 				.collect(Collectors.toList());
 		model.addAttribute("transactions", transactions);
@@ -614,9 +618,39 @@ public class HomeController {
 		}
 
 		attachCommonProfileModel(model, user);
+		model.addAttribute("paymentHasResult", false);
+		model.addAttribute("paymentSuccess", false);
 		if (!model.containsAttribute("paymentForm")) {
 			model.addAttribute("paymentForm", new PaymentForm());
 		}
+		return "user/profile/payment";
+	}
+
+	@GetMapping("/thanh-toan/ket-qua")
+	public String paymentResult(@RequestParam(name = "code", required = false) String code, Model model, Authentication authentication) {
+		var user = requireCurrentUser(authentication);
+		if (user == null) {
+			return "redirect:/dang-nhap";
+		}
+
+		if (code == null || code.isBlank()) {
+			return "redirect:/thanh-toan";
+		}
+
+		Transaction tx = transactionService.findByCode(code.trim()).orElse(null);
+		if (tx == null || tx.getUser() == null || !user.getId().equals(tx.getUser().getId())) {
+			return "redirect:/thanh-toan";
+		}
+
+		attachCommonProfileModel(model, user);
+		model.addAttribute("paymentHasResult", true);
+		model.addAttribute("paymentSuccess", tx.getStatus() == TransactionStatus.SUCCESS);
+		model.addAttribute("paymentResultAmount", formatVnd(tx.getAmount()));
+		model.addAttribute("paymentResultStatusLabel", transactionStatusLabel(tx.getStatus()));
+		model.addAttribute("paymentResultStatusClass", transactionStatusClass(tx.getStatus()));
+		model.addAttribute("paymentResultIconClass", paymentResultIconClass(tx.getStatus()));
+		model.addAttribute("paymentResultIconChar", paymentResultIconChar(tx.getStatus()));
+		model.addAttribute("paymentResultTitle", paymentResultTitle(tx.getStatus()));
 		return "user/profile/payment";
 	}
 
@@ -627,30 +661,132 @@ public class HomeController {
 			return "redirect:/dang-nhap";
 		}
 
+		Integer option = paymentForm.amountOption;
+		List<Integer> allowed = List.of(10, 20, 50, 100);
+		if (option == null || !allowed.contains(option)) {
+			bindingResult.rejectValue("amountOption", "amountOption.invalid", "Vui lòng chọn số tiền 10k/20k/50k/100k");
+		}
+
 		if (bindingResult.hasErrors()) {
 			attachCommonProfileModel(model, user);
+			model.addAttribute("paymentHasResult", false);
+			model.addAttribute("paymentSuccess", false);
 			model.addAttribute("paymentForm", paymentForm);
 			return "user/profile/payment";
 		}
 
-		String code = paymentForm.orderCode == null || paymentForm.orderCode.isBlank()
-				? "TXN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase(Locale.ROOT)
-				: paymentForm.orderCode.trim();
-
-		BigDecimal amount = paymentForm.amount == null ? BigDecimal.ZERO : paymentForm.amount;
-		if (amount.compareTo(BigDecimal.ZERO) < 0) {
-			amount = BigDecimal.ZERO;
-		}
-
-		String desc = paymentForm.description == null || paymentForm.description.isBlank()
-				? "Thanh toán"
-				: paymentForm.description.trim();
+		String code = "TXN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase(Locale.ROOT);
+		BigDecimal amount = BigDecimal.valueOf(option.longValue()).multiply(BigDecimal.valueOf(1000));
+		String desc = "Nạp tiền MoMo";
 
 		Transaction tx = new Transaction(code, desc, amount, user);
-		tx.setStatus(TransactionStatus.SUCCESS);
+		tx.setStatus(TransactionStatus.PENDING);
 		transactionService.save(tx);
 
-		return "redirect:/lich-su-giao-dich";
+		try {
+			String orderInfo = desc + " - " + (user.getFullName() == null ? user.getEmail() : user.getFullName());
+			var momoRes = momoPaymentService.createPayment(code, orderInfo, amount.longValue());
+			if (momoRes != null && momoRes.errorCode != null && momoRes.errorCode == 0 && momoRes.payUrl != null && !momoRes.payUrl.isBlank()) {
+				return "redirect:" + momoRes.payUrl;
+			}
+			tx.setStatus(TransactionStatus.FAILED);
+			transactionService.save(tx);
+			return "redirect:/thanh-toan/ket-qua?code=" + code;
+		} catch (Exception ex) {
+			tx.setStatus(TransactionStatus.FAILED);
+			transactionService.save(tx);
+			return "redirect:/thanh-toan/ket-qua?code=" + code;
+		}
+	}
+
+	@GetMapping({"/thanh-toan/momo/callback", "/order/momo-return"})
+	public String momoCallback(
+			@RequestParam(name = "orderId", required = false) String orderId,
+			@RequestParam(name = "requestId", required = false) String requestId,
+			@RequestParam(name = "errorCode", required = false) String errorCode,
+			@RequestParam(name = "resultCode", required = false) String resultCode
+	) {
+		String resolvedOrderId = orderId;
+		if ((resolvedOrderId == null || resolvedOrderId.isBlank()) && requestId != null && !requestId.isBlank()) {
+			resolvedOrderId = requestId;
+		}
+
+		if (resolvedOrderId == null || resolvedOrderId.isBlank()) {
+			return "redirect:/thanh-toan";
+		}
+
+		Transaction tx = transactionService.findByCode(resolvedOrderId.trim()).orElse(null);
+		if (tx != null) {
+			Integer ec = parseIntOrNull(errorCode);
+			Integer rc = parseIntOrNull(resultCode);
+			boolean ok = (ec != null && ec == 0) || (rc != null && rc == 0);
+			tx.setStatus(ok ? TransactionStatus.SUCCESS : TransactionStatus.FAILED);
+			transactionService.save(tx);
+		}
+
+		return "redirect:/thanh-toan/ket-qua?code=" + resolvedOrderId.trim();
+	}
+
+	@PostMapping({"/thanh-toan/momo/notify", "/order/momo-notify"})
+	@ResponseBody
+	public ResponseEntity<String> momoNotify(
+			@org.springframework.web.bind.annotation.RequestBody(required = false) Map<String, Object> body,
+			@RequestParam(name = "orderId", required = false) String orderIdParam,
+			@RequestParam(name = "requestId", required = false) String requestIdParam,
+			@RequestParam(name = "errorCode", required = false) String errorCodeParam,
+			@RequestParam(name = "resultCode", required = false) String resultCodeParam
+	) {
+		String orderId = orderIdParam;
+		String requestId = requestIdParam;
+		String errorCode = errorCodeParam;
+		String resultCode = resultCodeParam;
+
+		if (body != null) {
+			Object oid = body.get("orderId");
+			Object rid = body.get("requestId");
+			Object ec = body.get("errorCode");
+			Object rc = body.get("resultCode");
+			if (orderId == null && oid != null) {
+				orderId = oid.toString();
+			}
+			if (requestId == null && rid != null) {
+				requestId = rid.toString();
+			}
+			if (errorCode == null && ec != null) {
+				errorCode = ec.toString();
+			}
+			if (resultCode == null && rc != null) {
+				resultCode = rc.toString();
+			}
+		}
+
+		String resolvedOrderId = orderId;
+		if ((resolvedOrderId == null || resolvedOrderId.isBlank()) && requestId != null && !requestId.isBlank()) {
+			resolvedOrderId = requestId;
+		}
+
+		if (resolvedOrderId != null && !resolvedOrderId.isBlank()) {
+			Transaction tx = transactionService.findByCode(resolvedOrderId.trim()).orElse(null);
+			if (tx != null) {
+				Integer ec = parseIntOrNull(errorCode);
+				Integer rc = parseIntOrNull(resultCode);
+				boolean ok = (ec != null && ec == 0) || (rc != null && rc == 0);
+				tx.setStatus(ok ? TransactionStatus.SUCCESS : TransactionStatus.FAILED);
+				transactionService.save(tx);
+			}
+		}
+		return ResponseEntity.status(HttpStatus.OK).body("OK");
+	}
+
+	private static Integer parseIntOrNull(String value) {
+		if (value == null) {
+			return null;
+		}
+		try {
+			return Integer.parseInt(value.trim());
+		} catch (Exception ex) {
+			return null;
+		}
 	}
 
 	private record GeocodeResult(double lat, double lon, String displayName) {
@@ -815,45 +951,14 @@ public class HomeController {
 	}
 
 	public static class PaymentForm {
-		private String orderCode;
+		private Integer amountOption;
 
-		@NotBlank(message = "Vui lòng nhập mô tả")
-		private String description;
-
-		private BigDecimal amount;
-
-		private String method;
-
-		public String getOrderCode() {
-			return orderCode;
+		public Integer getAmountOption() {
+			return amountOption;
 		}
 
-		public void setOrderCode(String orderCode) {
-			this.orderCode = orderCode;
-		}
-
-		public String getDescription() {
-			return description;
-		}
-
-		public void setDescription(String description) {
-			this.description = description;
-		}
-
-		public BigDecimal getAmount() {
-			return amount;
-		}
-
-		public void setAmount(BigDecimal amount) {
-			this.amount = amount;
-		}
-
-		public String getMethod() {
-			return method;
-		}
-
-		public void setMethod(String method) {
-			this.method = method;
+		public void setAmountOption(Integer amountOption) {
+			this.amountOption = amountOption;
 		}
 	}
 
@@ -870,7 +975,7 @@ public class HomeController {
 		}
 	}
 
-	private record TransactionView(String code, String description, String amount, String time, String status) {
+	private record TransactionHistoryRow(String time, String amount, String statusLabel, String statusClass) {
 	}
 
 	private record RegistrationView(String tournamentName, String teamName, String date, String status) {
@@ -1113,6 +1218,57 @@ public class HomeController {
 			case LIVE -> "badge--live";
 			case FINISHED -> "badge--finished";
 		};
+	}
+
+	private static String transactionStatusLabel(TransactionStatus status) {
+		if (status == null) {
+			return "";
+		}
+		return switch (status) {
+			case PENDING -> "Đang chờ thanh toán";
+			case SUCCESS -> "Thành công";
+			case FAILED -> "Thất bại";
+		};
+	}
+
+	private static String transactionStatusClass(TransactionStatus status) {
+		if (status == null) {
+			return "badge--muted";
+		}
+		return switch (status) {
+			case PENDING -> "badge--pending";
+			case SUCCESS -> "badge--success";
+			case FAILED -> "badge--failed";
+		};
+	}
+
+	private static String paymentResultIconClass(TransactionStatus status) {
+		if (status == null) {
+			return "pay-result__icon--pending";
+		}
+		return switch (status) {
+			case SUCCESS -> "pay-result__icon--success";
+			case FAILED -> "pay-result__icon--failed";
+			case PENDING -> "pay-result__icon--pending";
+		};
+	}
+
+	private static String paymentResultIconChar(TransactionStatus status) {
+		if (status == null) {
+			return "…";
+		}
+		return switch (status) {
+			case SUCCESS -> "✓";
+			case FAILED -> "!";
+			case PENDING -> "…";
+		};
+	}
+
+	private static String paymentResultTitle(TransactionStatus status) {
+		if (status == TransactionStatus.SUCCESS) {
+			return "Cảm ơn bạn đã thanh toán!";
+		}
+		return "Trạng thái thanh toán";
 	}
 
 	private static String opponentName(Long teamId, Match m) {

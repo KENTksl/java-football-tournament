@@ -58,29 +58,33 @@
                 <img class="icon" th:src="@{/assets/figma/icon-phone.svg}" alt="" />
                 <span>Lịch Sử Giao Dịch</span>
               </a>
-              <a th:href="@{/thanh-toan}">
-                <img class="icon" th:src="@{/assets/figma/icon-mail.svg}" alt="" />
-                <span>Thanh Toán</span>
-              </a>
             </nav>
           </aside>
 
           <section class="profile-card" aria-label="Lịch sử giao dịch">
             <h2>Lịch Sử Giao Dịch</h2>
-            <div class="history-grid">
-              <div class="history-item" th:each="t : ${transactions}">
-                <p class="title" th:text="${t.description}">Giao dịch</p>
-                <p class="meta">
-                  Mã: <span th:text="${t.code}">---</span> •
-                  Số tiền: <span th:text="${t.amount}">---</span> •
-                  Thời gian: <span th:text="${t.time}">---</span> •
-                  Trạng thái: <span th:text="${t.status}">---</span>
-                </p>
-              </div>
-              <div class="history-item" th:if="${transactions == null or #lists.isEmpty(transactions)}">
-                <p class="title">Chưa có dữ liệu</p>
-                <p class="meta">Lịch sử giao dịch sẽ hiển thị tại đây.</p>
-              </div>
+            <div class="table-wrap team-tableWrap" role="region" aria-label="Bảng lịch sử giao dịch" tabindex="0">
+              <table class="team-table">
+                <thead>
+                  <tr>
+                    <th>Thời gian</th>
+                    <th>Số tiền</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="t : ${transactions}">
+                    <td th:text="${t.time}">--/--/----</td>
+                    <td th:text="${t.amount}">0đ</td>
+                    <td>
+                      <span class="badge" th:classappend="${t.statusClass}" th:text="${t.statusLabel}">---</span>
+                    </td>
+                  </tr>
+                  <tr th:if="${transactions == null or #lists.isEmpty(transactions)}">
+                    <td colspan="3" class="team-table__empty">Chưa có dữ liệu.</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </section>
         </div>

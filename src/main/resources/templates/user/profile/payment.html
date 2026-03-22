@@ -58,65 +58,153 @@
                 <img class="icon" th:src="@{/assets/figma/icon-phone.svg}" alt="" />
                 <span>Lịch Sử Giao Dịch</span>
               </a>
-              <a th:href="@{/thanh-toan}" aria-current="page">
-                <img class="icon" th:src="@{/assets/figma/icon-mail.svg}" alt="" />
-                <span>Thanh Toán</span>
-              </a>
             </nav>
           </aside>
 
           <section class="profile-card" aria-label="Thanh toán">
-            <h2>Thanh Toán</h2>
-            <div class="profile-form">
-              <div class="profile-field">
-                <label>Thông tin đơn</label>
-                <div class="history-item" th:object="${paymentForm}">
-                  <p class="title">
-                    <span th:text="*{description}">Thanh toán</span>
+            <h2>Nạp tiền</h2>
+
+            <div class="history-item" th:if="${paymentHasResult}">
+              <div class="pay-result">
+                <div
+                  class="pay-result__icon"
+                  th:classappend="${paymentResultIconClass}"
+                  th:text="${paymentResultIconChar}"
+                  aria-hidden="true"
+                >
+                  ✓
+                </div>
+                <div>
+                  <p class="title" th:text="${paymentResultTitle}">
+                    Trạng thái thanh toán
                   </p>
                   <p class="meta">
-                    Mã đơn: <span th:text="*{orderCode}">---</span> •
-                    Số tiền: <span th:text="*{amount}">---</span>
+                    Số tiền:
+                    <strong th:text="${paymentResultAmount}">0đ</strong>
+                    • Trạng thái:
+                    <strong th:text="${paymentResultStatusLabel}">Thành công</strong>
                   </p>
                 </div>
               </div>
+              <div class="profile-actions" style="justify-content:flex-start;">
+                <a class="profile-btn" th:href="@{/lich-su-giao-dich}">Xem lịch sử giao dịch</a>
+                <a class="profile-btn" th:href="@{/thanh-toan}">Nạp thêm</a>
+              </div>
+            </div>
 
-              <div th:object="${paymentForm}">
+            <div th:unless="${paymentHasResult}" th:object="${paymentForm}">
+              <div class="pay-grid">
+                <section class="pay-card" aria-label="Phương thức">
+                  <div class="pay-card__title">Phương thức thanh toán</div>
+                  <div class="pay-method">
+                    <div class="pay-method__logo">
+                      <img src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-MoMo-Square-1024x1024.png" alt="MoMo" />
+                    </div>
+                    <div class="pay-method__meta">
+                      <div class="pay-method__name">Ví MoMo</div>
+                      <div class="pay-method__desc">Thanh toán nhanh, an toàn</div>
+                    </div>
+                    <span class="pay-pill">MoMo</span>
+                  </div>
+                </section>
+              </div>
+
               <div th:if="${#fields.hasErrors('*')}" class="auth-hint">
                 <div th:each="e : ${#fields.errors('*')}" th:text="${e}">Lỗi</div>
               </div>
+
               <form class="profile-form" method="post" th:action="@{/thanh-toan}">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                <div class="profile-field">
-                  <label for="orderCode">Mã đơn</label>
-                  <input class="profile-input" id="orderCode" th:field="*{orderCode}" placeholder="Nhập mã đơn" />
+
+                <div class="pay-grid">
+                  <section class="pay-card" aria-label="Chọn số tiền">
+                    <div class="pay-card__title">Chọn số tiền</div>
+                    <div class="pay-options" data-pay-options>
+                      <label class="pay-option" data-pay-option>
+                        <input type="radio" th:field="*{amountOption}" value="10" required />
+                        <span class="pay-option__card">
+                          <span class="pay-option__amount">10.000đ</span>
+                          <span class="pay-option__sub">Nạp nhanh</span>
+                        </span>
+                      </label>
+                      <label class="pay-option" data-pay-option>
+                        <input type="radio" th:field="*{amountOption}" value="20" />
+                        <span class="pay-option__card">
+                          <span class="pay-option__amount">20.000đ</span>
+                          <span class="pay-option__sub">Phổ biến</span>
+                        </span>
+                      </label>
+                      <label class="pay-option" data-pay-option>
+                        <input type="radio" th:field="*{amountOption}" value="50" />
+                        <span class="pay-option__card">
+                          <span class="pay-option__amount">50.000đ</span>
+                          <span class="pay-option__sub">Tiết kiệm</span>
+                        </span>
+                      </label>
+                      <label class="pay-option" data-pay-option>
+                        <input type="radio" th:field="*{amountOption}" value="100" />
+                        <span class="pay-option__card">
+                          <span class="pay-option__amount">100.000đ</span>
+                          <span class="pay-option__sub">Giá trị</span>
+                        </span>
+                      </label>
+                    </div>
+                  </section>
+
+                  <section class="pay-card" aria-label="Tóm tắt">
+                    <div class="pay-card__title">Tóm tắt</div>
+                    <div class="pay-summary">
+                      <div class="pay-summary__row">
+                        <span class="pay-summary__label">Số tiền nạp</span>
+                        <strong class="pay-summary__value" data-pay-summary>—</strong>
+                      </div>
+                      <div class="pay-summary__row">
+                        <span class="pay-summary__label">Phí</span>
+                        <strong class="pay-summary__value">0đ</strong>
+                      </div>
+                      <div class="pay-summary__divider"></div>
+                      <div class="pay-summary__row pay-summary__row--total">
+                        <span class="pay-summary__label">Tổng thanh toán</span>
+                        <strong class="pay-summary__value" data-pay-total>—</strong>
+                      </div>
+                    </div>
+                    <div class="profile-actions" style="justify-content:flex-start;">
+                      <button class="profile-btn" type="submit">Thanh toán MoMo</button>
+                    </div>
+                  </section>
                 </div>
-                <div class="profile-field">
-                  <label for="description">Mô tả</label>
-                  <input class="profile-input" id="description" th:field="*{description}" placeholder="Nhập mô tả" />
-                </div>
-                <div class="profile-field">
-                  <label for="amount">Số tiền</label>
-                  <input class="profile-input" id="amount" th:field="*{amount}" placeholder="Nhập số tiền" />
-                </div>
-                <div class="profile-field">
-                  <label for="method">Phương thức</label>
-                  <select class="profile-input" id="method" th:field="*{method}">
-                    <option value="bank">Chuyển khoản</option>
-                    <option value="momo">Ví MoMo</option>
-                    <option value="vnpay">VNPay</option>
-                  </select>
-                </div>
-                <div class="profile-actions">
-                  <button class="profile-btn" type="submit">Xác Nhận</button>
-                </div>
+
               </form>
-              </div>
             </div>
           </section>
         </div>
       </section>
     </main>
     <footer th:replace="~{user/fragments/footer :: footer('home')}"></footer>
+    <script>
+      (() => {
+        const options = document.querySelector("[data-pay-options]");
+        if (!options) return;
+        const summaryEl = document.querySelector("[data-pay-summary]");
+        const totalEl = document.querySelector("[data-pay-total]");
+
+        const format = (k) => {
+          const n = Number(k);
+          if (!Number.isFinite(n)) return "—";
+          return `${n}.000đ`;
+        };
+
+        const update = () => {
+          const checked = options.querySelector("input[type='radio']:checked");
+          const val = checked ? checked.value : null;
+          const text = val ? format(val) : "—";
+          if (summaryEl) summaryEl.textContent = text;
+          if (totalEl) totalEl.textContent = text;
+        };
+
+        options.addEventListener("change", update);
+        update();
+      })();
+    </script>
   </body>
 </html>
