@@ -1,36 +1,18 @@
 package com.example.football_tourament_web.config;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-
+import com.example.football_tourament_web.model.entity.*;
+import com.example.football_tourament_web.model.enums.*;
+import com.example.football_tourament_web.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.football_tourament_web.model.entity.AppUser;
-import com.example.football_tourament_web.model.entity.Match;
-import com.example.football_tourament_web.model.entity.Player;
-import com.example.football_tourament_web.model.entity.Team;
-import com.example.football_tourament_web.model.entity.Tournament;
-import com.example.football_tourament_web.model.entity.TournamentRegistration;
-import com.example.football_tourament_web.model.entity.Transaction;
-import com.example.football_tourament_web.model.enums.Gender;
-import com.example.football_tourament_web.model.enums.MatchStatus;
-import com.example.football_tourament_web.model.enums.RegistrationStatus;
-import com.example.football_tourament_web.model.enums.TournamentMode;
-import com.example.football_tourament_web.model.enums.TournamentStatus;
-import com.example.football_tourament_web.model.enums.TransactionStatus;
-import com.example.football_tourament_web.model.enums.UserRole;
-import com.example.football_tourament_web.repository.AppUserRepository;
-import com.example.football_tourament_web.repository.MatchRepository;
-import com.example.football_tourament_web.repository.PlayerRepository;
-import com.example.football_tourament_web.repository.TeamRepository;
-import com.example.football_tourament_web.repository.TournamentRegistrationRepository;
-import com.example.football_tourament_web.repository.TournamentRepository;
-import com.example.football_tourament_web.repository.TransactionRepository;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 public class DataSeeder implements CommandLineRunner {
@@ -107,7 +89,9 @@ public class DataSeeder implements CommandLineRunner {
 		var tournament = new Tournament("HUTECH mở rộng lần 31");
 		tournament.setOrganizer("Đỗ Thành Nhân");
 		tournament.setMode(TournamentMode.KNOCKOUT);
+		tournament.setPitchType(PitchType.PITCH_7);
 		tournament.setTeamLimit(4);
+		tournament.setImageUrl("/assets/general-overview/tournament.jpg");
 		tournament.setDescription("Giải đấu demo từ dữ liệu mẫu UI.");
 		tournament.setStatus(TournamentStatus.LIVE);
 		tournament.setStartDate(LocalDate.now().minusDays(1));

@@ -713,106 +713,159 @@
             display: flex;
         }
     </style>
+    <script>
+        // Modal functions moved to head for reliability
+        function openModal() {
+            console.log("Opening Add Modal");
+            const modal = document.getElementById('addTournamentModal');
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            } else {
+                console.error("Add modal not found");
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('addTournamentModal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function openEditModal(id, name, organizer, mode, pitchType, teams, startDate, endDate, description) {
+            console.log("Opening Edit Modal", id);
+            const modal = document.getElementById('editTournamentModal');
+            if (!modal) return;
+            
+            const form = document.getElementById('editTournamentForm');
+            if (form) {
+                form.action = '/admin/manage/tournament/edit/' + id;
+            }
+            
+            document.getElementById('editTournamentName').value = name;
+            document.getElementById('editOrganizer').value = organizer;
+            
+            const modeSelect = document.getElementById('editMode');
+            if (mode === 'GROUP_STAGE') {
+                modeSelect.value = 'Chia bảng đấu (Group Stage)';
+            } else {
+                modeSelect.value = 'Knockout';
+            }
+
+            const pitchSelect = document.getElementById('editPitchType');
+            if (pitchType === 'PITCH_5') {
+                pitchSelect.value = 'Sân 5 người';
+            } else if (pitchType === 'PITCH_11') {
+                pitchSelect.value = 'Sân 11 người';
+            } else {
+                pitchSelect.value = 'Sân 7 người';
+            }
+
+            document.getElementById('editTeams').value = teams + '/' + teams;
+            document.getElementById('editStartDate').value = startDate;
+            document.getElementById('editEndDate').value = endDate;
+            document.getElementById('editDescription').value = description;
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEditModal() {
+            const modal = document.getElementById('editTournamentModal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function handleFormSubmit(event, fileInputId) {
+            // Cho phép gửi form bình thường, Spring sẽ xử lý file trống bằng .isEmpty()
+            return true;
+        }
+
+        function handleEdit(button) {
+            const id = button.getAttribute('data-id');
+            const name = button.getAttribute('data-name');
+            const organizer = button.getAttribute('data-organizer');
+            const mode = button.getAttribute('data-mode');
+            const pitchType = button.getAttribute('data-pitch');
+            const teams = button.getAttribute('data-teams');
+            const startDate = button.getAttribute('data-start');
+            const endDate = button.getAttribute('data-end');
+            const description = button.getAttribute('data-desc');
+            
+            openEditModal(id, name, organizer, mode, pitchType, teams, startDate, endDate, description);
+        }
+
+        window.onclick = function(event) {
+            const addModal = document.getElementById('addTournamentModal');
+            const editModal = document.getElementById('editTournamentModal');
+            
+            if (event.target == addModal) {
+                closeModal();
+            } else if (event.target == editModal) {
+                closeEditModal();
+            }
+        }
+    </script>
 </head>
 
 <body>
-    <!-- Modal for Adding Tournament -->
-    <div id="addTournamentModal" class="modal-overlay">
-        <!-- Content will be loaded or embedded here -->
-        <div th:insert="~{admin/manage/add-tournament}"></div>
-    </div>
 
-    <!-- Modal for Editing Tournament -->
-    <div id="editTournamentModal" class="modal-overlay">
-        <div th:insert="~{admin/manage/edit-tournament}"></div>
-    </div>
     <div class="app" th:with="activePage='manage', activeSubPage='tournament'">
     <aside th:replace="~{admin/fragments_admin/sidebar :: sidebar}"></aside>
 
     <main class="content">
         <header th:replace="~{admin/fragments_admin/header :: header (searchPlaceholder='Tìm kiếm giải đấu, mùa giải...')}"></header>
 
-            <section class="tournament-card" aria-label="Quản lý giải đấu bóng đá">
+            <section class="tournament-card">
                 <div class="tournament-card__header">
-                    <h1 class="tournament-card__title">Quản lý Giải đấu bóng đá</h1>
-                    <button class="btn-add-tournament" onclick="openModal()">Thêm giải đấu</button>
+                    <h2 class="tournament-card__title">Quản Lý Giải Đấu</h2>
+                    <button class="btn-add-tournament" onclick="openModal()">+ Thêm giải đấu</button>
                 </div>
 
-                <div class="tableWrap" style="border: none; background: transparent;">
+                <div class="table-container">
                     <table class="tournament-table">
                         <thead>
                             <tr>
-                                <th style="width: 40px;">#</th>
-                                <th>Tên giải</th>
+                                <th>#</th>
+                                <th>Tên giải đấu</th>
                                 <th>Ban tổ chức</th>
-                                <th>Chế độ</th>
+                                <th>Hình thức</th>
                                 <th>Số đội</th>
                                 <th>Trạng thái</th>
                                 <th>Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>1</td>
-                                <td>Hutech mở rộng lần 1</td>
-                                <td>Nguyễn Nhật Hào</td>
-                                <td>Knockout</td>
-                                <td>4/4</td>
-                                <td class="status-text">completed</td>
+                            <tr th:each="t, iter : ${tournaments}">
+                                <td th:text="${iter.count}">1</td>
+                                <td th:text="${t.name}">Hutech mở rộng lần 1</td>
+                                <td th:text="${t.organizer}">Nguyễn Nhật Hào</td>
+                                <td th:text="${t.mode == T(com.example.football_tourament_web.model.enums.TournamentMode).GROUP_STAGE ? 'Chia bảng đấu (Group Stage)' : 'Knockout'}">Knockout</td>
+                                <td th:text="${t.teamLimit + '/' + t.teamLimit}">4/4</td>
+                                <td class="status-text" th:classappend="'status--' + ${#strings.toLowerCase(t.status)}" 
+                                    th:text="${t.status == T(com.example.football_tourament_web.model.enums.TournamentStatus).UPCOMING ? 'Sắp diễn ra' : (t.status == T(com.example.football_tourament_web.model.enums.TournamentStatus).LIVE ? 'Đang đá' : 'Đã kết thúc')}">completed</td>
                                 <td>
                                     <div class="action-btns">
-                                        <a th:href="@{/admin/general-information}" class="btn-act btn-act--detail">Chi tiết</a>
+                                        <a th:href="@{/admin/general-information(id=${t.id})}" class="btn-act btn-act--detail">Chi tiết</a>
 
-                                        <button class="btn-act btn-act--edit" onclick="openEditModal(this)">Sửa</button>
-                                        <button class="btn-act btn-act--delete">Xóa</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>Hutech mở rộng lần 1</td>
-                                <td>Nguyễn Nhật Hào</td>
-                                <td>Knockout</td>
-                                <td>4/4</td>
-                                <td class="status-text">completed</td>
-                                <td>
-                                    <div class="action-btns">
-                                        <a th:href="@{/admin/general-information}" class="btn-act btn-act--detail">Chi tiết</a>
-
-                                        <button class="btn-act btn-act--edit" onclick="openEditModal(this)">Sửa</button>
-                                        <button class="btn-act btn-act--delete">Xóa</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td>Hutech mở rộng lần 1</td>
-                                <td>Nguyễn Nhật Hào</td>
-                                <td>Knockout</td>
-                                <td>4/4</td>
-                                <td class="status-text">completed</td>
-                                <td>
-                                    <div class="action-btns">
-                                        <a th:href="@{/admin/general-information}" class="btn-act btn-act--detail">Chi tiết</a>
-
-                                        <button class="btn-act btn-act--edit" onclick="openEditModal(this)">Sửa</button>
-                                        <button class="btn-act btn-act--delete">Xóa</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>4</td>
-                                <td>Hutech mở rộng lần 1</td>
-                                <td>Nguyễn Nhật Hào</td>
-                                <td>Knockout</td>
-                                <td>4/4</td>
-                                <td class="status-text">completed</td>
-                                <td>
-                                    <div class="action-btns">
-                                        <a th:href="@{/admin/general-information}" class="btn-act btn-act--detail">Chi tiết</a>
-
-                                        <button class="btn-act btn-act--edit" onclick="openEditModal(this)">Sửa</button>
-                                        <button class="btn-act btn-act--delete">Xóa</button>
+                                        <button class="btn-act btn-act--edit" 
+                                                th:data-id="${t.id}"
+                                                th:data-name="${t.name}"
+                                                th:data-organizer="${t.organizer}"
+                                                th:data-mode="${t.mode}"
+                                                th:data-pitch="${t.pitchType}"
+                                                th:data-teams="${t.teamLimit}"
+                                                th:data-start="${t.startDate}"
+                                                th:data-end="${t.endDate}"
+                                                th:data-desc="${t.description}"
+                                                onclick="handleEdit(this)">Sửa</button>
+                                        <form th:action="@{/admin/manage/tournament/delete/{id}(id=${t.id})}" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa giải đấu này?')">
+                                            <button type="submit" class="btn-act btn-act--delete">Xóa</button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -825,60 +878,15 @@
         </main>
     </div>
 
-    <script>
-        // Modal for Adding Tournament
-        function openModal() {
-            document.getElementById('addTournamentModal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
+    <!-- Modals moved to bottom for better rendering reliability -->
+    <div id="addTournamentModal" class="modal-overlay">
+        <div th:replace="~{admin/manage/add-tournament}"></div>
+    </div>
 
-        function closeModal() {
-            document.getElementById('addTournamentModal').classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
+    <div id="editTournamentModal" class="modal-overlay">
+        <div th:replace="~{admin/manage/edit-tournament}"></div>
+    </div>
 
-        // Modal for Editing Tournament
-        function openEditModal(btn) {
-            const modal = document.getElementById('editTournamentModal');
-            const row = btn.closest('tr');
-            
-            // Get data from table row
-            const id = row.cells[0].innerText;
-            const name = row.cells[1].innerText;
-            const organizer = row.cells[2].innerText;
-            const mode = row.cells[3].innerText;
-            const teams = row.cells[4].innerText;
-            // For description, we might not have it in the table. 
-            // In a real app, you'd fetch it by ID or store it in data-attributes.
-            
-            // Populate form fields
-            document.getElementById('editTournamentId').value = id;
-            document.getElementById('editTournamentName').value = name;
-            document.getElementById('editOrganizer').value = organizer;
-            document.getElementById('editMode').value = mode;
-            document.getElementById('editTeams').value = teams;
-            
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeEditModal() {
-            document.getElementById('editTournamentModal').classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const addModal = document.getElementById('addTournamentModal');
-            const editModal = document.getElementById('editTournamentModal');
-            
-            if (event.target == addModal) {
-                closeModal();
-            } else if (event.target == editModal) {
-                closeEditModal();
-            }
-        }
-    </script>
 </body>
 
 </html>

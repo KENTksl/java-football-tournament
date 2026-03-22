@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.football_tourament_web.model.enums.PitchType;
 import com.example.football_tourament_web.model.enums.TournamentMode;
 import com.example.football_tourament_web.model.enums.TournamentStatus;
 
@@ -40,7 +41,12 @@ public class Tournament {
 	@Column(nullable = false)
 	private TournamentMode mode = TournamentMode.KNOCKOUT;
 
+	@Enumerated(EnumType.STRING)
+	private PitchType pitchType = PitchType.PITCH_7;
+
 	private Integer teamLimit;
+
+	private String imageUrl;
 
 	@Column(columnDefinition = "TEXT")
 	private String description;
@@ -116,12 +122,28 @@ public class Tournament {
 		this.mode = mode;
 	}
 
+	public PitchType getPitchType() {
+		return pitchType;
+	}
+
+	public void setPitchType(PitchType pitchType) {
+		this.pitchType = pitchType;
+	}
+
 	public Integer getTeamLimit() {
 		return teamLimit;
 	}
 
 	public void setTeamLimit(Integer teamLimit) {
 		this.teamLimit = teamLimit;
+	}
+
+	public String getImageUrl() {
+		return imageUrl;
+	}
+
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
 	}
 
 	public String getDescription() {

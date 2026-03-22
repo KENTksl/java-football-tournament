@@ -16,6 +16,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import com.example.football_tourament_web.model.enums.UserStatus;
 import com.example.football_tourament_web.repository.AppUserRepository;
 
+import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -52,6 +53,11 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationSuccessHandler successHandler)
 			throws Exception {
+		// Bỏ qua CSRF cho toàn bộ các API quản lý giải đấu để tránh lỗi 413 khi parse multipart
+		http.csrf(csrf -> csrf
+				.ignoringRequestMatchers("/admin/manage/tournament/**")
+		);
+
 		http.authorizeHttpRequests(auth -> auth
 				.requestMatchers(
 						"/assets/**",

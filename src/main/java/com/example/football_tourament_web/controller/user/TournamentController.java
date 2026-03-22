@@ -1,6 +1,8 @@
 package com.example.football_tourament_web.controller.user;
 
+import com.example.football_tourament_web.service.TournamentService;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -8,8 +10,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/user/tournament")
 public class TournamentController {
 
+	private final TournamentService tournamentService;
+
+	public TournamentController(TournamentService tournamentService) {
+		this.tournamentService = tournamentService;
+	}
+
 	@GetMapping({"", "/"})
-	public String tournamentList() {
+	public String tournamentList(Model model) {
+		model.addAttribute("tournaments", tournamentService.listTournaments());
 		return "user/tournament/Tournament_list";
 	}
 

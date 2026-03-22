@@ -4,9 +4,7 @@
         <button type="button" class="btn-close-box" onclick="closeEditModal()" style="position: static; border: 0; width: auto; height: auto; font-size: 22px; color: #6b7280;">×</button>
     </div>
 
-    <form id="editTournamentForm" class="tournament-form" enctype="multipart/form-data" style="padding: 16px 18px 18px;">
-        <input type="hidden" id="editTournamentId" name="id">
-
+    <form id="editTournamentForm" method="post" class="tournament-form" enctype="multipart/form-data" style="padding: 16px 18px 18px;" onsubmit="handleFormSubmit(event, 'editTournamentImage')">
         <div class="form-group" style="margin-bottom: 14px; display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center;">
             <label for="editTournamentName" style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 0; line-height: 1.2;">Tên Giải</label>
             <input type="text" id="editTournamentName" name="name" required style="width: 100%; height: 36px; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px;">
@@ -41,6 +39,16 @@
                 <option value="8/8">8 Đội</option>
                 <option value="16/16">16 Đội</option>
             </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 14px; display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center;">
+            <label for="editStartDate" style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 0; line-height: 1.2;">Ngày bắt đầu</label>
+            <input type="date" id="editStartDate" name="startDate" required style="width: 100%; height: 36px; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px;">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 14px; display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center;">
+            <label for="editEndDate" style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 0; line-height: 1.2;">Ngày kết thúc</label>
+            <input type="date" id="editEndDate" name="endDate" required style="width: 100%; height: 36px; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px;">
         </div>
 
         <div class="form-group" style="margin-bottom: 14px; display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: start;">

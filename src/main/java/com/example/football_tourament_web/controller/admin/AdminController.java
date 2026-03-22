@@ -1,6 +1,9 @@
 package com.example.football_tourament_web.controller.admin;
 
 import com.example.football_tourament_web.model.entity.AppUser;
+import com.example.football_tourament_web.model.entity.Tournament;
+import com.example.football_tourament_web.model.enums.PitchType;
+import com.example.football_tourament_web.model.enums.TournamentMode;
 import com.example.football_tourament_web.model.enums.TournamentStatus;
 import com.example.football_tourament_web.service.MatchService;
 import com.example.football_tourament_web.service.TeamService;
@@ -10,6 +13,7 @@ import com.example.football_tourament_web.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +23,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.security.Principal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -56,19 +62,22 @@ public class AdminController {
 	}
 
 	@GetMapping({"/admin/admin-profile", "/admin/profile"})
-	public String adminProfile(Model model) {
-		AppUser admin = userService.findByEmail("admin@example.com").orElse(null);
+	public String adminProfile(Model model, Principal principal) {
+		String email = principal.getName();
+		AppUser admin = userService.findByEmail(email).orElse(null);
 		model.addAttribute("admin", admin);
 		return "admin/profile/admin-profile";
 	}
 
 	@PostMapping("/admin/profile/save")
-	public String saveAdminProfile(@RequestParam("fullName") String fullName,
+	public String saveAdminProfile(Principal principal,
+								   @RequestParam("fullName") String fullName,
 								   @RequestParam("phone") String phone,
 								   @RequestParam("address") String address,
 								   @RequestParam(value = "dob", required = false) String dob,
 								   @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile) {
-		AppUser admin = userService.findByEmail("admin@example.com").orElse(null);
+		String email = principal.getName();
+		AppUser admin = userService.findByEmail(email).orElse(null);
 		if (admin != null) {
 			admin.setFullName(fullName);
 			admin.setPhone(phone);
@@ -90,7 +99,9 @@ public class AdminController {
 					try (var inputStream = avatarFile.getInputStream()) {
 						Path filePath = uploadPath.resolve(fileName);
 						Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-						admin.setAvatar("/uploads/avatars/" + fileName);
+						String avatarPath = "/uploads/avatars/" + fileName;
+						admin.setAvatar(avatarPath);
+						admin.setAvatarUrl(avatarPath);
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -102,9 +113,170 @@ public class AdminController {
 	}
 
 	@GetMapping({"/admin/manage-tournament", "/admin/manage/tournament"})
-	public String manageTournament() {
+	public String manageTournament(Model model) {
+		model.addAttribute("tournaments", tournamentService.listTournaments());
 		return "admin/manage/manage-tournament";
 	}
+
+	@PostMapping("/admin/manage/tournament/add")
+	public String addTournament(@RequestParam("name") String name,
+								@RequestParam("organizer") String organizer,
+								@RequestParam("mode") String mode,
+								@RequestParam("pitchType") String pitchType,
+								@RequestParam("teams") String teams,
+								@RequestParam("startDate") String startDate,
+								@RequestParam("endDate") String endDate,
+								@RequestParam("description") String description,
+								@RequestParam(value = "image", required = false) MultipartFile image) {
+		Tournament tournament = new Tournament();
+		tournament.setName(name);
+		tournament.setOrganizer(organizer);
+		
+		if (mode.contains("Group Stage")) {
+			tournament.setMode(TournamentMode.GROUP_STAGE);
+		} else {
+			tournament.setMode(TournamentMode.KNOCKOUT);
+		}
+
+		if (pitchType.contains("5")) {
+			tournament.setPitchType(PitchType.PITCH_5);
+		} else if (pitchType.contains("11")) {
+			tournament.setPitchType(PitchType.PITCH_11);
+		} else {
+			tournament.setPitchType(PitchType.PITCH_7);
+		}
+
+		try {
+			String teamCount = teams.split("/")[0];
+			tournament.setTeamLimit(Integer.parseInt(teamCount));
+		} catch (Exception e) {
+			tournament.setTeamLimit(4);
+		}
+
+		try {
+			if (startDate != null && !startDate.isEmpty()) {
+				tournament.setStartDate(LocalDate.parse(startDate));
+			}
+			if (endDate != null && !endDate.isEmpty()) {
+				tournament.setEndDate(LocalDate.parse(endDate));
+			}
+		} catch (Exception e) {
+			// fallback to current date or handle error
+			tournament.setStartDate(LocalDate.now());
+			tournament.setEndDate(LocalDate.now().plusMonths(1));
+		}
+
+		tournament.setDescription(description);
+		tournament.setStatus(calculateStatus(tournament.getStartDate(), tournament.getEndDate()));
+
+		if (image != null && !image.isEmpty()) {
+			tournament.setImageUrl(saveFile(image, "src/main/resources/static/uploads/tournaments/", "/uploads/tournaments/"));
+		}
+
+		tournamentService.save(tournament);
+		return "redirect:/admin/manage/tournament";
+	}
+
+	@PostMapping("/admin/manage/tournament/edit/{id}")
+	public String editTournament(@PathVariable("id") Long id,
+								 @RequestParam("name") String name,
+								 @RequestParam("organizer") String organizer,
+								 @RequestParam("mode") String mode,
+								 @RequestParam("pitchType") String pitchType,
+								 @RequestParam("teams") String teams,
+								 @RequestParam("startDate") String startDate,
+								 @RequestParam("endDate") String endDate,
+								 @RequestParam("description") String description,
+								 @RequestParam(value = "image", required = false) MultipartFile image) {
+		Tournament tournament = tournamentService.findById(id).orElse(null);
+		if (tournament != null) {
+			tournament.setName(name);
+			tournament.setOrganizer(organizer);
+			
+			if (mode.contains("Group Stage")) {
+				tournament.setMode(TournamentMode.GROUP_STAGE);
+			} else {
+				tournament.setMode(TournamentMode.KNOCKOUT);
+			}
+
+			if (pitchType.contains("5")) {
+				tournament.setPitchType(PitchType.PITCH_5);
+			} else if (pitchType.contains("11")) {
+				tournament.setPitchType(PitchType.PITCH_11);
+			} else {
+				tournament.setPitchType(PitchType.PITCH_7);
+			}
+
+			try {
+				String teamCount = teams.split("/")[0];
+				tournament.setTeamLimit(Integer.parseInt(teamCount));
+			} catch (Exception e) {
+				// keep old value or default
+			}
+
+			try {
+				if (startDate != null && !startDate.isEmpty()) {
+					tournament.setStartDate(LocalDate.parse(startDate));
+				}
+				if (endDate != null && !endDate.isEmpty()) {
+					tournament.setEndDate(LocalDate.parse(endDate));
+				}
+			} catch (Exception e) {
+				// keep old values or set defaults
+			}
+
+			tournament.setDescription(description);
+			tournament.setStatus(calculateStatus(tournament.getStartDate(), tournament.getEndDate()));
+
+			if (image != null && !image.isEmpty()) {
+				tournament.setImageUrl(saveFile(image, "src/main/resources/static/uploads/tournaments/", "/uploads/tournaments/"));
+			}
+
+			tournamentService.save(tournament);
+		}
+		return "redirect:/admin/manage/tournament";
+	}
+
+	private TournamentStatus calculateStatus(LocalDate startDate, LocalDate endDate) {
+		if (startDate == null || endDate == null) {
+			return TournamentStatus.UPCOMING;
+		}
+		LocalDate today = LocalDate.now();
+		if (today.isBefore(startDate)) {
+			return TournamentStatus.UPCOMING;
+		} else if (today.isAfter(endDate)) {
+			return TournamentStatus.FINISHED;
+		} else {
+			return TournamentStatus.LIVE;
+		}
+	}
+
+	@PostMapping("/admin/manage/tournament/delete/{id}")
+	public String deleteTournament(@PathVariable("id") Long id) {
+		tournamentService.deleteById(id);
+		return "redirect:/admin/manage/tournament";
+	}
+
+	private String saveFile(MultipartFile file, String uploadDir, String publicPath) {
+		try {
+			String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+			Path uploadPath = Paths.get(uploadDir);
+
+			if (!Files.exists(uploadPath)) {
+				Files.createDirectories(uploadPath);
+			}
+
+			try (var inputStream = file.getInputStream()) {
+				Path filePath = uploadPath.resolve(fileName);
+				Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+				return publicPath + fileName;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 
 	@GetMapping({"/admin/manage-user", "/admin/manage/user"})
 	public String manageUser() {

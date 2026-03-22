@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -28,83 +28,16 @@
         <div class="container">
             <h2 class="section__title">DANH SÁCH GIẢI ĐẤU</h2>
             <div class="tournament-grid">
-                <article class="tournament-card">
-                    <div class="tournament-card__cover"></div>
+                <article class="tournament-card" th:each="t : ${tournaments}">
+                    <div class="tournament-card__cover" th:style="'background-image: url(' + (${t.imageUrl != null} ? ${t.imageUrl} : '/assets/general-overview/tournament.jpg') + '); background-size: cover; background-position: center;'"></div>
                     <div class="tournament-card__content">
-                        <h3 class="tournament-card__title">HUTECH mở rộng lần 1</h3>
-                        <p class="tournament-card__meta">BTC: Đỗ Thành Nhân</p>
-                        <p class="tournament-card__meta">Hình thức: Knockout</p>
-                        <p class="tournament-card__meta">Số đội: 4</p>
+                        <h3 class="tournament-card__title" th:text="${t.name}">HUTECH mở rộng lần 1</h3>
+                        <p class="tournament-card__meta" th:text="'BTC: ' + ${t.organizer}">BTC: Đỗ Thành Nhân</p>
+                        <p class="tournament-card__meta" th:text="'Hình thức: ' + (${t.mode == T(com.example.football_tourament_web.model.enums.TournamentMode).GROUP_STAGE} ? 'Chia bảng đấu (Group Stage)' : 'Knockout')">Hình thức: Knockout</p>
+                        <p class="tournament-card__meta" th:text="'Số đội: ' + ${t.teamLimit}">Số đội: 4</p>
                         <div class="card-bottom">
-                            <span class="status status--live">Đang đá</span>
-                            <a href="/user/tournament/match-schedule" class="detail-btn">Xem chi tiết <span>→</span></a>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="tournament-card">
-                    <div class="tournament-card__cover"></div>
-                    <div class="tournament-card__content">
-                        <h3 class="tournament-card__title">HUTECH mở rộng lần 2</h3>
-                        <p class="tournament-card__meta">BTC: Đỗ Thành Nhân</p>
-                        <p class="tournament-card__meta">Hình thức: Knockout</p>
-                        <p class="tournament-card__meta">Số đội: 4</p>
-                        <div class="card-bottom">
-                            <span class="status status--upcoming">Sắp diễn ra</span>
-                            <a href="/user/tournament/match-schedule" class="detail-btn">Xem chi tiết <span>→</span></a>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="tournament-card">
-                    <div class="tournament-card__cover"></div>
-                    <div class="tournament-card__content">
-                        <h3 class="tournament-card__title">HUTECH mở rộng lần 3</h3>
-                        <p class="tournament-card__meta">BTC: Đỗ Thành Nhân</p>
-                        <p class="tournament-card__meta">Hình thức: Knockout</p>
-                        <p class="tournament-card__meta">Số đội: 4</p>
-                        <div class="card-bottom">
-                            <span class="status status--finished">Đã kết thúc</span>
-                            <a href="/user/tournament/match-schedule" class="detail-btn">Xem chi tiết <span>→</span></a>
-                        </div>
-                    </div>
-                </article>
-                <article class="tournament-card">
-                    <div class="tournament-card__cover"></div>
-                    <div class="tournament-card__content">
-                        <h3 class="tournament-card__title">HUTECH mở rộng lần 4</h3>
-                        <p class="tournament-card__meta">BTC: Đỗ Thành Nhân</p>
-                        <p class="tournament-card__meta">Hình thức: Knockout</p>
-                        <p class="tournament-card__meta">Số đội: 4</p>
-                        <div class="card-bottom">
-                            <span class="status status--finished">Đã kết thúc</span>
-                            <a href="/user/tournament/match-schedule" class="detail-btn">Xem chi tiết <span>→</span></a>
-                        </div>
-                    </div>
-                </article>
-                <article class="tournament-card">
-                    <div class="tournament-card__cover"></div>
-                    <div class="tournament-card__content">
-                        <h3 class="tournament-card__title">HUTECH mở rộng lần 5</h3>
-                        <p class="tournament-card__meta">BTC: Đỗ Thành Nhân</p>
-                        <p class="tournament-card__meta">Hình thức: Knockout</p>
-                        <p class="tournament-card__meta">Số đội: 4</p>
-                        <div class="card-bottom">
-                            <span class="status status--finished">Đã kết thúc</span>
-                            <a href="/user/tournament/match-schedule" class="detail-btn">Xem chi tiết <span>→</span></a>
-                        </div>
-                    </div>
-                </article>
-                <article class="tournament-card">
-                    <div class="tournament-card__cover"></div>
-                    <div class="tournament-card__content">
-                        <h3 class="tournament-card__title">HUTECH mở rộng lần 6</h3>
-                        <p class="tournament-card__meta">BTC: Đỗ Thành Nhân</p>
-                        <p class="tournament-card__meta">Hình thức: Knockout</p>
-                        <p class="tournament-card__meta">Số đội: 4</p>
-                        <div class="card-bottom">
-                            <span class="status status--finished">Đã kết thúc</span>
-                            <a href="/user/tournament/match-schedule" class="detail-btn">Xem chi tiết <span>→</span></a>
+                            <span class="status" th:classappend="'status--' + ${#strings.toLowerCase(t.status)}" th:text="${t.status == T(com.example.football_tourament_web.model.enums.TournamentStatus).UPCOMING ? 'Sắp diễn ra' : (t.status == T(com.example.football_tourament_web.model.enums.TournamentStatus).LIVE ? 'Đang đá' : 'Đã kết thúc')}">Đang đá</span>
+                            <a th:href="@{/user/tournament/match-schedule(id=${t.id})}" class="detail-btn">Xem chi tiết <span>→</span></a>
                         </div>
                     </div>
                 </article>

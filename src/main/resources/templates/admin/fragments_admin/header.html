@@ -24,9 +24,9 @@
 
         <div class="profile" aria-label="Người dùng">
             <div class="profile__avatar">
-                <img src="/assets/general-overview/top-avatar.png" alt="">
+                <img th:src="${currentUserAvatarUrl != null and !#strings.isEmpty(currentUserAvatarUrl)} ? ${currentUserAvatarUrl} : @{/assets/figma/avatar.jpg}" alt="Avatar">
             </div>
-            <div class="profile__name">Quang Minh</div>
+            <div class="profile__name" th:text="${currentUserFullName != null and !#strings.isEmpty(currentUserFullName)} ? ${currentUserFullName} : 'Admin'">Admin</div>
             <img class="profile__dropdown" src="/assets/general-overview/top-dropdown.png" alt="">
         </div>
     </div>

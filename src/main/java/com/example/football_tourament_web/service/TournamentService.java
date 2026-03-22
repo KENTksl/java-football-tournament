@@ -33,6 +33,11 @@ public class TournamentService {
 		return tournamentRepository.save(tournament);
 	}
 
+	@Transactional
+	public void deleteById(Long id) {
+		tournamentRepository.deleteById(id);
+	}
+
 	@Transactional(readOnly = true)
 	public long countTournaments() {
 		return tournamentRepository.count();

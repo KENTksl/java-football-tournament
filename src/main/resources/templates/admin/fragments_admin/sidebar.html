@@ -68,7 +68,10 @@
     </nav>
 
     <div class="sidebar__footer">
-        <a class="nav__item nav__item--large" href="/logout">
+        <form th:action="@{/dang-xuat}" method="post" id="logoutForm" style="display: none;">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        </form>
+        <a class="nav__item nav__item--large" href="javascript:void(0)" onclick="document.getElementById('logoutForm').submit();">
             <span class="nav__icon nav__icon--large">
                 <img src="/assets/general-overview/sidebar-logout.png" alt="">
             </span>
