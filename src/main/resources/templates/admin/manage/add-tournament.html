@@ -1,37 +1,59 @@
-<div class="modal-content">
-    <div class="modal-header">
-        <h2 class="modal-title">Thêm giải đấu</h2>
-        <button class="btn-close-box" onclick="closeModal()">x</button>
+<div class="modal-content" style="max-width: 420px; border-radius: 8px;">
+    <div class="modal-header" style="justify-content: space-between; padding: 14px 18px;">
+        <h2 class="modal-title" style="font-size: 18px; font-weight: 700;">Tạo Giải Đấu Mới</h2>
+        <button type="button" class="btn-close-box" onclick="closeModal()" style="position: static; border: 0; width: auto; height: auto; font-size: 22px; color: #6b7280;">×</button>
     </div>
 
-    <form id="addTournamentForm" class="tournament-form">
-        <div class="form-group">
-            <label for="tournamentName">Tên giải đấu:</label>
-            <input type="text" id="tournamentName" name="name" required>
+    <form id="addTournamentForm" class="tournament-form" enctype="multipart/form-data" style="padding: 16px 18px 18px;">
+        <div class="form-group" style="margin-bottom: 14px; display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center;">
+            <label for="tournamentName" style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 0; line-height: 1.2;">Tên Giải</label>
+            <input type="text" id="tournamentName" name="name" required style="width: 100%; height: 36px; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px;">
         </div>
 
-        <div class="form-group">
-            <label for="organizer">Ban tổ chức:</label>
-            <input type="text" id="organizer" name="organizer" required>
+        <div class="form-group" style="margin-bottom: 14px; display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center;">
+            <label for="organizer" style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 0; line-height: 1.2;">Ban Tổ Chức</label>
+            <input type="text" id="organizer" name="organizer" required style="width: 100%; height: 36px; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px;">
         </div>
 
-        <div class="form-group">
-            <label for="mode">Chế độ:</label>
-            <input type="text" id="mode" name="mode">
+        <div class="form-group" style="margin-bottom: 14px; display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center;">
+            <label for="mode" style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 0; line-height: 1.2;">Hình thức thi đấu</label>
+            <select id="mode" name="mode" style="width: 100%; height: 36px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; background: #fff;">
+                <option value="Chia bảng đấu (Group Stage)" selected>Chia bảng đấu (Group Stage)</option>
+                <option value="Knockout">Knockout</option>
+            </select>
         </div>
 
-        <div class="form-group">
-            <label for="teams">Số đội:</label>
-            <input type="text" id="teams" name="teams">
+        <div class="form-group" style="margin-bottom: 14px; display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center;">
+            <label for="pitchType" style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 0; line-height: 1.2;">Loại sân</label>
+            <select id="pitchType" name="pitchType" style="width: 100%; height: 36px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; background: #fff;">
+                <option value="Sân 7 người" selected>Sân 7 người</option>
+                <option value="Sân 5 người">Sân 5 người</option>
+                <option value="Sân 11 người">Sân 11 người</option>
+            </select>
         </div>
 
-        <div class="form-group">
-            <label for="description">Mô tả:</label>
-            <textarea id="description" name="description" rows="6"></textarea>
+        <div class="form-group" style="margin-bottom: 14px; display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center;">
+            <label for="teams" style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 0; line-height: 1.2;">Số lượng đội</label>
+            <select id="teams" name="teams" style="width: 100%; height: 36px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; background: #fff;">
+                <option value="4/4" selected>4 Đội</option>
+                <option value="8/8">8 Đội</option>
+                <option value="16/16">16 Đội</option>
+            </select>
         </div>
 
-        <div class="form-actions-center">
-            <button type="submit" class="btn-save-figma">Lưu</button>
+        <div class="form-group" style="margin-bottom: 14px; display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: start;">
+            <label for="description" style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 0; line-height: 1.2; padding-top: 8px;">Mô Tả</label>
+            <textarea id="description" name="description" rows="5" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; resize: none;"></textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 16px; display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center;">
+            <label for="tournamentImage" style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 0; line-height: 1.2;">Hình Ảnh</label>
+            <input type="file" id="tournamentImage" name="image" accept="image/*" style="width: 100%; font-size: 13px;">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+            <button type="button" onclick="closeModal()" style="height: 36px; padding: 0 14px; border-radius: 4px; border: 0; background: #6b7280; color: #fff; font-weight: 700; font-size: 13px; cursor: pointer;">Đóng</button>
+            <button type="submit" style="height: 36px; padding: 0 14px; border-radius: 4px; border: 0; background: #009cff; color: #fff; font-weight: 700; font-size: 13px; cursor: pointer;">Tạo Giải Đấu</button>
         </div>
     </form>
 </div>
