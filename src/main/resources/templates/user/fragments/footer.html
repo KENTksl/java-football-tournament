@@ -4,15 +4,29 @@
     <footer class="footer" th:fragment="footer(active)">
     <div class="container">
         <div class="footer__grid">
-            <div>
-                <div class="footer__brand">SPORT<br>TOURNAMENT</div>
+            <div class="footer__brandWrap">
+                <div class="footer__brand">SPORT<span>TOURNAMENT</span></div>
+                <p class="footer__tagline">
+                    Nền tảng theo dõi tin tức, quản lý đội hình và đăng ký giải đấu nhanh chóng.
+                </p>
             </div>
             <div>
                 <div class="footer__col-title">LIÊN HỆ</div>
-                <p class="footer__contact">Nếu bạn cần hỗ trợ hoặc muốn góp ý cho nền tảng,<br>hãy liên hệ với chúng tôi qua thông tin bên dưới.</p>
-                <div class="footer__contact-item">📍 TP. Thủ Đức, TP. HCM</div>
-                <div class="footer__contact-item">📞 0123456789</div>
-                <div class="footer__contact-item">✉️ sporttournament@example.com</div>
+                <p class="footer__contact">
+                    Nếu bạn cần hỗ trợ hoặc muốn góp ý cho nền tảng, hãy liên hệ với chúng tôi qua thông tin bên dưới.
+                </p>
+                <a class="footer__contact-item" href="https://www.google.com/maps/search/?api=1&query=TP.%20Th%E1%BB%A7%20%C4%90%E1%BB%A9c%2C%20TP.%20HCM" target="_blank" rel="noopener">
+                    <span class="footer__icon"><img th:src="@{/assets/figma/icon-map-pin.svg}" alt="" /></span>
+                    <span>TP. Thủ Đức, TP. HCM</span>
+                </a>
+                <a class="footer__contact-item" href="tel:0123456789">
+                    <span class="footer__icon"><img th:src="@{/assets/figma/icon-phone.svg}" alt="" /></span>
+                    <span>0123 456 789</span>
+                </a>
+                <a class="footer__contact-item" href="mailto:sporttournament@example.com">
+                    <span class="footer__icon"><img th:src="@{/assets/figma/icon-mail.svg}" alt="" /></span>
+                    <span>sporttournament@example.com</span>
+                </a>
             </div>
             <div>
                 <div class="footer__col-title">LIÊN KẾT NHANH</div>
