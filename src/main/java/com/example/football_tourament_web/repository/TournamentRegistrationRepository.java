@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.example.football_tourament_web.model.entity.TournamentRegistration;
 
@@ -13,5 +15,15 @@ public interface TournamentRegistrationRepository extends JpaRepository<Tourname
 	List<TournamentRegistration> findByRegisteredByIdOrderByCreatedAtDesc(Long userId);
 
 	Optional<TournamentRegistration> findByTournamentIdAndTeamId(Long tournamentId, Long teamId);
+
+	@Query("""
+			select r
+			from TournamentRegistration r
+			join fetch r.tournament t
+			join fetch r.team tm
+			where r.registeredBy.id = :userId
+			order by r.createdAt desc
+			""")
+	List<TournamentRegistration> findByRegisteredByIdWithDetails(@Param("userId") Long userId);
 }
 

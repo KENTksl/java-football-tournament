@@ -51,7 +51,7 @@ a {
   align-items: center;
   gap: 36px;
   font-weight: 700;
-  font-size: 20px;
+  font-size: 15px;
 }
 
 .nav form {
@@ -241,7 +241,7 @@ a {
 
 .banner {
   background: var(--brand);
-  min-height: 476px;
+  min-height: 300px;
   display: grid;
   place-items: center;
   text-align: center;

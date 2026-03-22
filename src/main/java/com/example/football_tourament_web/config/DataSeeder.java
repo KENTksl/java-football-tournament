@@ -79,6 +79,7 @@ public class DataSeeder implements CommandLineRunner {
 		var userA = new AppUser("Huỳnh Văn A", "a@example.com");
 		userA.setGender(Gender.MALE);
 		userA.setAddress("Thủ Đức, TPHCM");
+		userA.setDateOfBirth(LocalDate.of(2004, 7, 28));
 		userA.setPasswordHash(passwordEncoder.encode("user123"));
 		userRepository.save(userA);
 

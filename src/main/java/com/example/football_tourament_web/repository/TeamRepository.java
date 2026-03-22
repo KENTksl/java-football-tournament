@@ -8,5 +8,7 @@ import com.example.football_tourament_web.model.entity.Team;
 
 public interface TeamRepository extends JpaRepository<Team, Long> {
 	Optional<Team> findByNameIgnoreCase(String name);
+
+	Optional<Team> findFirstByCaptainId(Long captainId);
 }
 

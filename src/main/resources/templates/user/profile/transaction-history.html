@@ -27,16 +27,18 @@
         <div class="container profile-grid">
           <aside class="profile-card" aria-label="Điều hướng hồ sơ">
             <div class="profile-user">
-              <div class="profile-avatar" aria-hidden="true">A</div>
+              <div class="profile-avatar" aria-hidden="true">
+                <img th:src="${avatarSrc}" alt="" />
+              </div>
               <div>
-                <p class="name" th:text="${fullName ?: 'Quang'}">Quang</p>
-                <p class="email" th:text="${email ?: 'abcd@gmail.com'}">abcd@gmail.com</p>
+                <p class="name" th:text="${user.fullName}">Quang</p>
+                <p class="email" th:text="${user.email}">abcd@gmail.com</p>
               </div>
             </div>
 
             <div class="profile-balance" aria-label="Số dư">
-              <div class="value" th:text="${balanceText ?: 'Số dư: 100.000đ'}">Số dư: 100.000đ</div>
-              <button class="profile-btn" type="button">Nạp tiền</button>
+              <div class="value" th:text="${balanceText}">Số dư: 0đ</div>
+              <a class="profile-btn" th:href="@{/thanh-toan}">Nạp tiền</a>
             </div>
 
             <nav class="profile-menu" aria-label="Menu hồ sơ">
@@ -67,12 +69,12 @@
             <h2>Lịch Sử Giao Dịch</h2>
             <div class="history-grid">
               <div class="history-item" th:each="t : ${transactions}">
-                <p class="title" th:text="${t.description ?: 'Giao dịch'}">Giao dịch</p>
+                <p class="title" th:text="${t.description}">Giao dịch</p>
                 <p class="meta">
-                  Mã: <span th:text="${t.code ?: '---'}">---</span> •
-                  Số tiền: <span th:text="${t.amount ?: '---'}">---</span> •
-                  Thời gian: <span th:text="${t.time ?: '---'}">---</span> •
-                  Trạng thái: <span th:text="${t.status ?: '---'}">---</span>
+                  Mã: <span th:text="${t.code}">---</span> •
+                  Số tiền: <span th:text="${t.amount}">---</span> •
+                  Thời gian: <span th:text="${t.time}">---</span> •
+                  Trạng thái: <span th:text="${t.status}">---</span>
                 </p>
               </div>
               <div class="history-item" th:if="${transactions == null or #lists.isEmpty(transactions)}">

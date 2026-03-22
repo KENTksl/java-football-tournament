@@ -58,7 +58,7 @@
 .hero {
     background: var(--brand);
     color: #000000;
-    min-height: 476px;
+    min-height: 300px;
     display: grid;
     place-items: center;
     text-align: center;
