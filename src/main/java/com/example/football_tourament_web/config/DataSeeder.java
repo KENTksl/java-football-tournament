@@ -137,6 +137,11 @@ public class DataSeeder implements CommandLineRunner {
 
 		matchRepository.saveAll(List.of(semi1, semi2, finalMatch));
 
+		// Set winner for tournament
+		tournament.setWinner(team4);
+		tournament.setStatus(TournamentStatus.FINISHED);
+		tournamentRepository.save(tournament);
+
 		var tx1 = new Transaction("TXN-0001", "Nạp tiền ví", new BigDecimal("200000.00"), userA);
 		tx1.setStatus(TransactionStatus.SUCCESS);
 		var tx2 = new Transaction("TXN-0002", "Phí đăng ký giải", new BigDecimal("100000.00"), userA);

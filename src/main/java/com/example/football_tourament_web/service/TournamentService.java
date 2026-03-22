@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.football_tourament_web.model.entity.Tournament;
+import com.example.football_tourament_web.model.enums.TournamentStatus;
 import com.example.football_tourament_web.repository.TournamentRepository;
 
 @Service
@@ -30,6 +31,21 @@ public class TournamentService {
 	@Transactional
 	public Tournament save(Tournament tournament) {
 		return tournamentRepository.save(tournament);
+	}
+
+	@Transactional(readOnly = true)
+	public long countTournaments() {
+		return tournamentRepository.count();
+	}
+
+	@Transactional(readOnly = true)
+	public long countTournamentsByStatus(TournamentStatus status) {
+		return tournamentRepository.countByStatus(status);
+	}
+
+	@Transactional(readOnly = true)
+	public List<Tournament> getRecentWinners() {
+		return tournamentRepository.findTop4ByWinnerIsNotNullOrderByIdDesc();
 	}
 }
 

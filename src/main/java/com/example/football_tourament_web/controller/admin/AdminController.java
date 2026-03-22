@@ -4,11 +4,41 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.ui.Model;
 
+import com.example.football_tourament_web.model.enums.TournamentStatus;
+import com.example.football_tourament_web.service.MatchService;
+import com.example.football_tourament_web.service.TeamService;
+import com.example.football_tourament_web.service.TournamentService;
+
+import java.util.ArrayList;
+import java.util.List;
+
 @Controller
 public class AdminController {
 
+	private final TournamentService tournamentService;
+	private final TeamService teamService;
+	private final MatchService matchService;
+
+	public AdminController(TournamentService tournamentService, TeamService teamService, MatchService matchService) {
+		this.tournamentService = tournamentService;
+		this.teamService = teamService;
+		this.matchService = matchService;
+	}
+
 	@GetMapping({"/admin", "/admin/general-overview"})
-	public String generalOverview() {
+	public String generalOverview(Model model) {
+		model.addAttribute("totalTournaments", tournamentService.countTournaments());
+		model.addAttribute("totalTeams", teamService.countTeams());
+		model.addAttribute("activeTournaments", tournamentService.countTournamentsByStatus(TournamentStatus.LIVE));
+		model.addAttribute("completedTournaments", tournamentService.countTournamentsByStatus(TournamentStatus.FINISHED));
+
+		// For winners table
+		model.addAttribute("recentWinners", tournamentService.getRecentWinners());
+
+		// For chart: real counts for last 7 months
+		List<Long> matchFrequency = matchService.getMatchFrequencyForLast7Months();
+		model.addAttribute("matchFrequency", matchFrequency);
+
 		return "admin/dashboard/general-overview";
 	}
 
