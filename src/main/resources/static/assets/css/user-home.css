@@ -452,12 +452,22 @@ a {
   place-items: center;
   background: rgba(255, 170, 23, 0.18);
   border: 1px solid rgba(255, 170, 23, 0.25);
+  color: rgba(0, 0, 0, 0.88);
 }
 
 .home-card__icon img {
   width: 20px;
   height: 20px;
   display: block;
+  filter: invert(1) brightness(0);
+  opacity: 0.9;
+}
+
+.home-card__icon svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+  opacity: 0.9;
 }
 
 .home-card__title {

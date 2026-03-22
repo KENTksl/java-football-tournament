@@ -160,6 +160,25 @@
 .profile-menu .icon {
   width: 22px;
   height: 22px;
+  color: rgba(0, 0, 0, 0.72);
+}
+
+.profile-menu img.icon {
+  filter: invert(1) brightness(0);
+  opacity: 0.9;
+}
+
+.profile-menu svg.icon {
+  opacity: 0.9;
+}
+
+.profile-menu a[aria-current="page"] img.icon {
+  opacity: 1;
+}
+
+.profile-menu a[aria-current="page"] svg.icon {
+  opacity: 1;
+  color: rgba(0, 0, 0, 0.88);
 }
 
 .profile-info {
