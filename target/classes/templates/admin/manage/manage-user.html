@@ -421,45 +421,19 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>1</td>
-                                <td>admin_hutech</td>
-                                <td>Nguyễn Nhật Hào</td>
-                                <td>hao.nn@hutech.edu.vn</td>
-                                <td>Admin</td>
-                                <td class="status-text">active</td>
-                                <td>
-                                    <div class="action-btns">
-                                        <a href="/admin/manage/user-detail" class="btn-act btn-act--detail" style="text-decoration: none;">Chi tiết</a>
-                              
-                                    </div>
-                                </td>
+                            <tr th:if="${users == null or #lists.isEmpty(users)}">
+                                <td colspan="7">Chưa có user role USER trong hệ thống</td>
                             </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>quangminh_99</td>
-                                <td>Trần Quang Minh</td>
-                                <td>minh.tq@gmail.com</td>
+                            <tr th:each="u,iter : ${users}">
+                                <td th:text="${iter.count}">1</td>
+                                <td th:text="${u.email}">username</td>
+                                <td th:text="${u.fullName != null and !#strings.isEmpty(u.fullName) ? u.fullName : 'Chưa cập nhật'}">Họ tên</td>
+                                <td th:text="${u.email}">email</td>
                                 <td>User</td>
-                                <td class="status-text">active</td>
+                                <td class="status-text" th:text="${u.status != null ? #strings.toLowerCase(u.status.name()) : 'inactive'}">active</td>
                                 <td>
                                     <div class="action-btns">
                                         <a href="/admin/manage/user-detail" class="btn-act btn-act--detail" style="text-decoration: none;">Chi tiết</a>
-                               
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td>fc_test_user</td>
-                                <td>FC Test 196267</td>
-                                <td>test.fc@hutech.vn</td>
-                                <td>User</td>
-                                <td class="status-text">inactive</td>
-                                <td>
-                                    <div class="action-btns">
-                                        <a href="/admin/manage/user-detail" class="btn-act btn-act--detail" style="text-decoration: none;">Chi tiết</a>
-                                     
                                     </div>
                                 </td>
                             </tr>

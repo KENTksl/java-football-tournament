@@ -34,8 +34,8 @@
             <div class="tournament-list__grid" th:if="${tournaments != null and !#lists.isEmpty(tournaments)}">
                 <a class="tournament-list__card" th:each="t : ${tournaments}" th:href="@{/user/tournament/match-schedule(id=${t.id})}">
                     <div class="tournament-list__media" aria-hidden="true">
-                        <img th:if="${t.imageUrl != null and !#strings.isEmpty(t.imageUrl)}" th:src="${t.imageUrl}" alt="" />
-                        <img th:unless="${t.imageUrl != null and !#strings.isEmpty(t.imageUrl)}" th:src="@{/assets/figma/home-hero.png}" alt="" />
+                        <img th:if="${t.imageUrl != null and !#strings.isEmpty(t.imageUrl)}" th:src="${t.imageUrl}" th:alt="${t.name}" loading="lazy" />
+                        <img th:unless="${t.imageUrl != null and !#strings.isEmpty(t.imageUrl)}" th:src="@{/assets/figma/home-hero.png}" th:alt="${t.name}" loading="lazy" />
                     </div>
                     <div class="tournament-list__body">
                         <div class="tournament-list__top">
@@ -57,8 +57,19 @@
                             </div>
                             <div class="tournament-list__metaRow">
                                 <span class="tournament-list__label">Số đội</span>
-                                <span th:text="${t.teamLimit != null ? t.teamLimit : '—'}">—</span>
+                                <span th:text="${(registeredTeamCounts[t.id] != null ? registeredTeamCounts[t.id] : 0) + ' / ' + (t.teamLimit != null ? t.teamLimit : 0)}">0 / 0</span>
                             </div>
+                        </div>
+                        <div class="tournament-list__progressWrap">
+                            <div class="tournament-list__progressBar">
+                                <span class="tournament-list__progressFill"
+                                      th:style="${'width:' + (registeredTeamPercents[t.id] != null ? registeredTeamPercents[t.id] : 0) + '%'}">
+                                </span>
+                            </div>
+                            <span class="badge badge--finished"
+                                  th:if="${t.teamLimit != null and registeredTeamCounts[t.id] != null and registeredTeamCounts[t.id] >= t.teamLimit}">
+                                Đã đủ đội
+                            </span>
                         </div>
 
                         <div class="tournament-list__cta">Xem chi tiết</div>

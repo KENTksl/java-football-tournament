@@ -1429,7 +1429,7 @@ public class HomeController {
 			default -> ".jpg";
 		};
 
-		Path baseDir = Paths.get("src", "main", "resources", "static", "uploads", "avatars");
+		Path baseDir = uploadBaseDir("avatars");
 		Files.createDirectories(baseDir);
 
 		String fileName = UUID.randomUUID().toString().replace("-", "") + ext;
@@ -1465,7 +1465,7 @@ public class HomeController {
 			default -> ".jpg";
 		};
 
-		Path baseDir = Paths.get("src", "main", "resources", "static", "uploads", folder);
+		Path baseDir = uploadBaseDir(folder);
 		Files.createDirectories(baseDir);
 
 		String fileName = UUID.randomUUID().toString().replace("-", "") + ext;
@@ -1479,6 +1479,10 @@ public class HomeController {
 		}
 
 		return "/uploads/" + folder + "/" + fileName;
+	}
+
+	private Path uploadBaseDir(String folder) {
+		return Paths.get(System.getProperty("user.home"), ".football_tournament_web", "uploads", folder).toAbsolutePath().normalize();
 	}
 
 	private static class AvatarTooLargeException extends RuntimeException {

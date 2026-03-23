@@ -15,6 +15,7 @@ import com.example.football_tourament_web.model.enums.RegistrationStatus;
 import com.example.football_tourament_web.model.enums.TeamSide;
 import com.example.football_tourament_web.model.enums.TournamentMode;
 import com.example.football_tourament_web.model.enums.TournamentStatus;
+import com.example.football_tourament_web.model.enums.UserRole;
 import com.example.football_tourament_web.repository.PlayerRepository;
 import com.example.football_tourament_web.service.MatchEventService;
 import com.example.football_tourament_web.service.MatchLineupService;
@@ -32,6 +33,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 import java.io.IOException;
@@ -43,6 +45,8 @@ import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -129,9 +133,8 @@ public class AdminController {
 
 			if (avatarFile != null && !avatarFile.isEmpty()) {
 				try {
-					String uploadDir = "src/main/resources/static/uploads/avatars/";
 					String fileName = UUID.randomUUID().toString() + "_" + avatarFile.getOriginalFilename();
-					Path uploadPath = Paths.get(uploadDir);
+					Path uploadPath = resolveUploadDir("avatars");
 
 					if (!Files.exists(uploadPath)) {
 						Files.createDirectories(uploadPath);
@@ -218,7 +221,7 @@ public class AdminController {
 		tournament.setStatus(calculateStatus(tournament.getStartDate(), tournament.getEndDate()));
 
 		if (image != null && !image.isEmpty()) {
-			tournament.setImageUrl(saveFile(image, "src/main/resources/static/uploads/tournaments/", "/uploads/tournaments/"));
+			tournament.setImageUrl(saveFile(image, "tournaments", "/uploads/tournaments/"));
 		}
 
 		tournamentService.save(tournament);
@@ -277,7 +280,7 @@ public class AdminController {
 			tournament.setStatus(calculateStatus(tournament.getStartDate(), tournament.getEndDate()));
 
 			if (image != null && !image.isEmpty()) {
-				tournament.setImageUrl(saveFile(image, "src/main/resources/static/uploads/tournaments/", "/uploads/tournaments/"));
+				tournament.setImageUrl(saveFile(image, "tournaments", "/uploads/tournaments/"));
 			}
 
 			tournamentService.save(tournament);
@@ -305,10 +308,10 @@ public class AdminController {
 		return "redirect:/admin/manage/tournament";
 	}
 
-	private String saveFile(MultipartFile file, String uploadDir, String publicPath) {
+	private String saveFile(MultipartFile file, String folder, String publicPath) {
 		try {
 			String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-			Path uploadPath = Paths.get(uploadDir);
+			Path uploadPath = resolveUploadDir(folder);
 
 			if (!Files.exists(uploadPath)) {
 				Files.createDirectories(uploadPath);
@@ -325,9 +328,15 @@ public class AdminController {
 		}
 	}
 
+	private Path resolveUploadDir(String folder) {
+		return Paths.get(System.getProperty("user.home"), ".football_tournament_web", "uploads", folder).toAbsolutePath().normalize();
+	}
+
 
 	@GetMapping({"/admin/manage-user", "/admin/manage/user"})
-	public String manageUser() {
+	public String manageUser(Model model) {
+		List<AppUser> users = userService.listUsersByRole(UserRole.USER);
+		model.addAttribute("users", users);
 		return "admin/manage/manage-user";
 	}
 
@@ -337,8 +346,54 @@ public class AdminController {
 	}
 
 	@GetMapping("/admin/team-management")
-	public String teamManagement() {
+	public String teamManagement(
+			@RequestParam(value = "tournamentId", required = false) Long tournamentId,
+			@RequestParam(value = "status", required = false, defaultValue = "ALL") String status,
+			Model model
+	) {
+		List<Tournament> tournaments = tournamentService.listTournaments();
+		model.addAttribute("tournaments", tournaments);
+
+		Long selectedTournamentId = tournamentId;
+		if (selectedTournamentId == null && !tournaments.isEmpty()) {
+			selectedTournamentId = tournaments.get(0).getId();
+		}
+		model.addAttribute("selectedTournamentId", selectedTournamentId);
+
+		RegistrationStatus selectedStatus = parseRegistrationStatus(status);
+		model.addAttribute("selectedStatus", selectedStatus == null ? "ALL" : selectedStatus.name());
+
+		List<TeamRegistrationRow> rows = buildTeamRegistrationRows(selectedTournamentId, selectedStatus);
+		model.addAttribute("registrationRows", rows);
 		return "admin/team/team-management";
+	}
+
+	@PostMapping("/admin/team-management/update-status")
+	public String updateTeamRegistrationStatus(
+			@RequestParam("registrationId") Long registrationId,
+			@RequestParam("tournamentId") Long tournamentId,
+			@RequestParam(value = "status", required = false, defaultValue = "ALL") String status,
+			@RequestParam("targetStatus") String targetStatus,
+			RedirectAttributes redirectAttributes
+	) {
+		RegistrationStatus newStatus = parseRegistrationStatus(targetStatus);
+		if (newStatus == null) {
+			redirectAttributes.addFlashAttribute("teamManageMessage", "Trạng thái cập nhật không hợp lệ");
+			return "redirect:/admin/team-management?tournamentId=" + tournamentId + "&status=" + status;
+		}
+		var registration = tournamentRegistrationService.findById(registrationId).orElse(null);
+		if (registration == null || registration.getTournament() == null || registration.getTournament().getId() == null
+				|| !registration.getTournament().getId().equals(tournamentId)) {
+			redirectAttributes.addFlashAttribute("teamManageMessage", "Không tìm thấy hồ sơ đăng ký cần cập nhật");
+			return "redirect:/admin/team-management?tournamentId=" + tournamentId + "&status=" + status;
+		}
+		registration.setStatus(newStatus);
+		if (newStatus != RegistrationStatus.APPROVED) {
+			registration.setGroupName(null);
+		}
+		tournamentRegistrationService.save(registration);
+		redirectAttributes.addFlashAttribute("teamManageMessage", "Đã cập nhật trạng thái hồ sơ");
+		return "redirect:/admin/team-management?tournamentId=" + tournamentId + "&status=" + status;
 	}
 
 	@GetMapping("/admin/team-detail")
@@ -1251,6 +1306,51 @@ public class AdminController {
 		};
 	}
 
+	private RegistrationStatus parseRegistrationStatus(String raw) {
+		if (raw == null || raw.isBlank() || "ALL".equalsIgnoreCase(raw)) {
+			return null;
+		}
+		try {
+			return RegistrationStatus.valueOf(raw.toUpperCase());
+		} catch (Exception ex) {
+			return null;
+		}
+	}
+
+	private List<TeamRegistrationRow> buildTeamRegistrationRows(Long tournamentId, RegistrationStatus statusFilter) {
+		if (tournamentId == null) {
+			return List.of();
+		}
+		List<TournamentRegistration> registrations = tournamentRegistrationService.listByTournamentIdWithTeam(tournamentId);
+		List<TeamRegistrationRow> rows = new ArrayList<>();
+		for (TournamentRegistration registration : registrations) {
+			if (registration == null) continue;
+			if (statusFilter != null && registration.getStatus() != statusFilter) continue;
+			if (registration.getTeam() == null || registration.getTeam().getId() == null) continue;
+			var captain = registration.getTeam().getCaptain();
+			String representative = captain == null || captain.getFullName() == null ? "Chưa cập nhật" : captain.getFullName();
+			String phone = captain == null || captain.getPhone() == null ? "Chưa cập nhật" : captain.getPhone();
+			long memberCount = playerRepository.countByTeamId(registration.getTeam().getId());
+			rows.add(new TeamRegistrationRow(
+					registration.getId(),
+					formatDate(registration.getCreatedAt()),
+					registration.getTeam().getName(),
+					representative,
+					phone,
+					memberCount,
+					registration.getStatus()
+			));
+		}
+		rows.sort(Comparator.comparing(TeamRegistrationRow::submittedDateText, Comparator.nullsLast(String::compareTo)).reversed());
+		return rows;
+	}
+
+	private String formatDate(java.time.Instant instant) {
+		if (instant == null) return "";
+		return DateTimeFormatter.ofPattern("dd/MM/yyyy")
+				.format(instant.atZone(ZoneId.systemDefault()).toLocalDateTime());
+	}
+
 	private List<TeamListItem> buildTeamListItems(Long tournamentId) {
 		List<TournamentRegistration> registrations = tournamentRegistrationService.listByTournamentIdWithTeam(tournamentId);
 		List<TeamListItem> teams = new ArrayList<>();
@@ -1293,6 +1393,31 @@ public class AdminController {
 
 		public long getMemberCount() {
 			return memberCount;
+		}
+	}
+
+	public record TeamRegistrationRow(
+			Long registrationId,
+			String submittedDateText,
+			String teamName,
+			String representativeName,
+			String phone,
+			long memberCount,
+			RegistrationStatus status
+	) {
+		public String statusLabel() {
+			if (status == null) return "Không xác định";
+			return switch (status) {
+				case PENDING -> "Chờ duyệt";
+				case APPROVED -> "Đã duyệt";
+				case REJECTED -> "Đã hủy";
+			};
+		}
+
+		public String statusClass() {
+			if (status == RegistrationStatus.APPROVED) return "badge--approved";
+			if (status == RegistrationStatus.REJECTED) return "badge--rejected";
+			return "badge--pending";
 		}
 	}
 

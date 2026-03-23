@@ -17,6 +17,7 @@ public interface TournamentRegistrationRepository extends JpaRepository<Tourname
 			select r
 			from TournamentRegistration r
 			join fetch r.team tm
+			left join fetch tm.captain c
 			where r.tournament.id = :tournamentId
 			order by r.createdAt asc
 			""")
