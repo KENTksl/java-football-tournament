@@ -266,35 +266,109 @@
             color: #111827;
         }
 
-        .tabs {
+        .invoice-tabs {
             display: flex;
-            gap: 0;
-            margin-bottom: 20px;
-            border-radius: 12px;
-            overflow: hidden;
+            gap: 12px;
+            margin-bottom: 30px;
             width: fit-content;
-            border: 1px solid #000;
         }
 
-        .tab {
-            padding: 10px 24px;
+        .invoice-tab {
+            padding: 10px 20px;
             background: #fff;
-            border: none;
-            border-right: 1px solid #000;
-            font-weight: 600;
-            font-size: 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
             cursor: pointer;
-            color: #111827;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.2s;
         }
 
-        .tab:last-child {
-            border-right: none;
+        .invoice-tab:hover {
+            border-color: var(--brand);
+            color: var(--brand);
+            background: rgba(0, 156, 255, 0.05);
         }
 
-        .tab--active {
+        .invoice-tab--active {
+            background: var(--brand) !important;
+            color: #fff !important;
+            border-color: var(--brand) !important;
+        }
+
+        .invoice-tab--active:hover {
+            background: #008ae6 !important;
+            color: #fff !important;
+        }
+
+        .invoice-tab--status { 
+            position: relative; 
+            padding-bottom: 10px;
+            margin-bottom: -10px;
+        }
+        
+        .status-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
             background: #fff;
-            color: #111827;
-            text-decoration: underline;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+            display: none;
+            flex-direction: column;
+            min-width: 160px;
+            z-index: 100;
+            overflow: hidden;
+            margin-top: 2px;
+        }
+        
+        .invoice-tab--status:hover .status-dropdown {
+            display: flex;
+        }
+        
+        .status-option {
+            padding: 10px 16px;
+            text-decoration: none;
+            color: var(--text);
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+        
+        .status-option:hover {
+            background: var(--surface);
+            color: var(--brand);
+        }
+
+        .invoice-tab svg {
+            width: 14px !important;
+            height: 14px !important;
+        }
+
+        /* Update search styling to match */
+        .search {
+            height: 42px;
+            width: 280px;
+            border-radius: 8px;
+            background: #fff;
+            border: 1px solid var(--border);
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .search input {
+            font-size: 14px;
+            border: 0;
+            outline: none;
+            background: transparent;
+            width: 100%;
+            color: var(--text);
         }
 
         .table-container {
@@ -362,23 +436,6 @@
             display: inline-block;
         }
 
-        .tournament-filter {
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .tournament-filter select {
-            min-width: 320px;
-            height: 40px;
-            border: 1px solid #000;
-            border-radius: 8px;
-            padding: 0 10px;
-            font-weight: 600;
-            background: #fff;
-        }
-
         .action-row {
             display: flex;
             gap: 8px;
@@ -434,18 +491,35 @@
         .page-btn {
             width: 36px;
             height: 36px;
-            border: 1px solid #000;
+            border: 1px solid var(--border);
+            border-radius: 4px;
             background: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            font-size: 16px;
+            font-weight: 600;
+            font-size: 14px;
             cursor: pointer;
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover {
+            border-color: var(--brand);
+            color: var(--brand);
         }
 
         .page-btn--active {
-            background: #fff;
+            background: var(--brand);
+            color: #fff !important;
+            border-color: var(--brand);
+        }
+
+        .page-btn--disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
         }
 
         .arrow-btn {
@@ -490,29 +564,53 @@
         <!-- Main Content: Team Management Table -->
         <h1 class="section-title">Danh Sách Hồ Sơ Đội Tuyển</h1>
 
-        <div class="tournament-filter">
-            <span>Giải đấu:</span>
-            <form method="get" th:action="@{/admin/team-management}">
+        <div style="margin-bottom: 20px;">
+            <div class="invoice-tab invoice-tab--status" th:classappend="${selectedTournamentId != null} ? 'invoice-tab--active' : ''" style="width: fit-content;">
+                <span th:with="selectedTournament=${tournaments.?[id == __${selectedTournamentId}__]}"
+                      th:text="${selectedTournament != null and !selectedTournament.isEmpty() ? selectedTournament[0].name : 'Chọn giải đấu'}">Giải đấu</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+                <div class="status-dropdown">
+                    <a th:each="t : ${tournaments}" 
+                       th:href="@{/admin/team-management(tournamentId=${t.id}, status=${selectedStatus}, search=${currentSearch})}" 
+                       class="status-option" th:text="${t.name}">Tên giải</a>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <div class="invoice-tabs" style="margin-bottom: 0;">
+                <a class="invoice-tab" th:classappend="${selectedStatus == 'ALL' ? ' invoice-tab--active' : ''}" 
+                   th:href="@{/admin/team-management(tournamentId=${selectedTournamentId},status='ALL', search=${currentSearch})}">Tất cả</a>
+                
+                <a class="invoice-tab" th:classappend="${selectedStatus == 'PENDING' ? ' invoice-tab--active' : ''}" 
+                   th:href="@{/admin/team-management(tournamentId=${selectedTournamentId},status='PENDING', search=${currentSearch})}">Chờ duyệt</a>
+                
+                <a class="invoice-tab" th:classappend="${selectedStatus == 'APPROVED' ? ' invoice-tab--active' : ''}" 
+                   th:href="@{/admin/team-management(tournamentId=${selectedTournamentId},status='APPROVED', search=${currentSearch})}">Đã duyệt</a>
+                
+                <a class="invoice-tab" th:classappend="${selectedStatus == 'REJECTED' ? ' invoice-tab--active' : ''}" 
+                   th:href="@{/admin/team-management(tournamentId=${selectedTournamentId},status='REJECTED', search=${currentSearch})}">Đã hủy</a>
+            </div>
+
+            <form th:action="@{/admin/team-management}" method="get" class="search" style="margin-bottom: 0;">
+                <input type="hidden" name="tournamentId" th:value="${selectedTournamentId}">
                 <input type="hidden" name="status" th:value="${selectedStatus}">
-                <select name="tournamentId" onchange="this.form.submit()">
-                    <option th:each="t : ${tournaments}"
-                            th:value="${t.id}"
-                            th:text="${t.name}"
-                            th:selected="${selectedTournamentId != null and selectedTournamentId == t.id}">
-                        Tên giải
-                    </option>
-                </select>
+                <button type="submit" style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center;">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width: 18px; height: 18px; color: var(--muted-2);">
+                        <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2"/>
+                        <path d="M16.3 16.3 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <input type="text" name="search" th:value="${currentSearch}" placeholder="Tìm tên đội, người đại diện..." aria-label="Tìm kiếm" style="flex: 1; margin-left: 8px;">
+                <a th:if="${currentSearch != null and !currentSearch.isEmpty()}" 
+                   th:href="@{/admin/team-management(tournamentId=${selectedTournamentId}, status=${selectedStatus}, search='')}" 
+                   style="text-decoration: none; color: var(--muted-2); font-size: 18px; padding: 0 4px;">&times;</a>
             </form>
         </div>
 
         <div class="flash-message" th:if="${teamManageMessage != null}" th:text="${teamManageMessage}">Thông báo</div>
-
-        <div class="tabs">
-            <a class="tab" th:classappend="${selectedStatus == 'ALL' ? ' tab--active' : ''}" th:href="@{/admin/team-management(tournamentId=${selectedTournamentId},status='ALL')}">Tất cả</a>
-            <a class="tab" th:classappend="${selectedStatus == 'PENDING' ? ' tab--active' : ''}" th:href="@{/admin/team-management(tournamentId=${selectedTournamentId},status='PENDING')}">Chờ duyệt</a>
-            <a class="tab" th:classappend="${selectedStatus == 'APPROVED' ? ' tab--active' : ''}" th:href="@{/admin/team-management(tournamentId=${selectedTournamentId},status='APPROVED')}">Đã duyệt</a>
-            <a class="tab" th:classappend="${selectedStatus == 'REJECTED' ? ' tab--active' : ''}" th:href="@{/admin/team-management(tournamentId=${selectedTournamentId},status='REJECTED')}">Đã hủy</a>
-        </div>
 
         <div class="table-container">
             <table class="data-table">
@@ -540,26 +638,32 @@
                         <td><span class="badge" th:classappend="${' ' + row.statusClass}" th:text="${row.statusLabel}">Chờ duyệt</span></td>
                         <td>
                             <div class="action-row">
-
-                                <form method="post" th:if="${row.status.name() != 'APPROVED'}" th:action="@{/admin/team-management/update-status}">
-                                    <input type="hidden" name="registrationId" th:value="${row.registrationId}">
-                                    <input type="hidden" name="tournamentId" th:value="${selectedTournamentId}">
-                                    <input type="hidden" name="status" th:value="${selectedStatus}">
-                                    <input type="hidden" name="targetStatus" value="APPROVED">
-                                    <button type="submit" class="btn-status btn-status--approve">Duyệt</button>
-                                </form>
-                                <form method="post" th:if="${row.status.name() != 'REJECTED'}" th:action="@{/admin/team-management/update-status}">
-                                    <input type="hidden" name="registrationId" th:value="${row.registrationId}">
-                                    <input type="hidden" name="tournamentId" th:value="${selectedTournamentId}">
-                                    <input type="hidden" name="status" th:value="${selectedStatus}">
-                                    <input type="hidden" name="targetStatus" value="REJECTED">
-                                    <button type="submit" class="btn-status btn-status--reject">Hủy</button>
-                                </form>
+                                <a th:href="@{/admin/team-detail(id=${row.registrationId})}" class="btn-detail">Chi tiết</a>
                             </div>
                         </td>
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <div class="pagination-container" th:if="${totalPages > 1}">
+            <a class="arrow-btn" th:href="@{/admin/team-management(tournamentId=${selectedTournamentId}, status=${selectedStatus}, search=${currentSearch}, page=${currentPage - 1})}"
+               th:classappend="${currentPage == 1} ? 'page-btn--disabled' : ''">
+                <div class="triangle-left"></div>
+            </a>
+            
+            <div class="page-numbers">
+                <a th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
+                   th:href="@{/admin/team-management(tournamentId=${selectedTournamentId}, status=${selectedStatus}, search=${currentSearch}, page=${pageNum})}"
+                   class="page-btn"
+                   th:classappend="${pageNum == currentPage} ? 'page-btn--active' : ''"
+                   th:text="${pageNum}">1</a>
+            </div>
+            
+            <a class="arrow-btn" th:href="@{/admin/team-management(tournamentId=${selectedTournamentId}, status=${selectedStatus}, search=${currentSearch}, page=${currentPage + 1})}"
+               th:classappend="${currentPage == totalPages} ? 'page-btn--disabled' : ''">
+                <div class="triangle-right"></div>
+            </a>
         </div>
 
         <footer th:replace="~{admin/fragments_admin/footer :: footer}"></footer>

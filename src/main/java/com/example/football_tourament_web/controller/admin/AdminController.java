@@ -354,6 +354,8 @@ public class AdminController {
 	public String teamManagement(
 			@RequestParam(value = "tournamentId", required = false) Long tournamentId,
 			@RequestParam(value = "status", required = false, defaultValue = "ALL") String status,
+			@RequestParam(value = "search", required = false) String search,
+			@RequestParam(value = "page", defaultValue = "1") int page,
 			Model model
 	) {
 		List<Tournament> tournaments = tournamentService.listTournaments();
@@ -368,8 +370,16 @@ public class AdminController {
 		RegistrationStatus selectedStatus = parseRegistrationStatus(status);
 		model.addAttribute("selectedStatus", selectedStatus == null ? "ALL" : selectedStatus.name());
 
-		List<TeamRegistrationRow> rows = buildTeamRegistrationRows(selectedTournamentId, selectedStatus);
-		model.addAttribute("registrationRows", rows);
+		List<TeamRegistrationRow> allRows = buildTeamRegistrationRows(selectedTournamentId, selectedStatus, search);
+		
+		// Pagination
+		int size = 10;
+		PagedResult<TeamRegistrationRow> paged = paginate(allRows, page, size);
+		
+		model.addAttribute("registrationRows", paged.items());
+		model.addAttribute("currentPage", paged.currentPage());
+		model.addAttribute("totalPages", paged.totalPages());
+		model.addAttribute("currentSearch", search);
 		return "admin/team/team-management";
 	}
 
@@ -1383,24 +1393,37 @@ public class AdminController {
 		}
 	}
 
-	private List<TeamRegistrationRow> buildTeamRegistrationRows(Long tournamentId, RegistrationStatus statusFilter) {
+	private List<TeamRegistrationRow> buildTeamRegistrationRows(Long tournamentId, RegistrationStatus statusFilter, String search) {
 		if (tournamentId == null) {
 			return List.of();
 		}
 		List<TournamentRegistration> registrations = tournamentRegistrationService.listByTournamentIdWithTeam(tournamentId);
 		List<TeamRegistrationRow> rows = new ArrayList<>();
+		String query = (search == null) ? "" : search.toLowerCase().trim();
+
 		for (TournamentRegistration registration : registrations) {
 			if (registration == null) continue;
 			if (statusFilter != null && registration.getStatus() != statusFilter) continue;
 			if (registration.getTeam() == null || registration.getTeam().getId() == null) continue;
+
 			var captain = registration.getTeam().getCaptain();
 			String representative = captain == null || captain.getFullName() == null ? "Chưa cập nhật" : captain.getFullName();
 			String phone = captain == null || captain.getPhone() == null ? "Chưa cập nhật" : captain.getPhone();
+			String teamName = registration.getTeam().getName();
+
+			// Apply search filter
+			if (!query.isEmpty()) {
+				boolean matches = (teamName != null && teamName.toLowerCase().contains(query)) ||
+						(representative != null && representative.toLowerCase().contains(query)) ||
+						(phone != null && phone.toLowerCase().contains(query));
+				if (!matches) continue;
+			}
+
 			long memberCount = playerRepository.countByTeamId(registration.getTeam().getId());
 			rows.add(new TeamRegistrationRow(
 					registration.getId(),
 					formatDate(registration.getCreatedAt()),
-					registration.getTeam().getName(),
+					teamName,
 					representative,
 					phone,
 					memberCount,
