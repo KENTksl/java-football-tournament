@@ -431,7 +431,7 @@
         <section class="page">
           <div class="page__header">
             <h1 class="page__title">LỊCH SỬ GIAO DỊCH</h1>
-            <a class="btn-back" th:href="@{/admin/manage/user-detail}">Quay lại</a>
+            <a class="btn-back" th:href="@{/admin/manage/user-detail(userId=${userId})}">Quay lại</a>
           </div>
 
           <section class="card" aria-label="Lịch sử giao dịch người dùng">
@@ -459,14 +459,14 @@
                     <td th:text="${stat.count}">1</td>
                     <td th:text="${t.code ?: '---'}">---</td>
                     <td th:text="${t.description ?: '---'}">---</td>
-                    <td class="amount" th:text="${t.amount ?: '---'}">---</td>
-                    <td th:text="${t.time ?: '---'}">---</td>
+                    <td class="amount" th:text="${t.amountText ?: '---'}">---</td>
+                    <td th:text="${t.timeText ?: '---'}">---</td>
                     <td>
                       <span
                         class="status"
-                        th:classappend="${t.status == 'SUCCESS'} ? ' status--success' : (${t.status == 'FAILED'} ? ' status--failed' : ' status--pending')"
-                        th:text="${t.status ?: 'PENDING'}"
-                      >PENDING</span>
+                        th:classappend="${t.statusClass != null ? ' ' + t.statusClass : ''}"
+                        th:text="${t.statusLabel ?: 'Đang chờ'}"
+                      >Đang chờ</span>
                     </td>
                   </tr>
                   <tr th:if="${transactions == null or #lists.isEmpty(transactions)}">

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.football_tourament_web.model.entity.AppUser;
 import com.example.football_tourament_web.model.enums.Gender;
 import com.example.football_tourament_web.model.enums.UserRole;
+import com.example.football_tourament_web.model.enums.UserStatus;
 import com.example.football_tourament_web.repository.AppUserRepository;
 
 @Service
@@ -46,6 +47,15 @@ public class UserService {
 	@Transactional
 	public AppUser save(AppUser user) {
 		return userRepository.save(user);
+	}
+
+	@Transactional
+	public Optional<AppUser> updateStatus(Long userId, UserStatus status) {
+		if (userId == null || status == null) return Optional.empty();
+		AppUser user = userRepository.findById(userId).orElse(null);
+		if (user == null) return Optional.empty();
+		user.setStatus(status);
+		return Optional.of(userRepository.save(user));
 	}
 
 	@Transactional

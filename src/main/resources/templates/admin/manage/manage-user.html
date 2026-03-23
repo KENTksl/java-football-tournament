@@ -405,6 +405,7 @@
             <section class="user-card" aria-label="Quản lý người dùng">
                 <div class="user-card__header">
                     <h1 class="user-card__title">Quản lý Người dùng</h1>
+                    <p th:if="${userLockMessage != null}" class="auth-hint" th:text="${userLockMessage}">---</p>
                 </div>
 
                 <div class="tableWrap" style="border: none; background: transparent;">
@@ -433,7 +434,7 @@
                                 <td class="status-text" th:text="${u.status != null ? #strings.toLowerCase(u.status.name()) : 'inactive'}">active</td>
                                 <td>
                                     <div class="action-btns">
-                                        <a href="/admin/manage/user-detail" class="btn-act btn-act--detail" style="text-decoration: none;">Chi tiết</a>
+                                        <a th:href="@{/admin/manage/user-detail(userId=${u.id})}" class="btn-act btn-act--detail" style="text-decoration: none;">Chi tiết</a>
                                     </div>
                                 </td>
                             </tr>
