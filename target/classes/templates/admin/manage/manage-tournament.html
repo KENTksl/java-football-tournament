@@ -691,6 +691,19 @@
         .status-text {
             font-style: italic;
             color: #999;
+            font-weight: 600;
+        }
+
+        .status--upcoming {
+            color: #f39c12 !important;
+        }
+
+        .status--live {
+            color: #009cff !important;
+        }
+
+        .status--finished {
+            color: #27ae60 !important;
         }
 
         /* Modal Styles */
@@ -845,7 +858,7 @@
                                 <td th:text="${t.mode == T(com.example.football_tourament_web.model.enums.TournamentMode).GROUP_STAGE ? 'Chia bảng đấu (Group Stage)' : 'Knockout'}">Knockout</td>
                                 <td th:text="${(registeredTeamCounts[t.id] ?: 0) + '/' + (t.teamLimit ?: 0)}">4/4</td>
                                 <td class="status-text" th:classappend="'status--' + ${#strings.toLowerCase(t.status)}" 
-                                    th:text="${t.status == T(com.example.football_tourament_web.model.enums.TournamentStatus).FINISHED ? 'Đã kết thúc' : 'Đang đá'}">completed</td>
+                                    th:text="${t.status == T(com.example.football_tourament_web.model.enums.TournamentStatus).UPCOMING ? 'Sắp diễn ra' : (t.status == T(com.example.football_tourament_web.model.enums.TournamentStatus).LIVE ? 'Đang đá' : 'Đã kết thúc')}">completed</td>
                                 <td>
                                     <div class="action-btns">
                                         <a th:href="@{/admin/general-information(id=${t.id})}" class="btn-act btn-act--detail">Chi tiết</a>
