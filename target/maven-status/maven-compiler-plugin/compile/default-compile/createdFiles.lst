@@ -1,1 +1,23 @@
+<<<<<<< Updated upstream
 com\example\football_tourament_web\controller\user\HomeController$1.class
+=======
+com\example\football_tourament_web\repository\MatchEventRepository.class
+com\example\football_tourament_web\controller\admin\AdminController$TeamListItem.class
+com\example\football_tourament_web\controller\admin\AdminController$PlayerDto.class
+com\example\football_tourament_web\controller\admin\AdminController.class
+com\example\football_tourament_web\model\entity\MatchEvent.class
+com\example\football_tourament_web\model\enums\MatchEventType.class
+com\example\football_tourament_web\controller\admin\AdminController$1.class
+com\example\football_tourament_web\repository\MatchLineupSlotRepository.class
+com\example\football_tourament_web\service\MatchService$GroupStats.class
+com\example\football_tourament_web\controller\admin\AdminController$GroupTeamRow.class
+com\example\football_tourament_web\controller\admin\AdminController$MatchPlayersResponse.class
+com\example\football_tourament_web\service\MatchEventService.class
+com\example\football_tourament_web\controller\admin\AdminController$PitchSlot.class
+com\example\football_tourament_web\model\enums\TeamSide.class
+com\example\football_tourament_web\controller\admin\AdminController$MatchEventRow.class
+com\example\football_tourament_web\controller\admin\AdminController$PagedResult.class
+com\example\football_tourament_web\config\DataSeeder.class
+com\example\football_tourament_web\service\MatchLineupService.class
+com\example\football_tourament_web\model\entity\MatchLineupSlot.class
+>>>>>>> Stashed changes

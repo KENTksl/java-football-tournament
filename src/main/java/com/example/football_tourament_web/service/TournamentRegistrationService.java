@@ -24,6 +24,17 @@ public class TournamentRegistrationService {
 	}
 
 	@Transactional(readOnly = true)
+	public List<TournamentRegistration> listByTournamentIdWithTeam(Long tournamentId) {
+		return registrationRepository.findByTournamentIdWithTeam(tournamentId);
+	}
+
+	@Transactional(readOnly = true)
+	public long countRegisteredTeams(Long tournamentId) {
+		if (tournamentId == null) return 0;
+		return registrationRepository.countDistinctTeamByTournamentIdAndStatusNot(tournamentId, RegistrationStatus.REJECTED);
+	}
+
+	@Transactional(readOnly = true)
 	public List<TournamentRegistration> listByUserId(Long userId) {
 		return registrationRepository.findByRegisteredByIdWithDetails(userId);
 	}

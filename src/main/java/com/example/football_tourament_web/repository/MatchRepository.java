@@ -1,6 +1,7 @@
 package com.example.football_tourament_web.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -12,6 +13,29 @@ import java.time.LocalDateTime;
 
 public interface MatchRepository extends JpaRepository<Match, Long> {
 	List<Match> findByTournamentIdOrderByScheduledAtAsc(Long tournamentId);
+
+	long countByTournamentId(Long tournamentId);
+
+	@Query("""
+			select m
+			from Match m
+			join fetch m.tournament t
+			join fetch m.homeTeam ht
+			join fetch m.awayTeam at
+			where t.id = :tournamentId
+			order by case when m.scheduledAt is null then 1 else 0 end asc, m.scheduledAt asc, m.id asc
+			""")
+	List<Match> findByTournamentIdWithDetails(@Param("tournamentId") Long tournamentId);
+
+	@Query("""
+			select m
+			from Match m
+			join fetch m.tournament t
+			join fetch m.homeTeam ht
+			join fetch m.awayTeam at
+			where m.id = :matchId
+			""")
+	Optional<Match> findByIdWithDetails(@Param("matchId") Long matchId);
 
 	@Query("SELECT COUNT(m) FROM Match m WHERE m.scheduledAt >= :start AND m.scheduledAt < :end")
 	long countMatchesByScheduledAtBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);

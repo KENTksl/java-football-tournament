@@ -13,6 +13,25 @@ import com.example.football_tourament_web.model.enums.RegistrationStatus;
 public interface TournamentRegistrationRepository extends JpaRepository<TournamentRegistration, Long> {
 	List<TournamentRegistration> findByTournamentId(Long tournamentId);
 
+	@Query("""
+			select r
+			from TournamentRegistration r
+			join fetch r.team tm
+			where r.tournament.id = :tournamentId
+			order by r.createdAt asc
+			""")
+	List<TournamentRegistration> findByTournamentIdWithTeam(@Param("tournamentId") Long tournamentId);
+
+	@Query("""
+			select count(distinct r.team.id)
+			from TournamentRegistration r
+			where r.tournament.id = :tournamentId and r.status <> :excludedStatus
+			""")
+	long countDistinctTeamByTournamentIdAndStatusNot(
+			@Param("tournamentId") Long tournamentId,
+			@Param("excludedStatus") RegistrationStatus excludedStatus
+	);
+
 	List<TournamentRegistration> findByRegisteredByIdOrderByCreatedAtDesc(Long userId);
 
 	Optional<TournamentRegistration> findByTournamentIdAndTeamId(Long tournamentId, Long teamId);

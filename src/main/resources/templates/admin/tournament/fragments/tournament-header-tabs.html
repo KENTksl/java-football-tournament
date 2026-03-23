@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
   <body>
-    <th:block th:fragment="headerTabs(activeTab, tournamentName)">
+    <th:block th:fragment="headerTabs(activeTab, tournamentId, tournamentName)">
       <div class="tournament__header">
         <h1
           class="tournament__title"
@@ -13,16 +13,16 @@
       </div>
 
       <div class="tabs">
-        <a th:href="@{/admin/general-information}" class="tab-link" th:classappend="${activeTab == 'info'} ? ' active' : ''">
+        <a th:href="@{/admin/general-information(id=${tournamentId})}" class="tab-link" th:classappend="${activeTab == 'info'} ? ' active' : ''">
           Thông tin chung
         </a>
-        <a th:href="@{/admin/team-list}" class="tab-link" th:classappend="${activeTab == 'teams'} ? ' active' : ''">
+        <a th:href="@{/admin/team-list(id=${tournamentId})}" class="tab-link" th:classappend="${activeTab == 'teams'} ? ' active' : ''">
           Danh sách đội
         </a>
-        <a th:href="@{/admin/match-history}" class="tab-link" th:classappend="${activeTab == 'matches'} ? ' active' : ''">
+        <a th:href="@{/admin/match-history(id=${tournamentId})}" class="tab-link" th:classappend="${activeTab == 'matches'} ? ' active' : ''">
           Lịch thi đấu
         </a>
-        <a th:href="@{/admin/tournament-bracket}" class="tab-link" th:classappend="${activeTab == 'bracket'} ? ' active' : ''">
+        <a th:href="@{/admin/tournament-bracket(id=${tournamentId})}" class="tab-link" th:classappend="${activeTab == 'bracket'} ? ' active' : ''">
           Sơ đồ thi đấu
         </a>
       </div>

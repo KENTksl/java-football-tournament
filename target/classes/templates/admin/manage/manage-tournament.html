@@ -845,9 +845,9 @@
                                 <td th:text="${t.name}">Hutech mở rộng lần 1</td>
                                 <td th:text="${t.organizer}">Nguyễn Nhật Hào</td>
                                 <td th:text="${t.mode == T(com.example.football_tourament_web.model.enums.TournamentMode).GROUP_STAGE ? 'Chia bảng đấu (Group Stage)' : 'Knockout'}">Knockout</td>
-                                <td th:text="${t.teamLimit + '/' + t.teamLimit}">4/4</td>
+                                <td th:text="${(registeredTeamCounts[t.id] ?: 0) + '/' + (t.teamLimit ?: 0)}">4/4</td>
                                 <td class="status-text" th:classappend="'status--' + ${#strings.toLowerCase(t.status)}" 
-                                    th:text="${t.status == T(com.example.football_tourament_web.model.enums.TournamentStatus).UPCOMING ? 'Sắp diễn ra' : (t.status == T(com.example.football_tourament_web.model.enums.TournamentStatus).LIVE ? 'Đang đá' : 'Đã kết thúc')}">completed</td>
+                                    th:text="${t.status == T(com.example.football_tourament_web.model.enums.TournamentStatus).FINISHED ? 'Đã kết thúc' : 'Đang đá'}">completed</td>
                                 <td>
                                     <div class="action-btns">
                                         <a th:href="@{/admin/general-information(id=${t.id})}" class="btn-act btn-act--detail">Chi tiết</a>

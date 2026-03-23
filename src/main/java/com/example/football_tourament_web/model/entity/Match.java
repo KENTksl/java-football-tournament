@@ -46,6 +46,15 @@ public class Match {
 
 	private LocalDateTime scheduledAt;
 
+	@Column(columnDefinition = "TEXT")
+	private String location;
+
+	@Column(columnDefinition = "TEXT")
+	private String lineupJson;
+
+	@Column(columnDefinition = "TEXT")
+	private String eventsJson;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private MatchStatus status = MatchStatus.SCHEDULED;
@@ -135,6 +144,30 @@ public class Match {
 
 	public void setScheduledAt(LocalDateTime scheduledAt) {
 		this.scheduledAt = scheduledAt;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
+	public String getLineupJson() {
+		return lineupJson;
+	}
+
+	public void setLineupJson(String lineupJson) {
+		this.lineupJson = lineupJson;
+	}
+
+	public String getEventsJson() {
+		return eventsJson;
+	}
+
+	public void setEventsJson(String eventsJson) {
+		this.eventsJson = eventsJson;
 	}
 
 	public MatchStatus getStatus() {

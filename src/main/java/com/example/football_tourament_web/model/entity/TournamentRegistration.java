@@ -45,6 +45,9 @@ public class TournamentRegistration {
 	@Column(nullable = false)
 	private RegistrationStatus status = RegistrationStatus.PENDING;
 
+	@Column(name = "group_name")
+	private String groupName;
+
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
 
@@ -105,6 +108,14 @@ public class TournamentRegistration {
 
 	public void setStatus(RegistrationStatus status) {
 		this.status = status;
+	}
+
+	public String getGroupName() {
+		return groupName;
+	}
+
+	public void setGroupName(String groupName) {
+		this.groupName = groupName;
 	}
 
 	public Instant getCreatedAt() {
