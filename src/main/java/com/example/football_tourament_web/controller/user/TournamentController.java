@@ -93,6 +93,7 @@ public class TournamentController {
 	@GetMapping("/standing-fragment")
 	public String standingFragment(@RequestParam(value = "id", required = false) Long id, Model model) {
 		attachTournament(model, id);
+		attachScheduleView(model, id);
 		return "user/tournament/fragments/standing :: standing";
 	}
 
@@ -104,18 +105,27 @@ public class TournamentController {
 	@GetMapping("/statistics-fragment")
 	public String statisticsFragment(@RequestParam(value = "id", required = false) Long id, Model model) {
 		attachTournament(model, id);
+		model.addAttribute("stats", userTournamentViewService.buildTournamentStats(id));
 		return "user/tournament/fragments/statistics :: statistics";
 	}
 
 	@GetMapping("/charts-fragment")
-	public String chartsFragment(@RequestParam(value = "id", required = false) Long id, Model model) {
+	public String chartsFragment(
+			@RequestParam(value = "id") Long id,
+			@RequestParam(value = "teamId", required = false) Long teamId,
+			Model model
+	) {
 		attachTournament(model, id);
+		model.addAttribute("charts", userTournamentViewService.buildChartsData(id, teamId));
+		model.addAttribute("teams", userTournamentViewService.buildTournamentTeams(id));
+		model.addAttribute("selectedTeamId", teamId != null ? teamId.toString() : "");
 		return "user/tournament/fragments/charts :: charts";
 	}
 
 	@GetMapping("/bracket-fragment")
 	public String bracketFragment(@RequestParam(value = "id", required = false) Long id, Model model) {
 		attachTournament(model, id);
+		model.addAttribute("bracket", userTournamentViewService.buildBracketData(id));
 		return "user/tournament/fragments/bracket :: bracket";
 	}
 

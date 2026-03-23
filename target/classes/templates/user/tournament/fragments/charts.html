@@ -2,6 +2,21 @@
     <link rel="stylesheet" th:href="@{/assets/css/tournament-fragment-charts.css}">
 
     <div class="charts-section">
+        <div class="mb-4">
+            <label for="team-chart-selector" class="form-label" style="font-weight: 500;">So sánh hiệu suất đội bóng</label>
+            <div style="max-width: 500px;">
+                <select id="team-chart-selector" class="form-select" onchange="reloadCharts(this)">
+                    <option value="">-- So sánh chung (2 đội hàng đầu) --</option>
+                    <option th:each="team : ${teams}" 
+                            th:value="${team.teamId}" 
+                            th:text="${team.teamName}" 
+                            th:selected="${team.teamId.toString() == #strings.defaultString(selectedTeamId, '')}">
+                        Team Name
+                    </option>
+                </select>
+            </div>
+        </div>
+
         <div class="charts-grid">
             <!-- Goals Distribution -->
             <div class="chart-card">
@@ -38,151 +53,162 @@
     </div>
 
     <script th:inline="javascript">
-        // Function to destroy and re-create charts
-        function initAllCharts() {
-            // Common colors from design
-            const colors = {
-                brand: '#e8b931', // Yellow
-                blue: '#6cabdd',
-                red: '#da291c',
-                dark: '#171717',
-                muted: '#d5d5d5',
-                green: '#2c9e49'
-            };
+        /*<![CDATA[*/
+        function reloadCharts(selectElement) {
+            const tournamentId = /*[[${tournament != null ? tournament.id : null}]]*/ null;
+            const selectedTeamId = selectElement.value;
+            
+            const container = document.querySelector('[data-tab-panel="fragment"]');
+            if (!container) return;
 
-            // Chart IDs to handle
-            const chartIds = ['goalsDoughnutChart', 'topScorersBarChart', 'goalsTimelineChart', 'teamPerformanceRadarChart'];
+            if (!tournamentId) return;
 
-            // Destroy existing instances if they exist
-            chartIds.forEach(id => {
-                const existingChart = Chart.getChart(id);
-                if (existingChart) {
-                    existingChart.destroy();
-                }
-            });
+            let url = `/user/tournament/charts-fragment?id=${tournamentId}`;
+            if (selectedTeamId) {
+                url += `&teamId=${selectedTeamId}`;
+            }
 
-            // 1. Goals Distribution Doughnut Chart
-            const ctxDoughnut = document.getElementById('goalsDoughnutChart').getContext('2d');
-            new Chart(ctxDoughnut, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Man United', 'Chelsea FC', 'Bayern Munich', 'Liverpool FC'],
-                    datasets: [{
-                        data: [12, 10, 8, 6],
-                        backgroundColor: [colors.red, colors.blue, colors.dark, colors.brand],
-                        borderWidth: 2,
-                        borderColor: '#ffffff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { usePointStyle: true, padding: 20 }
-                        }
-                    },
-                    cutout: '65%'
-                }
-            });
-
-            // 2. Top Scorers Bar Chart
-            const ctxBar = document.getElementById('topScorersBarChart').getContext('2d');
-            new Chart(ctxBar, {
-                type: 'bar',
-                data: {
-                    labels: ['C. Ronaldo', 'L. Messi', 'E. Haaland', 'K. Mbappe', 'M. Salah'],
-                    datasets: [{
-                        label: 'Số bàn thắng',
-                        data: [8, 6, 5, 5, 4],
-                        backgroundColor: colors.brand,
-                        borderRadius: 6,
-                        barThickness: 25
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { display: false } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-
-            // 3. Goals Timeline Line Chart
-            const ctxLine = document.getElementById('goalsTimelineChart').getContext('2d');
-            new Chart(ctxLine, {
-                type: 'line',
-                data: {
-                    labels: ['Vòng 1', 'Vòng 2', 'Vòng 3', 'Vòng 4', 'Vòng 5'],
-                    datasets: [{
-                        label: 'Tổng bàn thắng',
-                        data: [12, 15, 8, 20, 14],
-                        borderColor: colors.brand,
-                        backgroundColor: 'rgba(232, 185, 49, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 5,
-                        pointBackgroundColor: colors.brand
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-
-            // 4. Team Performance Radar Chart
-            const ctxRadar = document.getElementById('teamPerformanceRadarChart').getContext('2d');
-            new Chart(ctxRadar, {
-                type: 'radar',
-                data: {
-                    labels: ['Tấn công', 'Phòng ngự', 'Kiểm soát', 'Kỷ luật', 'Thể lực'],
-                    datasets: [
-                        {
-                            label: 'Man United',
-                            data: [90, 70, 80, 60, 85],
-                            borderColor: colors.red,
-                            backgroundColor: 'rgba(218, 41, 28, 0.2)',
-                            pointBackgroundColor: colors.red
-                        },
-                        {
-                            label: 'Chelsea FC',
-                            data: [75, 85, 70, 80, 75],
-                            borderColor: colors.blue,
-                            backgroundColor: 'rgba(108, 171, 221, 0.2)',
-                            pointBackgroundColor: colors.blue
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    elements: { line: { borderWidth: 2 } },
-                    scales: {
-                        r: {
-                            angleLines: { display: true },
-                            suggestedMin: 0,
-                            suggestedMax: 100,
-                            ticks: { display: false }
-                        }
-                    },
-                    plugins: {
-                        legend: { position: 'bottom', labels: { usePointStyle: true } }
-                    }
-                }
-            });
+            fetch(url)
+                .then(response => response.text())
+                .then(html => {
+                    container.innerHTML = html;
+                    initAllCharts();
+                })
+                .catch(err => console.error('Failed to reload charts:', err));
         }
 
-        // Initialize immediately
-        initAllCharts();
+        function initAllCharts() {
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js is not loaded');
+                return;
+            }
+
+            const chartsData = /*[[${charts}]]*/ {
+                teamLabels: [], teamGoals: [],
+                topScorerLabels: [], topScorerGoals: [],
+                roundLabels: [], roundGoals: [],
+                radarDatasets: []
+            };
+
+            const hexToRgba = (hex, alpha) => {
+                if (!hex || typeof hex !== 'string') return `rgba(0,0,0,${alpha})`;
+                const normalized = hex.replace('#', '').trim();
+                if (normalized.length !== 6) return `rgba(0,0,0,${alpha})`;
+                const r = parseInt(normalized.slice(0, 2), 16);
+                const g = parseInt(normalized.slice(2, 4), 16);
+                const b = parseInt(normalized.slice(4, 6), 16);
+                if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) return `rgba(0,0,0,${alpha})`;
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            };
+
+            const colors = {
+                brand: '#e8b931', blue: '#6cabdd', red: '#da291c', dark: '#171717',
+                muted: '#d5d5d5', green: '#2c9e49',
+                palette: ['#da291c', '#6cabdd', '#171717', '#e8b931', '#2c9e49', '#8e44ad', '#2ecc71', '#f39c12']
+            };
+
+            const chartIds = ['goalsDoughnutChart', 'topScorersBarChart', 'goalsTimelineChart', 'teamPerformanceRadarChart'];
+            chartIds.forEach(id => {
+                try {
+                    const existingChart = Chart.getChart(id);
+                    if (existingChart) existingChart.destroy();
+                } catch (e) {
+                    console.warn('Could not destroy chart:', id, e);
+                }
+            });
+
+            // 1. Goals Distribution
+            const canvasDoughnut = document.getElementById('goalsDoughnutChart');
+            if (canvasDoughnut) {
+                const ctxDoughnut = canvasDoughnut.getContext('2d');
+                new Chart(ctxDoughnut, {
+                    type: 'doughnut',
+                    data: {
+                        labels: (chartsData.teamLabels && chartsData.teamLabels.length > 0) ? chartsData.teamLabels : ['Chưa có dữ liệu'],
+                        datasets: [{
+                            data: (chartsData.teamGoals && chartsData.teamGoals.length > 0) ? chartsData.teamGoals : [1],
+                            backgroundColor: colors.palette, borderWidth: 2, borderColor: '#ffffff'
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } } }, cutout: '65%' }
+                });
+            }
+
+            // 2. Top Scorers Bar Chart
+            const canvasBar = document.getElementById('topScorersBarChart');
+            if (canvasBar) {
+                const ctxBar = canvasBar.getContext('2d');
+                new Chart(ctxBar, {
+                    type: 'bar',
+                    data: {
+                        labels: (chartsData.topScorerLabels && chartsData.topScorerLabels.length > 0) ? chartsData.topScorerLabels : ['Chưa có dữ liệu'],
+                        datasets: [{
+                            label: 'Số bàn thắng',
+                            data: (chartsData.topScorerGoals && chartsData.topScorerGoals.length > 0) ? chartsData.topScorerGoals : [0],
+                            backgroundColor: colors.brand, borderRadius: 6, barThickness: 25
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false }, ticks: { stepSize: 1 } }, x: { grid: { display: false } } } }
+                });
+            }
+
+            // 3. Goals Timeline
+            const canvasLine = document.getElementById('goalsTimelineChart');
+            if (canvasLine) {
+                const ctxLine = canvasLine.getContext('2d');
+                new Chart(ctxLine, {
+                    type: 'line',
+                    data: {
+                        labels: (chartsData.roundLabels && chartsData.roundLabels.length > 0) ? chartsData.roundLabels : ['Chưa có dữ liệu'],
+                        datasets: [{
+                            label: 'Tổng bàn thắng',
+                            data: (chartsData.roundGoals && chartsData.roundGoals.length > 0) ? chartsData.roundGoals : [0],
+                            borderColor: colors.brand, backgroundColor: 'rgba(232, 185, 49, 0.1)',
+                            fill: true, tension: 0.4, pointRadius: 5, pointBackgroundColor: colors.brand
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { stepSize: 1 } }, x: { grid: { display: false } } } }
+                });
+            }
+
+            // 4. Radar
+            const canvasRadar = document.getElementById('teamPerformanceRadarChart');
+            if (canvasRadar) {
+                const radarDatasets = (chartsData.radarDatasets || []).map((ds, index) => ({
+                    ...ds,
+                    borderColor: colors.palette[index % colors.palette.length],
+                    backgroundColor: hexToRgba(colors.palette[index % colors.palette.length], 0.2),
+                    pointBackgroundColor: colors.palette[index % colors.palette.length]
+                }));
+
+                const ctxRadar = canvasRadar.getContext('2d');
+                new Chart(ctxRadar, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Tấn công', 'Phòng ngự', 'Kiểm soát', 'Kỷ luật', 'Thể lực'],
+                        datasets: radarDatasets.length > 0 ? radarDatasets : [{
+                            label: 'Chưa có dữ liệu',
+                            data: [0, 0, 0, 0, 0]
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, elements: { line: { borderWidth: 2 } },
+                        scales: { r: { angleLines: { display: true }, suggestedMin: 0, suggestedMax: 100, ticks: { display: false } } },
+                        plugins: { legend: { position: 'bottom', labels: { usePointStyle: true } } }
+                    }
+                });
+            }
+        }
+
+        // Wait a bit for Chart.js to be available if loaded asynchronously
+        if (document.readyState === 'complete') {
+            initAllCharts();
+        } else {
+            window.addEventListener('load', initAllCharts);
+        }
+        
+        // Also call it immediately for AJAX loads
+        setTimeout(initAllCharts, 50);
+        /*]]>*/
     </script>
 </div>

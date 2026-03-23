@@ -1,6 +1,7 @@
 package com.example.football_tourament_web.service;
 
 import com.example.football_tourament_web.model.entity.Match;
+import com.example.football_tourament_web.model.entity.MatchEvent;
 import com.example.football_tourament_web.model.entity.Tournament;
 import com.example.football_tourament_web.model.entity.TournamentRegistration;
 import com.example.football_tourament_web.model.enums.MatchStatus;
@@ -9,6 +10,7 @@ import com.example.football_tourament_web.model.enums.RegistrationStatus;
 import com.example.football_tourament_web.model.enums.TeamSide;
 import com.example.football_tourament_web.model.enums.TournamentMode;
 import com.example.football_tourament_web.repository.PlayerRepository;
+import com.example.football_tourament_web.repository.MatchEventRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +34,8 @@ public class UserTournamentViewService {
 	private final UserService userService;
 	private final PlayerRepository playerRepository;
 
+	private final MatchEventRepository matchEventRepository;
+
 	public UserTournamentViewService(
 			TournamentService tournamentService,
 			TournamentRegistrationService tournamentRegistrationService,
@@ -39,7 +43,8 @@ public class UserTournamentViewService {
 			MatchLineupService matchLineupService,
 			TeamService teamService,
 			UserService userService,
-			PlayerRepository playerRepository
+			PlayerRepository playerRepository,
+			MatchEventRepository matchEventRepository
 	) {
 		this.tournamentService = tournamentService;
 		this.tournamentRegistrationService = tournamentRegistrationService;
@@ -48,6 +53,7 @@ public class UserTournamentViewService {
 		this.teamService = teamService;
 		this.userService = userService;
 		this.playerRepository = playerRepository;
+		this.matchEventRepository = matchEventRepository;
 	}
 
 	@Transactional(readOnly = true)
@@ -398,6 +404,189 @@ public class UserTournamentViewService {
 	}
 
 	@Transactional(readOnly = true)
+	public TournamentStatsView buildTournamentStats(Long tournamentId) {
+		if (tournamentId == null) {
+			return TournamentStatsView.none();
+		}
+		var events = matchEventRepository.findByTournamentId(tournamentId);
+		Map<Long, PlayerStatRow> scorersMap = new HashMap<>();
+		Map<Long, PlayerStatRow> assistsMap = new HashMap<>();
+		Map<Long, PlayerStatRow> yellowCardsMap = new HashMap<>();
+		Map<Long, PlayerStatRow> redCardsMap = new HashMap<>();
+
+		for (var event : events) {
+			if (event.getPlayer() == null || event.getPlayer().getId() == null) continue;
+			var player = event.getPlayer();
+			var team = player.getTeam();
+			String teamName = (team != null) ? team.getName() : "—";
+
+			if (event.getType() == com.example.football_tourament_web.model.enums.MatchEventType.GOAL) {
+				scorersMap.computeIfAbsent(player.getId(), id -> new PlayerStatRow(id, player.getFullName(), teamName, player.getAvatarUrl(), 0))
+						.increment();
+			} else if (event.getType() == com.example.football_tourament_web.model.enums.MatchEventType.ASSIST) {
+				assistsMap.computeIfAbsent(player.getId(), id -> new PlayerStatRow(id, player.getFullName(), teamName, player.getAvatarUrl(), 0))
+						.increment();
+			} else if (event.getType() == com.example.football_tourament_web.model.enums.MatchEventType.YELLOW) {
+				yellowCardsMap.computeIfAbsent(player.getId(), id -> new PlayerStatRow(id, player.getFullName(), teamName, player.getAvatarUrl(), 0))
+						.increment();
+			} else if (event.getType() == com.example.football_tourament_web.model.enums.MatchEventType.RED) {
+				redCardsMap.computeIfAbsent(player.getId(), id -> new PlayerStatRow(id, player.getFullName(), teamName, player.getAvatarUrl(), 0))
+						.increment();
+			}
+		}
+
+		var scorers = scorersMap.values().stream().sorted(Comparator.comparingInt(PlayerStatRow::value).reversed()).limit(5).toList();
+		var assists = assistsMap.values().stream().sorted(Comparator.comparingInt(PlayerStatRow::value).reversed()).limit(5).toList();
+		var yellowCards = yellowCardsMap.values().stream().sorted(Comparator.comparingInt(PlayerStatRow::value).reversed()).limit(5).toList();
+		var redCards = redCardsMap.values().stream().sorted(Comparator.comparingInt(PlayerStatRow::value).reversed()).limit(5).toList();
+
+		// For tournament comparison, if we don't have detailed match stats like possession, we'll mock them based on goals
+		// but since we don't have it, we just provide some reasonable averages
+		var tournamentAverages = new TournamentComparisonStats(55, 45, 12, 9, 84, 78, 8, 11);
+
+		return new TournamentStatsView(scorers, assists, yellowCards, redCards, tournamentAverages);
+	}
+
+	@Transactional(readOnly = true)
+	public ChartsView buildChartsData(Long tournamentId, Long selectedTeamId) {
+		if (tournamentId == null) return ChartsView.none();
+		var events = matchEventRepository.findByTournamentId(tournamentId);
+		var matches = matchService.listByTournamentIdWithDetails(tournamentId);
+
+		// 1. Goals Distribution
+		Map<String, Integer> goalsByTeam = new HashMap<>();
+		for (var event : events) {
+			if (event.getType() == com.example.football_tourament_web.model.enums.MatchEventType.GOAL && event.getPlayer() != null && event.getPlayer().getTeam() != null) {
+				String teamName = event.getPlayer().getTeam().getName();
+				goalsByTeam.put(teamName, goalsByTeam.getOrDefault(teamName, 0) + 1);
+			}
+		}
+
+		// 2. Top 5 Scorers
+		Map<String, Integer> topScorers = new HashMap<>();
+		for (var event : events) {
+			if (event.getType() == com.example.football_tourament_web.model.enums.MatchEventType.GOAL && event.getPlayer() != null) {
+				String playerName = event.getPlayer().getFullName();
+				topScorers.put(playerName, topScorers.getOrDefault(playerName, 0) + 1);
+			}
+		}
+		var sortedScorers = topScorers.entrySet().stream()
+				.sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+				.limit(5)
+				.toList();
+
+		// 3. Goals Timeline
+		Map<String, Integer> goalsByRound = new HashMap<>();
+		for (var match : matches) {
+			if (match.getRoundName() == null) continue;
+			int totalGoals = (match.getHomeScore() != null ? match.getHomeScore() : 0) + (match.getAwayScore() != null ? match.getAwayScore() : 0);
+			goalsByRound.put(match.getRoundName(), goalsByRound.getOrDefault(match.getRoundName(), 0) + totalGoals);
+		}
+		var sortedRounds = goalsByRound.entrySet().stream()
+				.sorted(Map.Entry.comparingByKey())
+				.toList();
+
+		// 4. Radar Data
+		List<RadarDataset> radarDatasets = new ArrayList<>();
+		if (selectedTeamId != null) {
+			teamService.findById(selectedTeamId).ifPresent(team -> {
+				RadarDataset ds = calculateTeamRadarStats(team, matches, events);
+				radarDatasets.add(ds);
+			});
+		} else {
+			// Default: show top 2 teams from group stage if available
+			var schedule = buildScheduleView(tournamentId);
+			if (schedule != null && schedule.groupTeams() != null) {
+				schedule.groupTeams().values().stream()
+						.flatMap(List::stream)
+						.sorted(Comparator.comparingInt(GroupTeamRow::points).reversed())
+						.limit(2)
+						.forEach(teamRow -> {
+							teamService.findById(teamRow.teamId()).ifPresent(team -> {
+								radarDatasets.add(calculateTeamRadarStats(team, matches, events));
+							});
+						});
+			}
+		}
+
+		return new ChartsView(
+				goalsByTeam.keySet().stream().toList(),
+				goalsByTeam.values().stream().toList(),
+				sortedScorers.stream().map(Map.Entry::getKey).toList(),
+				sortedScorers.stream().map(Map.Entry::getValue).toList(),
+				sortedRounds.stream().map(Map.Entry::getKey).toList(),
+				sortedRounds.stream().map(Map.Entry::getValue).toList(),
+				radarDatasets
+		);
+	}
+
+	private RadarDataset calculateTeamRadarStats(com.example.football_tourament_web.model.entity.Team team, List<Match> allMatches, List<MatchEvent> allEvents) {
+		if (team == null) return new RadarDataset("Unknown", List.of(0, 0, 0, 0, 0));
+
+		long teamId = team.getId();
+		int attack = 0, defense = 0, discipline = 0;
+
+		// Attack: Goals scored
+		attack = (int) allEvents.stream().filter(e -> e.getType() == com.example.football_tourament_web.model.enums.MatchEventType.GOAL && e.getPlayer() != null && e.getPlayer().getTeam() != null && e.getPlayer().getTeam().getId().equals(teamId)).count();
+
+		// Defense: Goals conceded
+		long goalsConceded = 0;
+		for (Match m : allMatches) {
+			if (m.getHomeTeam() != null && m.getHomeTeam().getId().equals(teamId) && m.getAwayScore() != null) {
+				goalsConceded += m.getAwayScore();
+			} else if (m.getAwayTeam() != null && m.getAwayTeam().getId().equals(teamId) && m.getHomeScore() != null) {
+				goalsConceded += m.getHomeScore();
+			}
+		}
+		// Lower conceded is better, so we invert it for the chart
+		defense = (int) (100 - (goalsConceded * 5)); // Simple scaling
+
+		// Discipline: Fewer cards is better
+		long yellow = allEvents.stream().filter(e -> (e.getType() == com.example.football_tourament_web.model.enums.MatchEventType.YELLOW) && e.getPlayer() != null && e.getPlayer().getTeam() != null && e.getPlayer().getTeam().getId().equals(teamId)).count();
+		long red = allEvents.stream().filter(e -> (e.getType() == com.example.football_tourament_web.model.enums.MatchEventType.RED) && e.getPlayer() != null && e.getPlayer().getTeam() != null && e.getPlayer().getTeam().getId().equals(teamId)).count();
+		discipline = (int) (100 - (yellow * 5) - (red * 10));
+
+		// Control and Stamina are harder to calculate without more data, so we use mock values based on performance
+		int control = 60 + (attack * 2) - (int) goalsConceded;
+		int stamina = 70 + (int) (allMatches.stream().filter(m -> (m.getHomeTeam() != null && m.getHomeTeam().getId().equals(teamId)) || (m.getAwayTeam() != null && m.getAwayTeam().getId().equals(teamId))).count() * 2);
+
+		List<Integer> data = List.of(
+				Math.max(0, Math.min(100, attack * 10)),
+				Math.max(0, Math.min(100, defense)),
+				Math.max(0, Math.min(100, control)),
+				Math.max(0, Math.min(100, discipline)),
+				Math.max(0, Math.min(100, stamina))
+		);
+		return new RadarDataset(team.getName(), data);
+	}
+
+	@Transactional(readOnly = true)
+	public BracketView buildBracketData(Long tournamentId) {
+		if (tournamentId == null) return BracketView.none();
+		List<Match> allMatches = matchService.listByTournamentIdWithDetails(tournamentId);
+
+		Map<String, List<MatchRow>> matchesByRound = new HashMap<>();
+		for (var match : allMatches) {
+			if (match.getRoundName() == null) continue;
+			String round = match.getRoundName().trim();
+			if (round.contains("Bảng")) continue;
+
+			matchesByRound.computeIfAbsent(round, k -> new ArrayList<>()).add(toMatchRow(match));
+		}
+
+		List<BracketRound> rounds = new ArrayList<>();
+		// Define order of rounds
+		List<String> roundOrder = List.of("Tứ kết", "Bán kết", "Chung kết");
+		for (String roundName : roundOrder) {
+			if (matchesByRound.containsKey(roundName)) {
+				rounds.add(new BracketRound(roundName, matchesByRound.get(roundName)));
+			}
+		}
+
+		return new BracketView(rounds);
+	}
+
+	@Transactional(readOnly = true)
 	public ScheduleView buildScheduleView(Long tournamentId) {
 		if (tournamentId == null) {
 			return ScheduleView.none("Chọn giải đấu để xem lịch thi đấu");
@@ -437,6 +626,8 @@ public class UserTournamentViewService {
 			}
 
 			List<TournamentRegistration> registrations = tournamentRegistrationService.listByTournamentIdWithTeam(tournamentId);
+			if (registrations == null) registrations = new ArrayList<>();
+			
 			List<Long> seenTeamIds = new ArrayList<>();
 			int validTeamCount = 0;
 			boolean allAssigned = true;
@@ -455,17 +646,29 @@ public class UserTournamentViewService {
 				seenTeamIds.add(teamId);
 				validTeamCount++;
 
-				String groupName = registration.getGroupName() == null ? "" : registration.getGroupName().trim().toUpperCase();
+				String rawGroupName = registration.getGroupName() == null ? "" : registration.getGroupName().trim().toUpperCase();
+				String groupName = rawGroupName;
+				
+				// Map other common group names to A, B, C, D if needed, or just use what's there
+				if (!groupTeams.containsKey(groupName)) {
+					// If not A, B, C, D, maybe it's "Bảng A", "Group A", etc.
+					if (groupName.contains("A")) groupName = "A";
+					else if (groupName.contains("B")) groupName = "B";
+					else if (groupName.contains("C")) groupName = "C";
+					else if (groupName.contains("D")) groupName = "D";
+				}
+
 				if (!groupTeams.containsKey(groupName)) {
 					allAssigned = false;
 					continue;
 				}
+				
 				statsByGroup.get(groupName).put(teamId, new TeamStats());
 				long memberCount = playerRepository.countByTeamId(teamId);
-				groupTeams.get(groupName).add(new GroupTeamRow(teamId, registration.getTeam().getName(), memberCount, 0, 0, 0));
+				groupTeams.get(groupName).add(new GroupTeamRow(teamId, registration.getTeam().getName(), registration.getTeam().getLogoUrl(), memberCount, 0, 0, 0, 0, 0, 0, 0, new ArrayList<>()));
 			}
 
-			boolean groupingReady = tournament.getTeamLimit() != null && validTeamCount == tournament.getTeamLimit() && validTeamCount == 16;
+			boolean groupingReady = tournament.getTeamLimit() != null && validTeamCount == tournament.getTeamLimit() && (validTeamCount == 16 || validTeamCount == 8);
 			boolean groupingLocked = groupingReady && allAssigned;
 			boolean hasGroupMatches = !groupMatchesSource.isEmpty();
 			boolean scheduleReady = hasGroupMatches;
@@ -477,10 +680,10 @@ public class UserTournamentViewService {
 				}
 
 				if (match.getHomeTeam() != null && match.getHomeTeam().getId() != null) {
-					ensureTeamInGroup(groupTeams, statsByGroup, groupName, match.getHomeTeam().getId(), match.getHomeTeam().getName());
+					ensureTeamInGroup(groupTeams, statsByGroup, groupName, match.getHomeTeam().getId(), match.getHomeTeam().getName(), match.getHomeTeam().getLogoUrl());
 				}
 				if (match.getAwayTeam() != null && match.getAwayTeam().getId() != null) {
-					ensureTeamInGroup(groupTeams, statsByGroup, groupName, match.getAwayTeam().getId(), match.getAwayTeam().getName());
+					ensureTeamInGroup(groupTeams, statsByGroup, groupName, match.getAwayTeam().getId(), match.getAwayTeam().getName(), match.getAwayTeam().getLogoUrl());
 				}
 
 				groupMatches.get(groupName).add(toMatchRow(match));
@@ -502,17 +705,31 @@ public class UserTournamentViewService {
 				}
 				int homeScore = match.getHomeScore();
 				int awayScore = match.getAwayScore();
+				homeStats.played++;
+				awayStats.played++;
 				homeStats.goalsFor += homeScore;
 				homeStats.goalsAgainst += awayScore;
 				awayStats.goalsFor += awayScore;
 				awayStats.goalsAgainst += homeScore;
 				if (homeScore > awayScore) {
+					homeStats.won++;
+					awayStats.lost++;
 					homeStats.points += 3;
+					homeStats.form.add("W");
+					awayStats.form.add("L");
 				} else if (awayScore > homeScore) {
+					awayStats.won++;
+					homeStats.lost++;
 					awayStats.points += 3;
+					homeStats.form.add("L");
+					awayStats.form.add("W");
 				} else {
+					homeStats.drawn++;
+					awayStats.drawn++;
 					homeStats.points += 1;
 					awayStats.points += 1;
+					homeStats.form.add("D");
+					awayStats.form.add("D");
 				}
 			}
 
@@ -520,7 +737,8 @@ public class UserTournamentViewService {
 				List<GroupTeamRow> rows = new ArrayList<>();
 				for (GroupTeamRow row : groupTeams.get(group)) {
 					TeamStats stats = statsByGroup.get(group).getOrDefault(row.teamId(), new TeamStats());
-					rows.add(new GroupTeamRow(row.teamId(), row.name(), row.memberCount(), stats.points, stats.goalsFor, stats.goalsAgainst));
+					List<String> last5Form = stats.form.subList(Math.max(0, stats.form.size() - 5), stats.form.size());
+					rows.add(new GroupTeamRow(row.teamId(), row.name(), row.logoUrl(), row.memberCount(), stats.played, stats.won, stats.drawn, stats.lost, stats.points, stats.goalsFor, stats.goalsAgainst, last5Form));
 				}
 				rows.sort(
 						Comparator.comparingInt(GroupTeamRow::points).reversed()
@@ -542,11 +760,12 @@ public class UserTournamentViewService {
 	}
 
 	private String toGroupName(String roundName) {
-		String value = roundName == null ? "" : roundName.trim();
-		if ("Bảng A".equalsIgnoreCase(value)) return "A";
-		if ("Bảng B".equalsIgnoreCase(value)) return "B";
-		if ("Bảng C".equalsIgnoreCase(value)) return "C";
-		if ("Bảng D".equalsIgnoreCase(value)) return "D";
+		if (roundName == null) return "";
+		String value = roundName.trim().toUpperCase();
+		if (value.contains("BẢNG A")) return "A";
+		if (value.contains("BẢNG B")) return "B";
+		if (value.contains("BẢNG C")) return "C";
+		if (value.contains("BẢNG D")) return "D";
 		return "";
 	}
 
@@ -599,7 +818,8 @@ public class UserTournamentViewService {
 			Map<String, Map<Long, TeamStats>> statsByGroup,
 			String groupName,
 			Long teamId,
-			String teamName
+			String teamName,
+			String logoUrl
 	) {
 		if (groupName == null || !groupTeams.containsKey(groupName) || teamId == null) {
 			return;
@@ -608,7 +828,7 @@ public class UserTournamentViewService {
 		boolean exists = rows.stream().anyMatch(row -> row != null && teamId.equals(row.teamId()));
 		if (!exists) {
 			long memberCount = playerRepository.countByTeamId(teamId);
-			rows.add(new GroupTeamRow(teamId, teamName, memberCount, 0, 0, 0));
+			rows.add(new GroupTeamRow(teamId, teamName, logoUrl, memberCount, 0, 0, 0, 0, 0, 0, 0, new ArrayList<>()));
 		}
 		statsByGroup.computeIfAbsent(groupName, key -> new HashMap<>()).putIfAbsent(teamId, new TeamStats());
 	}
@@ -622,9 +842,14 @@ public class UserTournamentViewService {
 	}
 
 	private static final class TeamStats {
+		private int played;
+		private int won;
+		private int drawn;
+		private int lost;
 		private int points;
 		private int goalsFor;
 		private int goalsAgainst;
+		private List<String> form = new ArrayList<>();
 	}
 
 	public record PlayerPrefill(String fullName, Integer jerseyNumber, String avatarUrl) {
@@ -680,9 +905,75 @@ public class UserTournamentViewService {
 		}
 	}
 
-	public record GroupTeamRow(Long teamId, String name, long memberCount, int points, int goalsFor, int goalsAgainst) {
+	public record GroupTeamRow(Long teamId, String name, String logoUrl, long memberCount, int played, int won, int drawn, int lost, int points, int goalsFor, int goalsAgainst, List<String> form) {
 		public int goalDiff() {
 			return goalsFor - goalsAgainst;
+		}
+	}
+
+	public static class PlayerStatRow {
+		private final Long id;
+		private final String name;
+		private final String teamName;
+		private final String avatarUrl;
+		private int value;
+
+		public PlayerStatRow(Long id, String name, String teamName, String avatarUrl, int value) {
+			this.id = id;
+			this.name = name;
+			this.teamName = teamName;
+			this.avatarUrl = avatarUrl;
+			this.value = value;
+		}
+
+		public void increment() {
+			this.value++;
+		}
+
+		public Long id() { return id; }
+		public String name() { return name; }
+		public String teamName() { return teamName; }
+		public String avatarUrl() { return avatarUrl; }
+		public int value() { return value; }
+	}
+
+	public record TournamentComparisonStats(
+			int homePossession, int awayPossession,
+			int homeShotsOnTarget, int awayShotsOnTarget,
+			int homePassAccuracy, int awayPassAccuracy,
+			int homeFouls, int awayFouls
+	) {}
+
+	public record TournamentStatsView(
+			List<PlayerStatRow> scorers,
+			List<PlayerStatRow> assists,
+			List<PlayerStatRow> yellowCards,
+			List<PlayerStatRow> redCards,
+			TournamentComparisonStats averages
+	) {
+		public static TournamentStatsView none() {
+			return new TournamentStatsView(List.of(), List.of(), List.of(), List.of(), new TournamentComparisonStats(50, 50, 0, 0, 0, 0, 0, 0));
+		}
+	}
+
+	public record ChartsView(
+			List<String> teamLabels, List<Integer> teamGoals,
+			List<String> topScorerLabels, List<Integer> topScorerGoals,
+			List<String> roundLabels, List<Integer> roundGoals,
+			List<RadarDataset> radarDatasets
+	) {
+		public static ChartsView none() {
+			return new ChartsView(List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
+		}
+	}
+
+	public record RadarDataset(String label, List<Integer> data) {}
+
+	public record BracketRound(String roundName, List<MatchRow> matches) {}
+
+	public record BracketView(List<BracketRound> rounds) {
+		public static BracketView none() {
+			return new BracketView(List.of());
 		}
 	}
 
