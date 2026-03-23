@@ -287,35 +287,44 @@
         }
 
         /* --- User Management Styling --- */
-        .user-card {
-            background-color: var(--surface);
-            border-radius: var(--radius-lg);
-            padding: 30px;
-            min-height: 500px;
+        .page {
+            display: grid;
+            gap: 18px;
         }
 
-        .user-card__header {
+        .page__header {
             display: flex;
+            align-items: flex-start;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
+            gap: 16px;
         }
 
-        .user-card__title {
-            font-size: 20px;
-            font-weight: 700;
+        .page__title {
             margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 0.2px;
         }
 
-        .btn-add-user {
-            background-color: #009cff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
+        .page__subtitle {
+            margin: 6px 0 0;
             font-size: 14px;
-            cursor: pointer;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .card {
+            background: #fff;
+            border-radius: var(--radius-xl);
+            border: 1px solid rgba(17, 24, 39, 0.08);
+            padding: 22px;
+        }
+
+        .tableWrap {
+            border: 1px solid rgba(17, 24, 39, 0.08);
+            border-radius: 16px;
+            overflow: hidden;
+            background: #fff;
         }
 
         .user-table {
@@ -325,43 +334,88 @@
 
         .user-table th {
             text-align: left;
-            padding: 12px 10px;
-            border-bottom: 2px solid #ccc;
-            font-weight: 700;
-            font-size: 15px;
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+            font-weight: 800;
+            font-size: 14px;
             color: var(--text);
+            background: var(--surface);
         }
 
         .user-table td {
-            padding: 15px 10px;
+            padding: 14px 16px;
             font-size: 14px;
-            color: #666;
-            border-bottom: 1px solid #e0e0e0;
+            color: var(--text);
+            border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+            font-weight: 600;
+        }
+
+        .user-table tbody tr:hover td {
+            background: rgba(243, 246, 249, 0.75);
         }
 
         .action-btns {
             display: flex;
-            gap: 4px;
+            gap: 8px;
         }
 
         .btn-act {
-            border: none;
-            padding: 4px 8px;
-            border-radius: 4px;
-            color: white;
-            font-size: 11px;
-            font-weight: 500;
+            border: 1px solid;
+            padding: 8px 14px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 800;
             cursor: pointer;
             white-space: nowrap;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .btn-act--detail { background-color: #f39c12; }
-        .btn-act--edit { background-color: #009cff; }
-        .btn-act--delete { background-color: #e74c3c; }
+        .btn-act--detail {
+            background: rgba(0, 156, 255, 0.10);
+            border-color: rgba(0, 156, 255, 0.35);
+            color: #0074be;
+        }
+
+        .btn-act--detail:hover {
+            background: rgba(0, 156, 255, 0.16);
+            border-color: rgba(0, 156, 255, 0.5);
+        }
 
         .status-text {
             font-style: italic;
             color: #999;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 28px;
+            padding: 0 12px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 800;
+            border: 1px solid;
+        }
+
+        .status-badge--active {
+            background: rgba(46, 125, 50, 0.10);
+            border-color: rgba(46, 125, 50, 0.35);
+            color: #2e7d32;
+        }
+
+        .status-badge--locked {
+            background: rgba(198, 40, 40, 0.10);
+            border-color: rgba(198, 40, 40, 0.35);
+            color: #c62828;
+        }
+
+        .muted {
+            color: var(--muted);
+            font-weight: 700;
         }
 
         .footer {
@@ -391,6 +445,7 @@
             .content { padding: 18px; }
             .search { width: 100%; flex: 1 1 auto; }
             .pill { display: none; }
+            .page__header { flex-direction: column; align-items: stretch; }
         }
     </style>
 </head>
@@ -402,13 +457,16 @@
     <main class="content">
         <header th:replace="~{admin/fragments_admin/header :: header (searchPlaceholder='Tìm kiếm người dùng...')}"></header>
 
-            <section class="user-card" aria-label="Quản lý người dùng">
-                <div class="user-card__header">
-                    <h1 class="user-card__title">Quản lý Người dùng</h1>
-                    <p th:if="${userLockMessage != null}" class="auth-hint" th:text="${userLockMessage}">---</p>
+            <section class="page" aria-label="Quản lý người dùng">
+                <div class="page__header">
+                    <div>
+                        <h1 class="page__title">Quản lý người dùng</h1>
+                        <p class="page__subtitle">Xem danh sách người dùng, trạng thái và mở trang chi tiết</p>
+                    </div>
                 </div>
 
-                <div class="tableWrap" style="border: none; background: transparent;">
+                <div class="card">
+                <div class="tableWrap">
                     <table class="user-table">
                         <thead>
                             <tr>
@@ -423,7 +481,7 @@
                         </thead>
                         <tbody>
                             <tr th:if="${users == null or #lists.isEmpty(users)}">
-                                <td colspan="7">Chưa có user role USER trong hệ thống</td>
+                                <td colspan="7" class="muted">Chưa có user role USER trong hệ thống</td>
                             </tr>
                             <tr th:each="u,iter : ${users}">
                                 <td th:text="${iter.count}">1</td>
@@ -431,15 +489,22 @@
                                 <td th:text="${u.fullName != null and !#strings.isEmpty(u.fullName) ? u.fullName : 'Chưa cập nhật'}">Họ tên</td>
                                 <td th:text="${u.email}">email</td>
                                 <td>User</td>
-                                <td class="status-text" th:text="${u.status != null ? #strings.toLowerCase(u.status.name()) : 'inactive'}">active</td>
+                                <td>
+                                    <span
+                                        class="status-badge"
+                                        th:classappend="${u.status != null and u.status.name() == 'LOCKED' ? ' status-badge--locked' : ' status-badge--active'}"
+                                        th:text="${u.status != null and u.status.name() == 'LOCKED' ? 'Đã khóa' : 'Đang hoạt động'}"
+                                    >Đang hoạt động</span>
+                                </td>
                                 <td>
                                     <div class="action-btns">
-                                        <a th:href="@{/admin/manage/user-detail(userId=${u.id})}" class="btn-act btn-act--detail" style="text-decoration: none;">Chi tiết</a>
+                                        <a th:href="@{/admin/manage/user-detail(userId=${u.id})}" class="btn-act btn-act--detail">Chi tiết</a>
                                     </div>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
                 </div>
             </section>
 
