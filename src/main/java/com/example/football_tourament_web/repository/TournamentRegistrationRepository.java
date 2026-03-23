@@ -50,6 +50,16 @@ public interface TournamentRegistrationRepository extends JpaRepository<Tourname
 	@Query("""
 			select r
 			from TournamentRegistration r
+			join fetch r.team tm
+			left join fetch tm.captain c
+			left join fetch r.tournament t
+			where r.id = :id
+			""")
+	Optional<TournamentRegistration> findByIdWithTeamAndTournament(@Param("id") Long id);
+
+	@Query("""
+			select r
+			from TournamentRegistration r
 			join fetch r.tournament t
 			where r.team.id = :teamId and r.status = :status
 			order by r.createdAt desc
