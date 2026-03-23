@@ -269,33 +269,54 @@
         }
 
         /* Invoice specific styles */
-        .section-title {
-            font-size: 32px;
+        .page {
+            display: grid;
+            gap: 18px;
+        }
+
+        .page__header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .page__title {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 0.2px;
+        }
+
+        .page__subtitle {
+            margin: 6px 0 0;
+            font-size: 14px;
             font-weight: 600;
-            margin-bottom: 24px;
-            color: #111827;
+            color: var(--muted);
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .invoice-tabs {
             display: flex;
             gap: 12px;
-            margin-bottom: 30px;
             width: fit-content;
-        }
-
-        .invoice-tabs {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 30px;
-            width: fit-content;
+            flex-wrap: wrap;
         }
 
         .invoice-tab {
             padding: 10px 20px;
             background: #fff;
             border: 1px solid var(--border);
-            border-radius: 8px;
-            font-weight: 500;
+            border-radius: 9999px;
+            font-weight: 800;
             font-size: 14px;
             cursor: pointer;
             color: var(--muted);
@@ -335,11 +356,11 @@
             left: 0;
             background: #fff;
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 12px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.12);
             display: none;
             flex-direction: column;
-            min-width: 160px;
+            min-width: 240px;
             z-index: 100;
             overflow: hidden;
             margin-top: 2px;
@@ -367,74 +388,120 @@
             height: 14px !important;
         }
 
-        /* Update search styling to match */
-        .search {
-            height: 42px;
-            width: 280px;
-            border-radius: 8px;
+        .pageSearch {
+            height: 44px;
+            width: 340px;
+            border-radius: 9999px;
             background: #fff;
-            border: 1px solid var(--border);
-            padding: 0 12px;
+            border: 1px solid rgba(17, 24, 39, 0.10);
+            padding: 0 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
-        .search input {
+        .pageSearch input {
             font-size: 14px;
+            border: 0;
+            outline: none;
+            background: transparent;
+            width: 100%;
+            color: var(--text);
+            font-weight: 600;
         }
 
         .table-container {
-            border: 2px solid #000;
-            border-radius: 0;
-            overflow: hidden;
+            border: 1px solid rgba(17, 24, 39, 0.08);
+            border-radius: 16px;
+            overflow: auto;
             background: #fff;
         }
 
         .data-table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 860px;
         }
 
         .data-table th, .data-table td {
-            border: 1px solid #000;
-            padding: 16px;
-            text-align: center;
-            font-size: 16px;
-            font-weight: 700;
-            color: #000;
+            border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
         }
 
         .data-table th {
-            background: #fff;
+            background: var(--surface);
+            border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+            font-weight: 800;
         }
 
-        .badge {
+        .data-table tbody tr:hover td {
+            background: rgba(243, 246, 249, 0.75);
+        }
+
+        .amountCell {
+            text-align: right;
+        }
+
+        .status-badge {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            height: 32px;
-            width: 160px;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 14px;
-            color: #fff;
-            text-align: center;
+            height: 28px;
+            padding: 0 12px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 800;
+            border: 1px solid;
+            white-space: nowrap;
         }
 
-        .badge--success {
-            background: #2e7d32;
+        .status-badge--success {
+            background: rgba(46, 125, 50, 0.10);
+            border-color: rgba(46, 125, 50, 0.35);
+            color: #2e7d32;
         }
 
-        .badge--fail {
-            background: #d32f2f;
+        .status-badge--failed {
+            background: rgba(198, 40, 40, 0.10);
+            border-color: rgba(198, 40, 40, 0.35);
+            color: #c62828;
+        }
+
+        .status-badge--pending {
+            background: rgba(251, 191, 36, 0.18);
+            border-color: rgba(251, 191, 36, 0.45);
+            color: #9a6400;
+        }
+
+        .status-badge--unknown {
+            background: rgba(107, 114, 128, 0.12);
+            border-color: rgba(107, 114, 128, 0.35);
+            color: rgba(17, 24, 39, 0.8);
         }
 
         .btn-detail {
-            background: #fff;
-            border: 1.5px solid #000;
-            border-radius: 20px;
-            padding: 6px 20px;
-            font-weight: 700;
-            font-size: 14px;
+            background: rgba(0, 156, 255, 0.10);
+            border: 1px solid rgba(0, 156, 255, 0.35);
+            border-radius: 9999px;
+            padding: 8px 14px;
+            font-weight: 800;
+            font-size: 13px;
             cursor: pointer;
+            color: #0074be;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-detail:hover {
+            background: rgba(0, 156, 255, 0.16);
+            border-color: rgba(0, 156, 255, 0.5);
         }
 
         /* Pagination Styles */
@@ -455,7 +522,7 @@
             width: 36px;
             height: 36px;
             border: 1px solid var(--border);
-            border-radius: 4px;
+            border-radius: 12px;
             background: #fff;
             display: flex;
             align-items: center;
@@ -513,6 +580,7 @@
         @media (max-width: 900px) {
             .sidebar { display: none; }
             .content { padding: 18px; }
+            .pageSearch { width: 100%; }
         }
     </style>
 </head>
@@ -523,9 +591,15 @@
     <main class="content">
         <header th:replace="~{admin/fragments_admin/header :: header}"></header>
 
-        <h1 class="section-title">Danh Sách Hóa Đơn</h1>
+        <section class="page" aria-label="Quản lý hóa đơn">
+        <div class="page__header">
+            <div>
+                <h1 class="page__title">Danh sách hóa đơn</h1>
+                <p class="page__subtitle">Theo dõi các giao dịch nạp tiền và trạng thái thanh toán</p>
+            </div>
+        </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px;">
+        <div class="controls">
             <div class="invoice-tabs">
                 <a th:href="@{/admin/invoice-management(status='ALL', sort=${currentSort}, search=${currentSearch})}" 
                    class="invoice-tab invoice-tab--all" th:classappend="${currentStatus == 'ALL'} ? 'invoice-tab--active' : ''">Tất cả</a>
@@ -557,7 +631,7 @@
                 </div>
             </div>
 
-            <form th:action="@{/admin/invoice-management}" method="get" class="search" style="margin-bottom: 0; display: flex; align-items: center;">
+            <form th:action="@{/admin/invoice-management}" method="get" class="pageSearch">
                 <input type="hidden" name="status" th:value="${currentStatus}">
                 <input type="hidden" name="sort" th:value="${currentSort}">
                 <button type="submit" style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center;">
@@ -566,10 +640,10 @@
                         <path d="M16.3 16.3 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                     </svg>
                 </button>
-                <input type="text" name="search" th:value="${currentSearch}" placeholder="Tìm mã HĐ, khách hàng..." aria-label="Tìm kiếm" style="flex: 1; margin-left: 8px;">
+                <input type="text" name="search" th:value="${currentSearch}" placeholder="Tìm mã HĐ, khách hàng..." aria-label="Tìm kiếm">
                 <a th:if="${currentSearch != null and !currentSearch.isEmpty()}" 
                    th:href="@{/admin/invoice-management(status=${currentStatus}, sort=${currentSort}, search='')}" 
-                   style="text-decoration: none; color: var(--muted-2); font-size: 18px; padding: 0 4px;">&times;</a>
+                   style="text-decoration: none; color: var(--muted-2); font-size: 18px; padding: 0 6px;">&times;</a>
             </form>
         </div>
 
@@ -577,11 +651,11 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Mã hóa đơn</th>
+                        <th style="width: 160px;">Mã hóa đơn</th>
                         <th>Khách hàng</th>
-                        <th>Ngày xuất HĐ</th>
-                        <th>Tổng tiền</th>
-                        <th>Trạng thái</th>
+                        <th style="width: 200px;">Ngày xuất HĐ</th>
+                        <th style="width: 160px; text-align:right;">Tổng tiền</th>
+                        <th style="width: 160px;">Trạng thái</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -589,12 +663,12 @@
                         <td th:text="${transaction.code}">#INV-102</td>
                         <td th:text="${transaction.user != null ? transaction.user.fullName : 'N/A'}">Nguyen Van B</td>
                         <td th:text="${transaction.createdAt != null ? #temporals.format(transaction.createdAt.atZone(T(java.time.ZoneId).of('Asia/Ho_Chi_Minh')), 'dd/MM/yyyy HH:mm') : 'N/A'}">9/12/2024</td>
-                        <td th:text="${transaction.amount != null ? #numbers.formatDecimal(transaction.amount, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '0 VNĐ'}">5,000,000 VNĐ</td>
+                        <td class="amountCell" th:text="${transaction.amount != null ? #numbers.formatDecimal(transaction.amount, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '0 VNĐ'}">5,000,000 VNĐ</td>
                         <td>
-                            <span th:if="${transaction.status != null and transaction.status.name() == 'SUCCESS'}" class="badge badge--success">Thành công</span>
-                            <span th:if="${transaction.status != null and transaction.status.name() == 'FAILED'}" class="badge badge--fail">Thất bại</span>
-                            <span th:if="${transaction.status != null and transaction.status.name() == 'PENDING'}" class="badge" style="background: #ffa726;">Đang xử lý</span>
-                            <span th:if="${transaction.status == null}" class="badge" style="background: #6b7280;">Không xác định</span>
+                            <span th:if="${transaction.status != null and transaction.status.name() == 'SUCCESS'}" class="status-badge status-badge--success">Thành công</span>
+                            <span th:if="${transaction.status != null and transaction.status.name() == 'FAILED'}" class="status-badge status-badge--failed">Thất bại</span>
+                            <span th:if="${transaction.status != null and transaction.status.name() == 'PENDING'}" class="status-badge status-badge--pending">Đang xử lý</span>
+                            <span th:if="${transaction.status == null}" class="status-badge status-badge--unknown">Không xác định</span>
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(transactions)}">
@@ -625,6 +699,7 @@
             </a>
         </div>
         <footer th:replace="~{admin/fragments_admin/footer :: footer}"></footer>
+        </section>
     </main>
 </div>
 </body>
