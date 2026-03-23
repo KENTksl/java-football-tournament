@@ -12,6 +12,83 @@
     />
     <link rel="stylesheet" th:href="@{/assets/css/user-home.css}" />
     <link rel="stylesheet" th:href="@{/assets/css/user-pages.css}" />
+    <style>
+      .history-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .history-header h2 {
+        margin: 0;
+      }
+
+      .history-subtitle {
+        margin: 6px 0 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+
+      .history-item__top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .history-item__badges {
+        display: inline-flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .history-item__sub {
+        margin: 6px 0 0;
+        font-size: 13px;
+        font-weight: 800;
+        color: rgba(0, 0, 0, 0.66);
+      }
+
+      .history-metaGrid {
+        margin-top: 12px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .history-kv {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: rgba(0, 0, 0, 0.03);
+        border: 1px solid rgba(0, 0, 0, 0.06);
+      }
+
+      .history-kv__k {
+        font-size: 12px;
+        font-weight: 900;
+        color: rgba(0, 0, 0, 0.6);
+      }
+
+      .history-kv__v {
+        font-size: 14px;
+        font-weight: 900;
+      }
+
+      @media (max-width: 980px) {
+        .history-metaGrid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
   </head>
   <body>
     <header th:replace="~{user/fragments/header :: header('profile')}"></header>
@@ -76,19 +153,60 @@
           </aside>
 
           <section class="profile-card" aria-label="Lịch sử đăng ký">
-            <h2>Lịch Sử Đăng Ký</h2>
-            <div class="history-grid">
-              <div class="history-item" th:each="r : ${registrations}">
-                <p class="title" th:text="${r.tournamentName}">Giải đấu</p>
-                <p class="meta">
-                  Đội: <span th:text="${r.teamName}">---</span> •
-                  Ngày: <span th:text="${r.date}">---</span> •
-                  Trạng thái: <span th:text="${r.status}">---</span>
-                </p>
+            <div class="history-header">
+              <div>
+                <h2>Lịch Sử Đăng Ký</h2>
+                <p class="history-subtitle">Theo dõi các giải đấu bạn đã gửi đăng ký và trạng thái xét duyệt.</p>
               </div>
+            </div>
+            <div class="history-grid">
+              <article class="history-item" th:each="r : ${registrations}">
+                <div class="history-item__top">
+                  <div style="min-width: 0;">
+                    <p class="title" th:text="${r.tournamentName ?: '---'}">Giải đấu</p>
+                    <p class="history-item__sub">
+                      Đội: <span th:text="${r.teamName ?: '---'}">---</span>
+                    </p>
+                  </div>
+                  <div class="history-item__badges">
+                    <span
+                      class="badge badge--pending"
+                      th:if="${r.status != null and (#strings.contains(r.status, 'Chờ') or #strings.contains(r.status, 'chờ'))}"
+                      th:text="${r.status}"
+                    >Chờ duyệt</span>
+                    <span
+                      class="badge badge--success"
+                      th:if="${r.status != null and (#strings.contains(r.status, 'Duyệt') or #strings.contains(r.status, 'duyệt'))}"
+                      th:text="${r.status}"
+                    >Đã duyệt</span>
+                    <span
+                      class="badge badge--failed"
+                      th:if="${r.status != null and (#strings.contains(r.status, 'Hủy') or #strings.contains(r.status, 'hủy'))}"
+                      th:text="${r.status}"
+                    >Đã hủy</span>
+                    <span
+                      class="badge"
+                      th:if="${r.status == null or (!#strings.contains(r.status, 'Chờ') and !#strings.contains(r.status, 'chờ') and !#strings.contains(r.status, 'Duyệt') and !#strings.contains(r.status, 'duyệt') and !#strings.contains(r.status, 'Hủy') and !#strings.contains(r.status, 'hủy'))}"
+                      th:text="${r.status ?: '---'}"
+                    >---</span>
+                  </div>
+                </div>
+
+                <div class="history-metaGrid">
+                  <div class="history-kv">
+                    <span class="history-kv__k">Ngày đăng ký</span>
+                    <span class="history-kv__v" th:text="${r.date ?: '---'}">---</span>
+                  </div>
+                  <div class="history-kv">
+                    <span class="history-kv__k">Trạng thái</span>
+                    <span class="history-kv__v" th:text="${r.status ?: '---'}">---</span>
+                  </div>
+                </div>
+              </article>
+
               <div class="history-item" th:if="${registrations == null or #lists.isEmpty(registrations)}">
-                <p class="title">Chưa có dữ liệu</p>
-                <p class="meta">Lịch sử đăng ký sẽ hiển thị tại đây.</p>
+                <p class="title">Chưa có lịch sử đăng ký</p>
+                <p class="meta">Khi bạn đăng ký tham gia giải đấu, thông tin sẽ hiển thị tại đây.</p>
               </div>
             </div>
           </section>

@@ -420,7 +420,39 @@ public class AdminController {
 	}
 
 	@GetMapping("/admin/team-detail")
-	public String teamDetail() {
+	public String teamDetail(
+			@RequestParam(value = "id", required = false) Long registrationId,
+			Model model
+	) {
+		if (registrationId == null) {
+			return "redirect:/admin/team-management";
+		}
+		var regOpt = tournamentRegistrationService.findByIdWithDetails(registrationId);
+		var registration = regOpt.orElse(null);
+		if (registration == null || registration.getTeam() == null || registration.getTeam().getId() == null) {
+			return "redirect:/admin/team-management";
+		}
+		var team = registration.getTeam();
+		Long teamId = team.getId();
+		Long tournamentId = registration.getTournament() == null ? null : registration.getTournament().getId();
+
+		long memberCount = playerRepository.countByTeamId(teamId);
+		List<Player> members = playerRepository.findByTeamIdOrderByJerseyNumberAsc(teamId);
+
+		model.addAttribute("registrationId", registrationId);
+		model.addAttribute("tournamentId", tournamentId);
+		model.addAttribute("submittedAt", formatDate(registration.getCreatedAt()));
+		model.addAttribute("statusLabel", displayRegistrationStatus(registration.getStatus()));
+		model.addAttribute("statusClass", registration.getStatus() == RegistrationStatus.APPROVED ? "badge--approved" : (registration.getStatus() == RegistrationStatus.REJECTED ? "badge--rejected" : "badge--pending"));
+		model.addAttribute("canApproveOrReject", registration.getStatus() == RegistrationStatus.PENDING);
+
+		model.addAttribute("teamName", team.getName());
+		model.addAttribute("captainName", team.getCaptain() == null ? "Chưa cập nhật" : (team.getCaptain().getFullName() == null ? "Chưa cập nhật" : team.getCaptain().getFullName()));
+		model.addAttribute("captainPhone", team.getCaptain() == null || team.getCaptain().getPhone() == null ? "Chưa cập nhật" : team.getCaptain().getPhone());
+		model.addAttribute("teamLogoUrl", team.getLogoUrl());
+		model.addAttribute("createdAt", formatDate(team.getCreatedAt()));
+		model.addAttribute("memberCount", memberCount);
+		model.addAttribute("members", members);
 		return "admin/team/team-detail";
 	}
 
@@ -506,28 +538,17 @@ public class AdminController {
 	@GetMapping({"/admin/manage/user-detail"})
 	public String manageUserDetail(
 			@RequestParam(value = "userId", required = false) Long userId,
-			Model model
+			Model model,
+			RedirectAttributes redirectAttributes
 	) {
 		model.addAttribute("userId", userId);
 		if (userId == null) {
-			model.addAttribute("user", null);
-			model.addAttribute("registeredAt", "—");
-			model.addAttribute("roleLabel", "—");
-			model.addAttribute("statusLabel", "—");
-			model.addAttribute("teamName", "—");
-			model.addAttribute("hasTeam", false);
-			return "admin/manage/user-detail";
+			return "redirect:/admin/manage/user";
 		}
 
 		AppUser user = userService.findById(userId).orElse(null);
 		if (user == null) {
-			model.addAttribute("user", null);
-			model.addAttribute("registeredAt", "—");
-			model.addAttribute("roleLabel", "—");
-			model.addAttribute("statusLabel", "—");
-			model.addAttribute("teamName", "—");
-			model.addAttribute("hasTeam", false);
-			return "admin/manage/user-detail";
+			return "redirect:/admin/manage/user";
 		}
 
 		var team = teamService.findCaptainTeam(userId).orElse(null);
@@ -549,20 +570,14 @@ public class AdminController {
 			RedirectAttributes redirectAttributes
 	) {
 		if (userId == null) {
-			redirectAttributes.addFlashAttribute("userLockMessage", "Thiếu userId");
 			return "redirect:/admin/manage/user";
 		}
 		AppUser user = userService.findById(userId).orElse(null);
 		if (user == null) {
-			redirectAttributes.addFlashAttribute("userLockMessage", "Không tìm thấy người dùng");
 			return "redirect:/admin/manage/user";
 		}
 		UserStatus next = user.getStatus() == UserStatus.LOCKED ? UserStatus.ACTIVE : UserStatus.LOCKED;
 		userService.updateStatus(userId, next);
-		redirectAttributes.addFlashAttribute(
-				"userLockMessage",
-				next == UserStatus.LOCKED ? "Đã khóa tài khoản người dùng" : "Đã mở khóa tài khoản người dùng"
-		);
 		return "redirect:/admin/manage/user-detail?userId=" + userId;
 	}
 
@@ -1505,14 +1520,29 @@ public class AdminController {
 	private record PagedResult<T>(List<T> items, int currentPage, int pageSize, int totalPages) {
 	}
 
-	private record AdminTransactionRow(
-			String code,
-			String description,
-			String amountText,
-			String timeText,
-			String statusLabel,
-			String statusClass
-	) {
+	public static final class AdminTransactionRow {
+		private final String code;
+		private final String description;
+		private final String amountText;
+		private final String timeText;
+		private final String statusLabel;
+		private final String statusClass;
+
+		public AdminTransactionRow(String code, String description, String amountText, String timeText, String statusLabel, String statusClass) {
+			this.code = code;
+			this.description = description;
+			this.amountText = amountText;
+			this.timeText = timeText;
+			this.statusLabel = statusLabel;
+			this.statusClass = statusClass;
+		}
+
+		public String getCode() { return code; }
+		public String getDescription() { return description; }
+		public String getAmountText() { return amountText; }
+		public String getTimeText() { return timeText; }
+		public String getStatusLabel() { return statusLabel; }
+		public String getStatusClass() { return statusClass; }
 	}
 
 	public record PlayerDto(Long id, String fullName, Integer jerseyNumber, String position, String avatarUrl) {
@@ -1568,6 +1598,15 @@ public class AdminController {
 	private String displayMode(TournamentMode mode) {
 		if (mode == null) return "";
 		return mode == TournamentMode.GROUP_STAGE ? "Chia bảng đấu (Group Stage)" : "Knockout";
+	}
+	
+	private String displayRegistrationStatus(RegistrationStatus status) {
+		if (status == null) return "Không xác định";
+		return switch (status) {
+			case PENDING -> "Chờ duyệt";
+			case APPROVED -> "Đã duyệt";
+			case REJECTED -> "Đã hủy";
+		};
 	}
 
 	private String displayTeamFormat(Integer teamLimit) {

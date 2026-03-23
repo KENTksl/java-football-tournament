@@ -9,44 +9,20 @@
                     <span>⚽</span> Vua phá lưới
                 </h3>
                 <div class="stats-list">
-                    <div class="stats-item">
+                    <div th:if="${#lists.isEmpty(stats.scorers)}" class="text-center py-3">Chưa có dữ liệu</div>
+                    <div th:each="p, iter : ${stats.scorers}" class="stats-item">
                         <div class="stats-player-info">
-                            <span class="stats-player-rank">1</span>
+                            <span class="stats-player-rank" th:text="${iter.count}">1</span>
                             <div class="stats-player-avatar">
-                                <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="18" fill="#eee"/><text x="18" y="23" text-anchor="middle" font-size="14" fill="#999">👤</text></svg>
+                                <img th:if="${p.avatarUrl != null and !#strings.isEmpty(p.avatarUrl)}" th:src="${p.avatarUrl}">
+                                <svg th:unless="${p.avatarUrl != null and !#strings.isEmpty(p.avatarUrl)}" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="18" fill="#eee"/><text x="18" y="23" text-anchor="middle" font-size="14" fill="#999">👤</text></svg>
                             </div>
                             <div>
-                                <div class="stats-player-name">Cristiano Ronaldo</div>
-                                <div class="stats-player-team">Manchester United</div>
+                                <div class="stats-player-name" th:text="${p.name}">Cristiano Ronaldo</div>
+                                <div class="stats-player-team" th:text="${p.teamName}">Manchester United</div>
                             </div>
                         </div>
-                        <div class="stats-value">8</div>
-                    </div>
-                    <div class="stats-item">
-                        <div class="stats-player-info">
-                            <span class="stats-player-rank">2</span>
-                            <div class="stats-player-avatar">
-                                <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="18" fill="#eee"/><text x="18" y="23" text-anchor="middle" font-size="14" fill="#999">👤</text></svg>
-                            </div>
-                            <div>
-                                <div class="stats-player-name">Lionel Messi</div>
-                                <div class="stats-player-team">Bayern Munich</div>
-                            </div>
-                        </div>
-                        <div class="stats-value">6</div>
-                    </div>
-                    <div class="stats-item">
-                        <div class="stats-player-info">
-                            <span class="stats-player-rank">3</span>
-                            <div class="stats-player-avatar">
-                                <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="18" fill="#eee"/><text x="18" y="23" text-anchor="middle" font-size="14" fill="#999">👤</text></svg>
-                            </div>
-                            <div>
-                                <div class="stats-player-name">Erling Haaland</div>
-                                <div class="stats-player-team">Chelsea FC</div>
-                            </div>
-                        </div>
-                        <div class="stats-value">5</div>
+                        <div class="stats-value" th:text="${p.value}">8</div>
                     </div>
                 </div>
             </div>
@@ -57,115 +33,25 @@
                     <span>👟</span> Kiến tạo hàng đầu
                 </h3>
                 <div class="stats-list">
-                    <div class="stats-item">
+                    <div th:if="${#lists.isEmpty(stats.assists)}" class="text-center py-3">Chưa có dữ liệu</div>
+                    <div th:each="p, iter : ${stats.assists}" class="stats-item">
                         <div class="stats-player-info">
-                            <span class="stats-player-rank">1</span>
+                            <span class="stats-player-rank" th:text="${iter.count}">1</span>
                             <div class="stats-player-avatar">
-                                <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="18" fill="#eee"/><text x="18" y="23" text-anchor="middle" font-size="14" fill="#999">👤</text></svg>
+                                <img th:if="${p.avatarUrl != null and !#strings.isEmpty(p.avatarUrl)}" th:src="${p.avatarUrl}">
+                                <svg th:unless="${p.avatarUrl != null and !#strings.isEmpty(p.avatarUrl)}" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="18" fill="#eee"/><text x="18" y="23" text-anchor="middle" font-size="14" fill="#999">👤</text></svg>
                             </div>
                             <div>
-                                <div class="stats-player-name">Kevin De Bruyne</div>
-                                <div class="stats-player-team">Manchester United</div>
+                                <div class="stats-player-name" th:text="${p.name}">Kevin De Bruyne</div>
+                                <div class="stats-player-team" th:text="${p.teamName}">Manchester United</div>
                             </div>
                         </div>
-                        <div class="stats-value">10</div>
-                    </div>
-                    <div class="stats-item">
-                        <div class="stats-player-info">
-                            <span class="stats-player-rank">2</span>
-                            <div class="stats-player-avatar">
-                                <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="18" fill="#eee"/><text x="18" y="23" text-anchor="middle" font-size="14" fill="#999">👤</text></svg>
-                            </div>
-                            <div>
-                                <div class="stats-player-name">Bruno Fernandes</div>
-                                <div class="stats-player-team">Liverpool FC</div>
-                            </div>
-                        </div>
-                        <div class="stats-value">7</div>
-                    </div>
-                    <div class="stats-item">
-                        <div class="stats-player-info">
-                            <span class="stats-player-rank">3</span>
-                            <div class="stats-player-avatar">
-                                <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="18" fill="#eee"/><text x="18" y="23" text-anchor="middle" font-size="14" fill="#999">👤</text></svg>
-                            </div>
-                            <div>
-                                <div class="stats-player-name">Luka Modric</div>
-                                <div class="stats-player-team">Bayern Munich</div>
-                            </div>
-                        </div>
-                        <div class="stats-value">6</div>
+                        <div class="stats-value" th:text="${p.value}">10</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Tournament Comparison Stats -->
-        <div class="stats-card">
-            <h3 class="stats-card-title">
-                <span>📊</span> Thống kê giải đấu (Trung bình)
-            </h3>
-            <div class="match-stats-container">
-                <!-- Ball Possession -->
-                <div class="match-stat-row">
-                    <div class="match-stat-header">
-                        <span class="team-a-val">58%</span>
-                        <span class="stat-label">Kiểm soát bóng</span>
-                        <span class="team-b-val">42%</span>
-                    </div>
-                    <div class="progress-container">
-                        <div class="progress progress--md">
-                            <div class="progress-bar w-58" role="progressbar" aria-valuenow="58" aria-valuemin="0" aria-valuemax="100"></div>
-                            <div class="progress-bar bg-dark w-42" role="progressbar" aria-valuenow="42" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Shots on Target -->
-                <div class="match-stat-row">
-                    <div class="match-stat-header">
-                        <span class="team-a-val">12</span>
-                        <span class="stat-label">Sút trúng đích</span>
-                        <span class="team-b-val">8</span>
-                    </div>
-                    <div class="progress-container">
-                        <div class="progress progress--md">
-                            <div class="progress-bar w-60" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                            <div class="progress-bar bg-dark w-40" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pass Accuracy -->
-                <div class="match-stat-row">
-                    <div class="match-stat-header">
-                        <span class="team-a-val">85%</span>
-                        <span class="stat-label">Chuyền bóng chính xác</span>
-                        <span class="team-b-val">78%</span>
-                    </div>
-                    <div class="progress-container">
-                        <div class="progress progress--md">
-                            <div class="progress-bar w-52" role="progressbar" aria-valuenow="52" aria-valuemin="0" aria-valuemax="100"></div>
-                            <div class="progress-bar bg-dark w-48" role="progressbar" aria-valuenow="48" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Fouls -->
-                <div class="match-stat-row">
-                    <div class="match-stat-header">
-                        <span class="team-a-val">6</span>
-                        <span class="stat-label">Phạm lỗi</span>
-                        <span class="team-b-val">9</span>
-                    </div>
-                    <div class="progress-container">
-                        <div class="progress progress--md">
-                            <div class="progress-bar w-40" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                            <div class="progress-bar bg-dark w-60" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>

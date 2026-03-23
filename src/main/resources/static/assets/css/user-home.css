@@ -1067,9 +1067,16 @@ a {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
+  color: rgba(0, 0, 0, 0.82);
 }
 
 .contact-info__icon img {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.contact-info__icon svg {
   width: 18px;
   height: 18px;
   display: block;
@@ -1232,9 +1239,17 @@ a {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .footer__icon img {
+  width: 16px;
+  height: 16px;
+  display: block;
+  opacity: 0.92;
+}
+
+.footer__icon svg {
   width: 16px;
   height: 16px;
   display: block;

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chi tiết đội tuyển</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/css/admin.css" />
+    <style>
+      :root {
+        --bg: #ffffff;
+        --surface: #f3f6f9;
+        --border: #d9d9d9;
+        --text: #111827;
+        --muted: #6b7280;
+        --brand: #009cff;
+        --radius-xl: 25px;
+        --radius-lg: 20px;
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        color: var(--text);
+        background: var(--bg);
+      }
+      .app { min-height: 100vh; display: flex; }
+      .content { flex: 1 1 auto; padding: 28px 32px; }
+      .page__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+      .page__title { margin: 0; font-size: 24px; font-weight: 800; }
+      .btn-back {
+        display: inline-flex; align-items: center; justify-content: center;
+        height: 44px; padding: 0 18px; border-radius: 12px;
+        background: var(--surface); border: 1px solid rgba(17,24,39,0.08);
+        color: var(--text); font-weight: 600; font-size: 14px; text-decoration: none;
+      }
+      .grid {
+        display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start;
+      }
+      .card { background: #fff; border-radius: var(--radius-xl); border: 1px solid rgba(17,24,39,0.08); padding: 24px; }
+      .section-title { margin: 0 0 16px; font-size: 18px; font-weight: 700; padding-bottom: 12px; border-bottom: 1px solid rgba(17,24,39,0.06); }
+      .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; }
+      .info-item__label { font-size: 13px; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
+      .info-item__value { font-size: 15px; font-weight: 600; color: var(--text); }
+      .badge { display: inline-flex; align-items: center; justify-content: center; height: 28px; border-radius: 9999px; padding: 0 12px; font-size: 13px; font-weight: 700; }
+      .badge--approved { background: #2e7d32; color: #fff; }
+      .badge--pending { background: #fbc02d; color: #000; }
+      .badge--rejected { background: #c62828; color: #fff; }
+      .table-wrap { width: 100%; overflow-x: auto; border-radius: 16px; border: 1px solid rgba(17,24,39,0.08); }
+      table { width: 100%; border-collapse: collapse; min-width: 620px; background: #fff; }
+      thead { background: var(--surface); }
+      th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid rgba(17,24,39,0.06); font-size: 14px; }
+      th { font-weight: 700; color: var(--text); }
+      tbody tr:last-child td { border-bottom: 0; }
+      .member-cell { display: flex; align-items: center; gap: 12px; min-width: 0; }
+      .member-avatar { width: 36px; height: 36px; border-radius: 9999px; overflow: hidden; background: rgba(17,24,39,0.06); flex: 0 0 auto; }
+      .member-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .member-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .actions { display: flex; gap: 10px; align-items: center; }
+      .btn { height: 36px; border-radius: 10px; padding: 0 14px; font-weight: 700; font-size: 13px; border: 1px solid; background: #fff; cursor: pointer; }
+      .btn--approve { border-color: #2e7d32; color: #2e7d32; }
+      .btn--reject { border-color: #c62828; color: #c62828; }
+      @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <div class="app" th:with="activePage='manage', activeSubPage='team'">
+      <aside th:replace="~{admin/fragments_admin/sidebar :: sidebar}"></aside>
+      <main class="content">
+        <header th:replace="~{admin/fragments_admin/header :: header}"></header>
+
+        <section class="page">
+          <div class="page__header">
+            <h1 class="page__title">CHI TIẾT HỒ SƠ ĐỘI</h1>
+            <a class="btn-back" th:href="@{/admin/team-management}">Quay lại</a>
+          </div>
+
+          <div class="grid">
+            <section class="card" aria-label="Thông tin đội">
+              <h2 class="section-title">Thông tin chung</h2>
+              <div class="info-grid">
+                <div class="info-item">
+                  <div class="info-item__label">Tên đội</div>
+                  <div class="info-item__value" th:text="${teamName ?: '---'}">---</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-item__label">Trưởng đội</div>
+                  <div class="info-item__value" th:text="${captainName ?: '---'}">---</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-item__label">SĐT</div>
+                  <div class="info-item__value" th:text="${captainPhone ?: '---'}">---</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-item__label">Ngày tạo đội</div>
+                  <div class="info-item__value" th:text="${createdAt ?: '---'}">---</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-item__label">Số lượng thành viên</div>
+                  <div class="info-item__value" th:text="${memberCount ?: 0}">0</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-item__label">Trạng thái hồ sơ</div>
+                  <div class="info-item__value"><span class="badge" th:classappend="${' ' + statusClass}" th:text="${statusLabel ?: '---'}">---</span></div>
+                </div>
+                <div class="info-item">
+                  <div class="info-item__label">Ngày nộp hồ sơ</div>
+                  <div class="info-item__value" th:text="${submittedAt ?: '---'}">---</div>
+                </div>
+              </div>
+
+              <h2 class="section-title" style="margin-top: 22px;">Danh sách thành viên</h2>
+              <div class="table-wrap" role="region" aria-label="Danh sách thành viên" tabindex="0">
+                <table>
+                  <thead>
+                    <tr>
+                      <th style="width: 70px;">#</th>
+                      <th>Họ và tên</th>
+                      <th style="width: 120px;">Số áo</th>
+                      <th style="width: 140px;">Vai trò</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="m, stat : ${members}">
+                      <td th:text="${stat.count}">1</td>
+                      <td>
+                        <div class="member-cell">
+                          <div class="member-avatar">
+                            <img
+                              th:if="${m.avatarUrl != null and !#strings.isEmpty(m.avatarUrl)}"
+                              th:src="${m.avatarUrl}"
+                              alt=""
+                            />
+                            <img
+                              th:unless="${m.avatarUrl != null and !#strings.isEmpty(m.avatarUrl)}"
+                              th:src="@{/assets/figma/avatar.jpg}"
+                              alt=""
+                            />
+                          </div>
+                          <div class="member-name" th:text="${m.fullName ?: '---'}">---</div>
+                        </div>
+                      </td>
+                      <td th:text="${m.jerseyNumber ?: '--'}">--</td>
+                      <td th:text="${m.role ?: 'Cầu thủ'}">Cầu thủ</td>
+                    </tr>
+                    <tr th:if="${members == null or #lists.isEmpty(members)}">
+                      <td colspan="4" style="color: var(--muted); font-weight: 600;">Chưa có dữ liệu thành viên.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <aside class="card" aria-label="Ảnh đội">
+              <h2 class="section-title">Hình ảnh</h2>
+              <div style="display: grid; place-items: center; padding: 10px 0 6px;">
+                <div style="width: 180px; height: 180px; border-radius: 9999px; overflow: hidden; border: 4px solid var(--surface); background: rgba(0, 156, 255, 0.08);">
+                  <img
+                    th:if="${teamLogoUrl != null and !#strings.isEmpty(teamLogoUrl)}"
+                    th:src="${teamLogoUrl}"
+                    alt="Team Avatar"
+                    style="width: 100%; height: 100%; object-fit: cover; display: block;"
+                  />
+                  <img
+                    th:unless="${teamLogoUrl != null and !#strings.isEmpty(teamLogoUrl)}"
+                    th:src="@{/assets/figma/home-hero.png}"
+                    alt="Team Avatar"
+                    style="width: 100%; height: 100%; object-fit: cover; display: block;"
+                  />
+                </div>
+              </div>
+
+              <h2 class="section-title" style="margin-top: 22px;">Thao tác duyệt</h2>
+              <div class="actions" th:if="${canApproveOrReject}">
+                <form th:action="@{/admin/team-management/update-status}" method="post" style="margin:0;">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <input type="hidden" name="registrationId" th:value="${registrationId}" />
+                  <input type="hidden" name="tournamentId" th:value="${tournamentId}" />
+                  <input type="hidden" name="status" value="ALL" />
+                  <input type="hidden" name="targetStatus" value="APPROVED" />
+                  <button type="submit" class="btn btn--approve">Phê duyệt</button>
+                </form>
+                <form th:action="@{/admin/team-management/update-status}" method="post" style="margin:0;">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <input type="hidden" name="registrationId" th:value="${registrationId}" />
+                  <input type="hidden" name="tournamentId" th:value="${tournamentId}" />
+                  <input type="hidden" name="status" value="ALL" />
+                  <input type="hidden" name="targetStatus" value="REJECTED" />
+                  <button type="submit" class="btn btn--reject">Từ chối</button>
+                </form>
+              </div>
+              <p th:unless="${canApproveOrReject}" style="color: var(--muted); font-weight: 600;">Hồ sơ đã được duyệt hoặc hủy.</p>
+            </aside>
+          </div>
+        </section>
+
+        <footer th:replace="~{admin/fragments_admin/footer :: footer}"></footer>
+      </main>
+    </div>
+  </body>
+</html>

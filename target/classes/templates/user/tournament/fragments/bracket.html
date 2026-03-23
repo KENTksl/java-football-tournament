@@ -2,145 +2,57 @@
     <link rel="stylesheet" th:href="@{/assets/css/tournament-fragment-bracket.css}">
 
     <div class="bracket-section">
-        <div class="bracket-container">
-            <!-- Quarter Finals -->
-            <div class="bracket-column round-quarter">
-                <div class="bracket-round-title">Tứ kết</div>
+        <div th:if="${#lists.isEmpty(bracket.rounds)}" class="alert alert-info text-center py-5" style="border-radius: 12px;">
+            Giải đấu chưa bước vào vòng Knockout hoặc chưa có lịch thi đấu vòng loại trực tiếp.
+        </div>
 
-                <div class="bracket-pair">
-                    <div class="bracket-match">
-                        <div class="bracket-team bracket-winner">
-                            <div class="bracket-team-info">
-                                <div class="bracket-team-logo logo-manu">M</div>
-                                <span class="bracket-team-name">Man United</span>
-                            </div>
-                            <span class="bracket-score">3</span>
-                        </div>
-                        <div class="bracket-team">
-                            <div class="bracket-team-info">
-                                <div class="bracket-team-logo logo-chelsea">C</div>
-                                <span class="bracket-team-name">Chelsea FC</span>
-                            </div>
-                            <span class="bracket-score">1</span>
-                        </div>
-                    </div>
+        <div th:if="${!#lists.isEmpty(bracket.rounds)}" class="bracket-container">
+            <!-- Dynamic Rounds -->
+            <div th:each="round, iter : ${bracket.rounds}" 
+                 class="bracket-column" 
+                 th:classappend="${round.roundName == 'Tứ kết' ? 'round-quarter' : (round.roundName == 'Bán kết' ? 'round-semi' : (round.roundName == 'Chung kết' ? 'round-final' : ''))}">
+                
+                <div class="bracket-round-title" th:text="${round.roundName}">Tứ kết</div>
 
-                    <div class="bracket-match">
-                        <div class="bracket-team">
+                <!-- Trophy icon for final -->
+                <div th:if="${round.roundName == 'Chung kết'}" class="trophy-final">🏆</div>
+
+                <div th:if="${round.roundName != 'Chung kết'}" class="bracket-pair-wrapper">
+                    <!-- Quarter Finals usually pairs matches for visual lines, for now just list matches -->
+                    <div th:each="m : ${round.matches}" class="bracket-match" style="margin-bottom: 30px;">
+                        <div class="bracket-team" th:classappend="${m.homeScore != null and m.awayScore != null and m.homeScore > m.awayScore ? 'bracket-winner' : ''}">
                             <div class="bracket-team-info">
-                                <div class="bracket-team-logo logo-bayern">B</div>
-                                <span class="bracket-team-name">Bayern Munich</span>
+                                <div class="bracket-team-logo" th:text="${#strings.substring(m.homeTeamName, 0, 1).toUpperCase()}">M</div>
+                                <span class="bracket-team-name" th:text="${m.homeTeamName}">Man United</span>
                             </div>
-                            <span class="bracket-score">0</span>
+                            <span class="bracket-score" th:text="${m.homeScore != null ? m.homeScore : '-'}">3</span>
                         </div>
-                        <div class="bracket-team bracket-winner">
+                        <div class="bracket-team" th:classappend="${m.homeScore != null and m.awayScore != null and m.awayScore > m.homeScore ? 'bracket-winner' : ''}">
                             <div class="bracket-team-info">
-                                <div class="bracket-team-logo logo-liverpool">L</div>
-                                <span class="bracket-team-name">Liverpool FC</span>
+                                <div class="bracket-team-logo" th:text="${#strings.substring(m.awayTeamName, 0, 1).toUpperCase()}">C</div>
+                                <span class="bracket-team-name" th:text="${m.awayTeamName}">Chelsea FC</span>
                             </div>
-                            <span class="bracket-score">2</span>
+                            <span class="bracket-score" th:text="${m.awayScore != null ? m.awayScore : '-'}">1</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="bracket-pair">
-                    <div class="bracket-match">
-                        <div class="bracket-team bracket-winner">
-                            <div class="bracket-team-info">
-                                <div class="bracket-team-logo logo-dortmund">D</div>
-                                <span class="bracket-team-name">Dortmund</span>
-                            </div>
-                            <span class="bracket-score">2</span>
-                        </div>
-                        <div class="bracket-team">
-                            <div class="bracket-team-info">
-                                <div class="bracket-team-logo logo-psg">P</div>
-                                <span class="bracket-team-name">PSG</span>
-                            </div>
-                            <span class="bracket-score">1</span>
-                        </div>
-                    </div>
-
-                    <div class="bracket-match">
-                        <div class="bracket-team">
-                            <div class="bracket-team-info">
-                                <div class="bracket-team-logo logo-arsenal">A</div>
-                                <span class="bracket-team-name">Arsenal</span>
-                            </div>
-                            <span class="bracket-score">1</span>
-                        </div>
-                        <div class="bracket-team bracket-winner">
-                            <div class="bracket-team-info">
-                                <div class="bracket-team-logo logo-juventus">J</div>
-                                <span class="bracket-team-name">Juventus</span>
-                            </div>
-                            <span class="bracket-score">2</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Semi Finals -->
-            <div class="bracket-column round-semi">
-                <div class="bracket-round-title">Bán kết</div>
-
-                <div class="bracket-pair">
-                    <div class="bracket-match">
-                        <div class="bracket-team bracket-winner">
-                            <div class="bracket-team-info">
-                                <div class="bracket-team-logo logo-manu">M</div>
-                                <span class="bracket-team-name">Man United</span>
-                            </div>
-                            <span class="bracket-score">2</span>
-                        </div>
-                        <div class="bracket-team">
-                            <div class="bracket-team-info">
-                                <div class="bracket-team-logo logo-liverpool">L</div>
-                                <span class="bracket-team-name">Liverpool FC</span>
-                            </div>
-                            <span class="bracket-score">1</span>
-                        </div>
-                    </div>
-
-                    <div class="bracket-match">
-                        <div class="bracket-team bracket-winner">
-                            <div class="bracket-team-info">
-                                <div class="bracket-team-logo logo-dortmund">D</div>
-                                <span class="bracket-team-name">Dortmund</span>
-                            </div>
-                            <span class="bracket-score">3</span>
-                        </div>
-                        <div class="bracket-team">
-                            <div class="bracket-team-info">
-                                <div class="bracket-team-logo logo-juventus">J</div>
-                                <span class="bracket-team-name">Juventus</span>
-                            </div>
-                            <span class="bracket-score">2</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Final -->
-            <div class="bracket-column round-final">
-                <div class="bracket-round-title">Chung kết</div>
-
-                <div class="trophy-final">🏆</div>
-                <div class="bracket-match">
+                <!-- Special styling for Final match -->
+                <div th:if="${round.roundName == 'Chung kết'}" th:each="m : ${round.matches}" class="bracket-match">
                     <span class="final-badge">GRAND FINAL</span>
-                    <div class="bracket-team bracket-winner">
+                    <div class="bracket-team" th:classappend="${m.homeScore != null and m.awayScore != null and m.homeScore > m.awayScore ? 'bracket-winner' : ''}">
                         <div class="bracket-team-info">
-                            <div class="bracket-team-logo logo-manu">M</div>
-                            <span class="bracket-team-name">Man United</span>
+                            <div class="bracket-team-logo" th:text="${#strings.substring(m.homeTeamName, 0, 1).toUpperCase()}">M</div>
+                            <span class="bracket-team-name" th:text="${m.homeTeamName}">Man United</span>
                         </div>
-                        <span class="bracket-score">1</span>
+                        <span class="bracket-score" th:text="${m.homeScore != null ? m.homeScore : '-'}">1</span>
                     </div>
-                    <div class="bracket-team">
+                    <div class="bracket-team" th:classappend="${m.homeScore != null and m.awayScore != null and m.awayScore > m.homeScore ? 'bracket-winner' : ''}">
                         <div class="bracket-team-info">
-                            <div class="bracket-team-logo logo-dortmund">D</div>
-                            <span class="bracket-team-name">Dortmund</span>
+                            <div class="bracket-team-logo" th:text="${#strings.substring(m.awayTeamName, 0, 1).toUpperCase()}">D</div>
+                            <span class="bracket-team-name" th:text="${m.awayTeamName}">Dortmund</span>
                         </div>
-                        <span class="bracket-score">0</span>
+                        <span class="bracket-score" th:text="${m.awayScore != null ? m.awayScore : '-'}">0</span>
                     </div>
                 </div>
             </div>
