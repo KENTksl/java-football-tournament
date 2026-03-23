@@ -30,6 +30,11 @@ public class TransactionService {
 	}
 
 	@Transactional(readOnly = true)
+	public List<Transaction> listAll() {
+		return transactionRepository.findAllWithUserOrderByCreatedAtDesc();
+	}
+
+	@Transactional(readOnly = true)
 	public BigDecimal calculateBalance(Long userId) {
 		return transactionRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
 				.filter(t -> t.getStatus() == TransactionStatus.SUCCESS)

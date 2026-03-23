@@ -278,40 +278,107 @@
 
         .invoice-tabs {
             display: flex;
-            gap: 0;
+            gap: 12px;
             margin-bottom: 30px;
-            border-radius: 12px;
-            overflow: hidden;
             width: fit-content;
-            border: 1px solid #000;
+        }
+
+        .invoice-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            width: fit-content;
         }
 
         .invoice-tab {
-            padding: 10px 24px;
+            padding: 10px 20px;
             background: #fff;
-            border: none;
-            border-right: 1px solid #000;
-            font-weight: 600;
-            font-size: 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
             cursor: pointer;
-            color: #111827;
+            color: var(--muted);
             display: flex;
             align-items: center;
             gap: 8px;
+            text-decoration: none;
+            transition: all 0.2s;
         }
 
-        .invoice-tab:last-child {
-            border-right: none;
+        .invoice-tab:hover {
+            border-color: var(--brand);
+            color: var(--brand);
+            background: rgba(0, 156, 255, 0.05);
         }
 
-        .invoice-tab--all { background: #4fc3f7; }
-        .invoice-tab--time { background: #fff176; }
-        .invoice-tab--value { background: #81c784; }
-        .invoice-tab--status { background: #ffb74d; }
+        .invoice-tab--active {
+            background: var(--brand) !important;
+            color: #fff !important;
+            border-color: var(--brand) !important;
+        }
+
+        .invoice-tab--active:hover {
+            background: #008ae6 !important; /* Slightly darker blue on hover when active */
+            color: #fff !important;
+        }
+
+        .invoice-tab--status { 
+            position: relative; 
+            padding-bottom: 10px;
+            margin-bottom: -10px;
+        }
+        
+        .status-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+            display: none;
+            flex-direction: column;
+            min-width: 160px;
+            z-index: 100;
+            overflow: hidden;
+            margin-top: 2px;
+        }
+        
+        .invoice-tab--status:hover .status-dropdown {
+            display: flex;
+        }
+        
+        .status-option {
+            padding: 10px 16px;
+            text-decoration: none;
+            color: var(--text);
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+        
+        .status-option:hover {
+            background: var(--surface);
+            color: var(--brand);
+        }
 
         .invoice-tab svg {
-            width: 16px !important;
-            height: 16px !important;
+            width: 14px !important;
+            height: 14px !important;
+        }
+
+        /* Update search styling to match */
+        .search {
+            height: 42px;
+            width: 280px;
+            border-radius: 8px;
+            background: #fff;
+            border: 1px solid var(--border);
+            padding: 0 12px;
+        }
+        
+        .search input {
+            font-size: 14px;
         }
 
         .table-container {
@@ -387,14 +454,35 @@
         .page-btn {
             width: 36px;
             height: 36px;
-            border: 1px solid #000;
+            border: 1px solid var(--border);
+            border-radius: 4px;
             background: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            font-size: 16px;
+            font-weight: 600;
+            font-size: 14px;
             cursor: pointer;
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover {
+            border-color: var(--brand);
+            color: var(--brand);
+        }
+
+        .page-btn--active {
+            background: var(--brand);
+            color: #fff !important;
+            border-color: var(--brand);
+        }
+
+        .page-btn--disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
         }
 
         .arrow-btn {
@@ -437,16 +525,52 @@
 
         <h1 class="section-title">Danh Sách Hóa Đơn</h1>
 
-        <div class="invoice-tabs">
-            <button class="invoice-tab invoice-tab--all">Tất cả</button>
-            <button class="invoice-tab invoice-tab--time">Thời gian</button>
-            <button class="invoice-tab invoice-tab--value">Giá trị</button>
-            <button class="invoice-tab invoice-tab--status">
-                Trạng thái
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-            </button>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px;">
+            <div class="invoice-tabs">
+                <a th:href="@{/admin/invoice-management(status='ALL', sort=${currentSort}, search=${currentSearch})}" 
+                   class="invoice-tab invoice-tab--all" th:classappend="${currentStatus == 'ALL'} ? 'invoice-tab--active' : ''">Tất cả</a>
+                
+                <a th:href="@{/admin/invoice-management(status=${currentStatus}, sort=${currentSort == 'time_desc' ? 'time_asc' : 'time_desc'}, search=${currentSearch})}" 
+                   class="invoice-tab invoice-tab--time" th:classappend="${currentSort.contains('time')} ? 'invoice-tab--active' : ''">
+                    Thời gian
+                    <svg th:if="${currentSort == 'time_desc'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    <svg th:if="${currentSort == 'time_asc'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                </a>
+                
+                <a th:href="@{/admin/invoice-management(status=${currentStatus}, sort=${currentSort == 'value_desc' ? 'value_asc' : 'value_desc'}, search=${currentSearch})}" 
+                   class="invoice-tab invoice-tab--value" th:classappend="${currentSort.contains('value')} ? 'invoice-tab--active' : ''">
+                    Giá trị
+                    <svg th:if="${currentSort == 'value_desc'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    <svg th:if="${currentSort == 'value_asc'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                </a>
+                
+                <div class="invoice-tab invoice-tab--status" th:classappend="${currentStatus != 'ALL'} ? 'invoice-tab--active' : ''">
+                    <span th:text="${currentStatus == 'ALL' ? 'Trạng thái' : (currentStatus == 'SUCCESS' ? 'Thành công' : (currentStatus == 'FAILED' ? 'Thất bại' : 'Đang xử lý'))}">Trạng thái</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                    <div class="status-dropdown">
+                        <a th:href="@{/admin/invoice-management(status='ALL', sort=${currentSort}, search=${currentSearch})}" class="status-option">Tất cả trạng thái</a>
+                        <a th:href="@{/admin/invoice-management(status='SUCCESS', sort=${currentSort}, search=${currentSearch})}" class="status-option">Thành công</a>
+                        <a th:href="@{/admin/invoice-management(status='FAILED', sort=${currentSort}, search=${currentSearch})}" class="status-option">Thất bại</a>
+                    </div>
+                </div>
+            </div>
+
+            <form th:action="@{/admin/invoice-management}" method="get" class="search" style="margin-bottom: 0; display: flex; align-items: center;">
+                <input type="hidden" name="status" th:value="${currentStatus}">
+                <input type="hidden" name="sort" th:value="${currentSort}">
+                <button type="submit" style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center;">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width: 18px; height: 18px; color: var(--muted-2);">
+                        <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2"/>
+                        <path d="M16.3 16.3 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <input type="text" name="search" th:value="${currentSearch}" placeholder="Tìm mã HĐ, khách hàng..." aria-label="Tìm kiếm" style="flex: 1; margin-left: 8px;">
+                <a th:if="${currentSearch != null and !currentSearch.isEmpty()}" 
+                   th:href="@{/admin/invoice-management(status=${currentStatus}, sort=${currentSort}, search='')}" 
+                   style="text-decoration: none; color: var(--muted-2); font-size: 18px; padding: 0 4px;">&times;</a>
+            </form>
         </div>
 
         <div class="table-container">
@@ -461,78 +585,44 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>#INV-102</td>
-                        <td>Nguyen Van B</td>
-                        <td>9/12/2024</td>
-                        <td>5000000</td>
-                        <td><span class="badge badge--success">Thành công</span></td>
+                    <tr th:each="transaction : ${transactions}">
+                        <td th:text="${transaction.code}">#INV-102</td>
+                        <td th:text="${transaction.user != null ? transaction.user.fullName : 'N/A'}">Nguyen Van B</td>
+                        <td th:text="${transaction.createdAt != null ? #temporals.format(transaction.createdAt.atZone(T(java.time.ZoneId).of('Asia/Ho_Chi_Minh')), 'dd/MM/yyyy HH:mm') : 'N/A'}">9/12/2024</td>
+                        <td th:text="${transaction.amount != null ? #numbers.formatDecimal(transaction.amount, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '0 VNĐ'}">5,000,000 VNĐ</td>
+                        <td>
+                            <span th:if="${transaction.status != null and transaction.status.name() == 'SUCCESS'}" class="badge badge--success">Thành công</span>
+                            <span th:if="${transaction.status != null and transaction.status.name() == 'FAILED'}" class="badge badge--fail">Thất bại</span>
+                            <span th:if="${transaction.status != null and transaction.status.name() == 'PENDING'}" class="badge" style="background: #ffa726;">Đang xử lý</span>
+                            <span th:if="${transaction.status == null}" class="badge" style="background: #6b7280;">Không xác định</span>
+                        </td>
                     </tr>
-                    <tr>
-                        <td>#INV-103</td>
-                        <td>Nguyen Van C</td>
-                        <td>9/12/2024</td>
-                        <td>2000000</td>
-                        <td><span class="badge badge--success">Thành công</span></td>
-                    </tr>
-                    <tr>
-                        <td>#INV-104</td>
-                        <td>Nguyen Van D</td>
-                        <td>9/12/2024</td>
-                        <td>1000000</td>
-                        <td><span class="badge badge--fail">Không thành công</span></td>
-                    </tr>
-                    <tr>
-                        <td>#INV-105</td>
-                        <td>Nguyen Van T</td>
-                        <td>9/12/2025</td>
-                        <td>4000000</td>
-                        <td><span class="badge badge--success">Thành công</span></td>
-                    </tr>
-                    <tr>
-                        <td>#INV-106</td>
-                        <td>Nguyen Van E</td>
-                        <td>9/12/2024</td>
-                        <td>2000000</td>
-                        <td><span class="badge badge--fail">Không thành công</span></td>
-                    </tr>
-                    <tr>
-                        <td>#INV-107</td>
-                        <td>Nhan</td>
-                        <td>9/12/2024</td>
-                        <td>6000000</td>
-                        <td><span class="badge badge--success">Thành công</span></td>
-                    </tr>
-                    <tr>
-                        <td>#INV-108</td>
-                        <td>Nguyen Van Z</td>
-                        <td>9/12/2023</td>
-                        <td>3000000</td>
-                        <td><span class="badge badge--success">Thành công</span></td>
-                    </tr>
-                    <tr>
-                        <td>#INV-109</td>
-                        <td>Nguyen Van M</td>
-                        <td>9/12/2024</td>
-                        <td>120000</td>
-                        <td><span class="badge badge--success">Thành công</span></td>
+                    <tr th:if="${#lists.isEmpty(transactions)}">
+                        <td colspan="5" style="padding: 40px; color: var(--muted);">Chưa có dữ liệu giao dịch nào.</td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div class="pagination-container">
-            <button class="arrow-btn"><div class="triangle-left"></div></button>
+        <div class="pagination-container" th:if="${totalPages > 1}">
+            <a class="arrow-btn" th:href="@{/admin/invoice-management(status=${currentStatus}, sort=${currentSort}, search=${currentSearch}, page=${currentPage - 1})}"
+               th:classappend="${currentPage == 1} ? 'page-btn--disabled' : ''">
+                <div class="triangle-left"></div>
+            </a>
+            
             <div class="page-numbers">
-                <button class="page-btn">1</button>
-                <button class="page-btn">2</button>
-                <button class="page-btn">3</button>
-                <button class="page-btn">4</button>
-                <button class="page-btn">5</button>
-                <button class="page-btn">6</button>
-                <button class="page-btn">...</button>
+                <!-- Hiển thị danh sách số trang -->
+                <a th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
+                   th:href="@{/admin/invoice-management(status=${currentStatus}, sort=${currentSort}, search=${currentSearch}, page=${pageNum})}"
+                   class="page-btn"
+                   th:classappend="${pageNum == currentPage} ? 'page-btn--active' : ''"
+                   th:text="${pageNum}">1</a>
             </div>
-            <button class="arrow-btn"><div class="triangle-right"></div></button>
+            
+            <a class="arrow-btn" th:href="@{/admin/invoice-management(status=${currentStatus}, sort=${currentSort}, search=${currentSearch}, page=${currentPage + 1})}"
+               th:classappend="${currentPage == totalPages} ? 'page-btn--disabled' : ''">
+                <div class="triangle-right"></div>
+            </a>
         </div>
         <footer th:replace="~{admin/fragments_admin/footer :: footer}"></footer>
     </main>

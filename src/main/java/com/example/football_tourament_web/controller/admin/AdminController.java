@@ -8,6 +8,7 @@ import com.example.football_tourament_web.model.entity.Player;
 import com.example.football_tourament_web.model.entity.Team;
 import com.example.football_tourament_web.model.entity.Tournament;
 import com.example.football_tourament_web.model.entity.TournamentRegistration;
+import com.example.football_tourament_web.model.entity.Transaction;
 import com.example.football_tourament_web.model.enums.MatchEventType;
 import com.example.football_tourament_web.model.enums.PitchType;
 import com.example.football_tourament_web.model.enums.MatchStatus;
@@ -24,6 +25,7 @@ import com.example.football_tourament_web.service.TeamService;
 import com.example.football_tourament_web.service.TournamentRegistrationService;
 import com.example.football_tourament_web.service.TournamentService;
 import com.example.football_tourament_web.service.UserService;
+import com.example.football_tourament_web.service.TransactionService;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -68,6 +70,7 @@ public class AdminController {
 	private final UserService userService;
 	private final TournamentRegistrationService tournamentRegistrationService;
 	private final PlayerRepository playerRepository;
+	private final TransactionService transactionService;
 
 	public AdminController(
 			TournamentService tournamentService,
@@ -77,7 +80,8 @@ public class AdminController {
 			MatchEventService matchEventService,
 			UserService userService,
 			TournamentRegistrationService tournamentRegistrationService,
-			PlayerRepository playerRepository
+			PlayerRepository playerRepository,
+			TransactionService transactionService
 	) {
 		this.tournamentService = tournamentService;
 		this.teamService = teamService;
@@ -87,6 +91,7 @@ public class AdminController {
 		this.userService = userService;
 		this.tournamentRegistrationService = tournamentRegistrationService;
 		this.playerRepository = playerRepository;
+		this.transactionService = transactionService;
 	}
 
 	@GetMapping({"/admin", "/admin/general-overview"})
@@ -402,7 +407,68 @@ public class AdminController {
 	}
 
 	@GetMapping("/admin/invoice-management")
-	public String invoiceManagement() {
+	public String invoiceManagement(
+			@RequestParam(value = "status", required = false) String status,
+			@RequestParam(value = "sort", required = false) String sort,
+			@RequestParam(value = "search", required = false) String search,
+			@RequestParam(value = "page", defaultValue = "1") int page,
+			Model model) {
+		List<Transaction> transactions;
+		
+		if (status != null && !status.isEmpty() && !"ALL".equalsIgnoreCase(status)) {
+			try {
+				com.example.football_tourament_web.model.enums.TransactionStatus targetStatus = com.example.football_tourament_web.model.enums.TransactionStatus.valueOf(status.toUpperCase());
+				transactions = transactionService.listAll().stream()
+						.filter(t -> t.getStatus() == targetStatus)
+						.collect(java.util.stream.Collectors.toList());
+			} catch (IllegalArgumentException e) {
+				transactions = transactionService.listAll();
+			}
+		} else {
+			transactions = transactionService.listAll();
+		}
+
+		if (search != null && !search.trim().isEmpty()) {
+			String query = search.toLowerCase().trim();
+			transactions = transactions.stream()
+					.filter(t -> (t.getCode() != null && t.getCode().toLowerCase().contains(query)) ||
+							(t.getUser() != null && t.getUser().getFullName() != null && t.getUser().getFullName().toLowerCase().contains(query)))
+					.collect(java.util.stream.Collectors.toList());
+		}
+
+		if ("time_asc".equalsIgnoreCase(sort)) {
+			transactions.sort(Comparator.comparing(Transaction::getCreatedAt));
+		} else if ("time_desc".equalsIgnoreCase(sort)) {
+			transactions.sort(Comparator.comparing(Transaction::getCreatedAt).reversed());
+		} else if ("value_asc".equalsIgnoreCase(sort)) {
+			transactions.sort(Comparator.comparing(Transaction::getAmount));
+		} else if ("value_desc".equalsIgnoreCase(sort)) {
+			transactions.sort(Comparator.comparing(Transaction::getAmount).reversed());
+		}
+
+		int pageSize = 6;
+		int totalItems = transactions.size();
+		int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+		
+		// Ensure current page is within valid range
+		if (page < 1) page = 1;
+		if (totalPages > 0 && page > totalPages) page = totalPages;
+
+		int start = (page - 1) * pageSize;
+		int end = Math.min(start + pageSize, totalItems);
+		
+		List<Transaction> pagedTransactions = (totalItems > 0 && start < totalItems) 
+				? transactions.subList(start, end) 
+				: Collections.emptyList();
+
+		model.addAttribute("transactions", pagedTransactions);
+		model.addAttribute("currentStatus", status != null ? status : "ALL");
+		model.addAttribute("currentSort", sort != null ? sort : "time_desc");
+		model.addAttribute("currentSearch", search != null ? search : "");
+		model.addAttribute("currentPage", page);
+		model.addAttribute("totalPages", totalPages);
+		model.addAttribute("pageSize", pageSize);
+		
 		return "admin/invoice/invoice-management";
 	}
 
