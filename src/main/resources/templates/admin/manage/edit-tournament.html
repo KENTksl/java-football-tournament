@@ -17,7 +17,8 @@
 
         <div class="form-group" style="margin-bottom: 14px; display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center;">
             <label for="editMode" style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 0; line-height: 1.2;">Hình thức thi đấu</label>
-            <select id="editMode" name="mode" style="width: 100%; height: 36px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; background: #fff;">
+            <select id="editMode" name="mode" required onchange="updateEditTeamOptions()" style="width: 100%; height: 36px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; background: #fff;">
+                <option value="" disabled selected hidden>Chọn hình thức thi đấu</option>
                 <option value="Chia bảng đấu (Group Stage)">Chia bảng đấu (Group Stage)</option>
                 <option value="Knockout">Knockout</option>
             </select>
@@ -25,15 +26,17 @@
 
         <div class="form-group" style="margin-bottom: 14px; display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center;">
             <label for="editPitchType" style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 0; line-height: 1.2;">Loại sân</label>
-            <select id="editPitchType" name="pitchType" style="width: 100%; height: 36px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; background: #fff;">
-                <option value="Sân 7 người" selected>Sân 7 người</option>
+            <select id="editPitchType" name="pitchType" required style="width: 100%; height: 36px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; background: #fff;">
+                <option value="" disabled selected hidden>Chọn loại sân</option>
+                <option value="Sân 7 người">Sân 7 người</option>
                 <option value="Sân 5 người">Sân 5 người</option>
             </select>
         </div>
 
         <div class="form-group" style="margin-bottom: 14px; display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center;">
             <label for="editTeams" style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 0; line-height: 1.2;">Số lượng đội</label>
-            <select id="editTeams" name="teams" style="width: 100%; height: 36px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; background: #fff;">
+            <select id="editTeams" name="teams" required style="width: 100%; height: 36px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; background: #fff;">
+                <option value="" disabled selected hidden>Chọn số lượng đội</option>
                 <option value="4/4">4 Đội</option>
                 <option value="8/8">8 Đội</option>
                 <option value="16/16">16 Đội</option>
@@ -66,3 +69,61 @@
         </div>
     </form>
 </div>
+
+<script>
+    function updateEditTeamOptions(currentTeams = null) {
+        const mode = document.getElementById('editMode').value;
+        const teamsSelect = document.getElementById('editTeams');
+        const options = teamsSelect.options;
+
+        if (mode === 'Chia bảng đấu (Group Stage)') {
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].value === '16/16') {
+                    options[i].style.display = 'block';
+                    options[i].disabled = false;
+                    if (!currentTeams || currentTeams === '16/16') {
+                        options[i].selected = true;
+                    }
+                } else if (options[i].value === '') {
+                    options[i].style.display = 'none';
+                    options[i].disabled = true;
+                } else {
+                    options[i].style.display = 'none';
+                    options[i].disabled = true;
+                }
+            }
+        } else if (mode === 'Knockout') {
+            let hasSelected = false;
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].value === '4/4' || options[i].value === '8/8') {
+                    options[i].style.display = 'block';
+                    options[i].disabled = false;
+                    if (currentTeams && options[i].value === currentTeams) {
+                        options[i].selected = true;
+                        hasSelected = true;
+                    } else if (!currentTeams && !hasSelected) {
+                        options[i].selected = true;
+                        hasSelected = true;
+                    }
+                } else if (options[i].value === '') {
+                    options[i].style.display = 'none';
+                    options[i].disabled = true;
+                } else {
+                    options[i].style.display = 'none';
+                    options[i].disabled = true;
+                }
+            }
+        } else {
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].value === '') {
+                    options[i].style.display = 'block';
+                    options[i].disabled = false;
+                    options[i].selected = true;
+                } else {
+                    options[i].style.display = 'none';
+                    options[i].disabled = true;
+                }
+            }
+        }
+    }
+</script>
