@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @Component
 public class DataSeeder implements CommandLineRunner {
-	private static final String DEFAULT_PLAYER_AVATAR_URL = "/assets/figma/avatar.jpg";
+//	private static final String DEFAULT_PLAYER_AVATAR_URL = "/assets/figma/avatar.jpg";
 
 	private final AppUserRepository userRepository;
 	private final TeamRepository teamRepository;
@@ -343,7 +343,7 @@ public class DataSeeder implements CommandLineRunner {
 		p.setJerseyNumber(number);
 		p.setRole(role);
 		p.setPosition(position);
-		p.setAvatarUrl(DEFAULT_PLAYER_AVATAR_URL);
+//		p.setAvatarUrl(DEFAULT_PLAYER_AVATAR_URL);
 		return p;
 	}
 
@@ -352,7 +352,7 @@ public class DataSeeder implements CommandLineRunner {
 		if (players == null || players.isEmpty()) return;
 		for (Player p : players) {
 			if (p == null) continue;
-			p.setAvatarUrl(DEFAULT_PLAYER_AVATAR_URL);
+//			p.setAvatarUrl(DEFAULT_PLAYER_AVATAR_URL);
 		}
 		playerRepository.saveAll(players);
 	}

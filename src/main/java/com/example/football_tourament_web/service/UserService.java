@@ -29,6 +29,11 @@ public class UserService {
 	}
 
 	@Transactional(readOnly = true)
+	public List<AppUser> listUsersByRole(UserRole role) {
+		return userRepository.findByRoleOrderByCreatedAtDesc(role);
+	}
+
+	@Transactional(readOnly = true)
 	public Optional<AppUser> findByEmail(String email) {
 		return userRepository.findByEmail(email);
 	}

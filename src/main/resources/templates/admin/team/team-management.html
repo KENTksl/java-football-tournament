@@ -344,6 +344,10 @@
             background: #fbc02d;
             color: #000;
         }
+        .badge--rejected {
+            background: #c62828;
+            color: #fff;
+        }
 
         .btn-detail {
             background: #fff;
@@ -356,6 +360,61 @@
             text-decoration: none;
             color: inherit;
             display: inline-block;
+        }
+
+        .tournament-filter {
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tournament-filter select {
+            min-width: 320px;
+            height: 40px;
+            border: 1px solid #000;
+            border-radius: 8px;
+            padding: 0 10px;
+            font-weight: 600;
+            background: #fff;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-status {
+            border: 1px solid #000;
+            background: #fff;
+            border-radius: 16px;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-status--approve {
+            border-color: #2e7d32;
+            color: #2e7d32;
+        }
+
+        .btn-status--reject {
+            border-color: #c62828;
+            color: #c62828;
+        }
+
+        .flash-message {
+            margin-bottom: 12px;
+            padding: 10px 12px;
+            border: 1px solid #9ec5fe;
+            border-radius: 8px;
+            background: #eef4ff;
+            font-weight: 600;
+            color: #12418f;
         }
 
         /* Pagination Styles */
@@ -431,11 +490,28 @@
         <!-- Main Content: Team Management Table -->
         <h1 class="section-title">Danh Sách Hồ Sơ Đội Tuyển</h1>
 
+        <div class="tournament-filter">
+            <span>Giải đấu:</span>
+            <form method="get" th:action="@{/admin/team-management}">
+                <input type="hidden" name="status" th:value="${selectedStatus}">
+                <select name="tournamentId" onchange="this.form.submit()">
+                    <option th:each="t : ${tournaments}"
+                            th:value="${t.id}"
+                            th:text="${t.name}"
+                            th:selected="${selectedTournamentId != null and selectedTournamentId == t.id}">
+                        Tên giải
+                    </option>
+                </select>
+            </form>
+        </div>
+
+        <div class="flash-message" th:if="${teamManageMessage != null}" th:text="${teamManageMessage}">Thông báo</div>
+
         <div class="tabs">
-            <button class="tab tab--active">Tất cả</button>
-            <button class="tab">Chờ duyệt</button>
-            <button class="tab">Đã duyệt</button>
-            <button class="tab">Đã hủy</button>
+            <a class="tab" th:classappend="${selectedStatus == 'ALL' ? ' tab--active' : ''}" th:href="@{/admin/team-management(tournamentId=${selectedTournamentId},status='ALL')}">Tất cả</a>
+            <a class="tab" th:classappend="${selectedStatus == 'PENDING' ? ' tab--active' : ''}" th:href="@{/admin/team-management(tournamentId=${selectedTournamentId},status='PENDING')}">Chờ duyệt</a>
+            <a class="tab" th:classappend="${selectedStatus == 'APPROVED' ? ' tab--active' : ''}" th:href="@{/admin/team-management(tournamentId=${selectedTournamentId},status='APPROVED')}">Đã duyệt</a>
+            <a class="tab" th:classappend="${selectedStatus == 'REJECTED' ? ' tab--active' : ''}" th:href="@{/admin/team-management(tournamentId=${selectedTournamentId},status='REJECTED')}">Đã hủy</a>
         </div>
 
         <div class="table-container">
@@ -452,95 +528,40 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>8/1/2026</td>
-                        <td>FC Test 196267</td>
-                        <td>Nguyen Van B</td>
-                        <td>0901234567</td>
-                        <td>6</td>
-                        <td><span class="badge badge--approved">Đã duyệt</span></td>
-                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
+                    <tr th:if="${registrationRows == null or #lists.isEmpty(registrationRows)}">
+                        <td colspan="7">Chưa có hồ sơ đăng ký trong giải đấu này</td>
                     </tr>
-                    <tr>
-                        <td>8/1/2026</td>
-                        <td>FC Test 196093</td>
-                        <td>Nguyen Van C</td>
-                        <td>0982219370</td>
-                        <td>6</td>
-                        <td><span class="badge badge--pending">Chờ duyệt</span></td>
-                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
-                    </tr>
-                    <tr>
-                        <td>8/1/2026</td>
-                        <td>FC Test 195891</td>
-                        <td>Nguyen Van D</td>
-                        <td>0982219370</td>
-                        <td>6</td>
-                        <td><span class="badge badge--pending">Chờ duyệt</span></td>
-                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
-                    </tr>
-                    <tr>
-                        <td>8/1/2026</td>
-                        <td>FC Test 159841</td>
-                        <td>Nguyen Van T</td>
-                        <td>0982219370</td>
-                        <td>6</td>
-                        <td><span class="badge badge--approved">Đã duyệt</span></td>
-                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
-                    </tr>
-                    <tr>
-                        <td>8/1/2026</td>
-                        <td>FC Test 156940</td>
-                        <td>Nguyen Van E</td>
-                        <td>0982219370</td>
-                        <td>6</td>
-                        <td><span class="badge badge--approved">Đã duyệt</span></td>
-                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
-                    </tr>
-                    <tr>
-                        <td>8/1/2026</td>
-                        <td>22DTHC3</td>
-                        <td>Nhan</td>
-                        <td>0982219370</td>
-                        <td>6</td>
-                        <td><span class="badge badge--approved">Đã duyệt</span></td>
-                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
-                    </tr>
-                    <tr>
-                        <td>8/1/2026</td>
-                        <td>22DTHC5</td>
-                        <td>Nguyen Van Z</td>
-                        <td>0982219370</td>
-                        <td>6</td>
-                        <td><span class="badge badge--approved">Đã duyệt</span></td>
-                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
-                    </tr>
-                    <tr>
-                        <td>8/1/2026</td>
-                        <td>22DTHC6</td>
-                        <td>Nguyen Van M</td>
-                        <td>0982219370</td>
-                        <td>6</td>
-                        <td><span class="badge badge--approved">Đã duyệt</span></td>
-                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
+                    <tr th:each="row : ${registrationRows}">
+                        <td th:text="${row.submittedDateText}">08/01/2026</td>
+                        <td th:text="${row.teamName}">Tên đội</td>
+                        <td th:text="${row.representativeName}">Đại diện</td>
+                        <td th:text="${row.phone}">0900000000</td>
+                        <td th:text="${row.memberCount}">10</td>
+                        <td><span class="badge" th:classappend="${' ' + row.statusClass}" th:text="${row.statusLabel}">Chờ duyệt</span></td>
+                        <td>
+                            <div class="action-row">
+
+                                <form method="post" th:if="${row.status.name() != 'APPROVED'}" th:action="@{/admin/team-management/update-status}">
+                                    <input type="hidden" name="registrationId" th:value="${row.registrationId}">
+                                    <input type="hidden" name="tournamentId" th:value="${selectedTournamentId}">
+                                    <input type="hidden" name="status" th:value="${selectedStatus}">
+                                    <input type="hidden" name="targetStatus" value="APPROVED">
+                                    <button type="submit" class="btn-status btn-status--approve">Duyệt</button>
+                                </form>
+                                <form method="post" th:if="${row.status.name() != 'REJECTED'}" th:action="@{/admin/team-management/update-status}">
+                                    <input type="hidden" name="registrationId" th:value="${row.registrationId}">
+                                    <input type="hidden" name="tournamentId" th:value="${selectedTournamentId}">
+                                    <input type="hidden" name="status" th:value="${selectedStatus}">
+                                    <input type="hidden" name="targetStatus" value="REJECTED">
+                                    <button type="submit" class="btn-status btn-status--reject">Hủy</button>
+                                </form>
+                            </div>
+                        </td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div class="pagination-container">
-            <button class="arrow-btn"><div class="triangle-left"></div></button>
-            <div class="page-numbers">
-                <button class="page-btn page-btn--active">1</button>
-                <button class="page-btn">2</button>
-                <button class="page-btn">3</button>
-                <button class="page-btn">4</button>
-                <button class="page-btn">5</button>
-                <button class="page-btn">6</button>
-                <button class="page-btn">...</button>
-            </div>
-            <button class="arrow-btn"><div class="triangle-right"></div></button>
-        </div>
         <footer th:replace="~{admin/fragments_admin/footer :: footer}"></footer>
     </main>
 </div>

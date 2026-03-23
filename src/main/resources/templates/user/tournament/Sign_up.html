@@ -27,70 +27,180 @@
 <main class="container">
     <div class="registration-form">
         <h2 class="form-title">FORM ĐĂNG KÝ</h2>
-        <div class="form-subtitle">Tham gia giải: Giải 1</div>
+        <div class="form-subtitle" th:text="${'Tham gia giải: ' + (tournament != null and tournament.name != null and !#strings.isEmpty(tournament.name) ? tournament.name : 'Giải đấu')}">Tham gia giải: Giải 1</div>
+        <div class="form-subtitle" th:text="${'Số đội hiện tại: ' + (registeredTeamCount != null ? registeredTeamCount : 0) + '/' + (tournament != null and tournament.teamLimit != null ? tournament.teamLimit : 0)}">Số đội hiện tại: 0/0</div>
+        <div th:if="${tournamentIsFull}" class="form-alert alert-error">Giải đấu đã đủ đội, không thể gửi thêm hồ sơ đăng ký.</div>
+        <div th:if="${registrationMessage != null}" th:text="${registrationMessage}" th:classappend="${registrationSuccess != null and registrationSuccess ? ' alert-success' : ' alert-error'}" class="form-alert">Thông báo</div>
         <p class="form-info-title">THÔNG TIN ĐỘI BÓNG & THÀNH VIÊN</p>
 
-        <div class="form-section">
-            <div class="section-header">
-                <h3>1. Thông tin đội bóng</h3>
-                <button class="btn btn-use-existing">Sử dụng thông tin đội đã có</button>
-            </div>
-            <div class="grid-inputs">
-                <input type="text" placeholder="Tên đội bóng">
-                <input type="text" placeholder="Người đại diện">
-                <input type="email" placeholder="Email liên hệ">
-                <input type="tel" placeholder="Số điện thoại">
-            </div>
-            <textarea placeholder="Giới thiệu sơ lược về đội bóng"></textarea>
+        <form th:action="@{/user/tournament/sign-up}" method="post">
+        <input type="hidden" name="tournamentId" th:value="${tournament != null ? tournament.id : ''}">
 
-            <div class="logo-upload">
-                <p class="logo-upload-title">Logo Đội Bóng:</p>
-                <div class="logo-placeholder">CLUB NAME</div>
-                <input type="file" class="logo-file-input">
-            </div>
-        </div>
+        <div class="form-layout-two">
+            <div class="form-section">
+                <div class="section-header">
+                    <h3>1. Thông tin đội bóng</h3>
+                    <button type="button" class="btn btn-use-existing" id="useExistingTeamBtn" th:attr="data-prefill-url=@{/user/tournament/sign-up/prefill}">Sử dụng thông tin đội đã có</button>
+                </div>
+                <select id="teamIdInput" name="teamId">
+                    <option value="">Chọn đội để đăng ký</option>
+                    <option th:each="team : ${signUpTeams}" th:value="${team.id}" th:text="${team.name}">Tên đội</option>
+                </select>
+                <div class="grid-inputs">
+                    <input type="text" id="teamNameInput" placeholder="Tên đội bóng">
+                    <input type="text" id="representativeInput" placeholder="Người đại diện">
+                    <input type="email" id="contactEmailInput" placeholder="Email liên hệ">
+                    <input type="tel" id="contactPhoneInput" placeholder="Số điện thoại">
+                </div>
+                <textarea id="teamDescriptionInput" placeholder="Giới thiệu sơ lược về đội bóng"></textarea>
 
-        <div class="form-section">
-            <div class="section-header">
-                <h3>2. Danh sách thành viên</h3>
+                <div class="logo-upload">
+                    <p class="logo-upload-title">Logo Đội Bóng:</p>
+                    <div class="logo-placeholder" id="teamLogoPlaceholder">CLUB NAME</div>
+                    <input type="file" class="logo-file-input">
+                </div>
             </div>
 
-            <div id="playerList">
-                <div class="player-item">
-                    <img src="https://i.pravatar.cc/150?u=1" class="player-avatar">
-                    <div class="player-info">
-                        <div>Số áo: <strong>38</strong></div>
-                        <div>Họ và tên: <strong>Nguyễn Văn A</strong></div>
+            <div class="form-section">
+                <div class="section-header">
+                    <h3>2. Danh sách thành viên</h3>
+                </div>
+
+                <div id="playerList">
+                    <div class="player-item">
+                        <img src="https://i.pravatar.cc/150?u=1" class="player-avatar">
+                        <div class="player-info">
+                            <div>Số áo: <strong>38</strong></div>
+                            <div>Họ và tên: <strong>Nguyễn Văn A</strong></div>
+                        </div>
+                        <button class="remove-btn" onclick="this.parentElement.remove(); updateAddPlayerBoxVisibility();">X</button>
                     </div>
-                    <button class="remove-btn" onclick="this.parentElement.remove()">X</button>
                 </div>
-            </div>
 
-            <div class="add-player-box">
-                <div>
-                    <label class="add-player-label">Tên cầu thủ</label>
-                    <input type="text" id="newName" placeholder="Nhập tên thành viên">
+                <div class="add-player-box" id="addPlayerBox">
+                    <div>
+                        <label class="add-player-label">Tên cầu thủ</label>
+                        <input type="text" id="newName" placeholder="Nhập tên thành viên">
+                    </div>
+                    <div>
+                        <label class="add-player-label">Số áo</label>
+                        <input type="number" id="newNumber" placeholder="Số áo">
+                    </div>
+                    <div>
+                        <label class="add-player-label">Ảnh chân dung</label>
+                        <input type="file" id="newImg">
+                    </div>
+                    <button type="button" class="btn btn-add-player" onclick="addPlayer()">Thêm</button>
                 </div>
-                <div>
-                    <label class="add-player-label">Số áo</label>
-                    <input type="number" id="newNumber" placeholder="Số áo">
-                </div>
-                <div>
-                    <label class="add-player-label">Ảnh chân dung</label>
-                    <input type="file" id="newImg">
-                </div>
-                <button class="btn btn-add-player" onclick="addPlayer()">Thêm</button>
             </div>
         </div>
 
-        <button class="btn btn-submit">GỬI HỒ SƠ ĐĂNG KÝ</button>
+        <button type="submit" class="btn btn-submit" th:disabled="${tournamentIsFull}">GỬI HỒ SƠ ĐĂNG KÝ</button>
+        </form>
     </div>
 </main>
 
 <th:block th:replace="~{user/fragments/footer :: footer('tournament')}"></th:block>
 
-<script>
+<script th:inline="javascript">
+    const useExistingTeamBtn = document.getElementById('useExistingTeamBtn');
+    const teamNameInput = document.getElementById('teamNameInput');
+    const representativeInput = document.getElementById('representativeInput');
+    const contactEmailInput = document.getElementById('contactEmailInput');
+    const contactPhoneInput = document.getElementById('contactPhoneInput');
+    const teamDescriptionInput = document.getElementById('teamDescriptionInput');
+    const teamLogoPlaceholder = document.getElementById('teamLogoPlaceholder');
+    const teamIdInput = document.getElementById('teamIdInput');
+    const signUpForm = document.querySelector('.registration-form form');
+    const playerList = document.getElementById('playerList');
+    const addPlayerBox = document.getElementById('addPlayerBox');
+    const MAX_PLAYERS = 10;
+
+    function updateAddPlayerBoxVisibility() {
+        const playerCount = playerList.querySelectorAll('.player-item').length;
+        addPlayerBox.style.display = playerCount >= MAX_PLAYERS ? 'none' : 'grid';
+    }
+
+    function createPlayerItem(name, number, avatarUrl) {
+        const newItem = document.createElement('div');
+        newItem.className = 'player-item';
+        const safeName = name || 'Chưa có tên';
+        const numberText = number == null ? '—' : number;
+        const imageSrc = avatarUrl || ('https://i.pravatar.cc/150?u=' + Math.random());
+        newItem.innerHTML = `
+            <img src="${imageSrc}" class="player-avatar">
+            <div class="player-info">
+                <div>Số áo: <strong>${numberText}</strong></div>
+                <div>Họ và tên: <strong>${safeName}</strong></div>
+            </div>
+            <button class="remove-btn" onclick="this.parentElement.remove(); updateAddPlayerBoxVisibility();">X</button>
+        `;
+        return newItem;
+    }
+
+    async function useExistingTeamInfo() {
+        const prefillUrl = useExistingTeamBtn.dataset.prefillUrl;
+        if (!prefillUrl) {
+            alert('Không tìm thấy URL lấy dữ liệu đội');
+            return;
+        }
+        useExistingTeamBtn.disabled = true;
+        const previousText = useExistingTeamBtn.textContent;
+        useExistingTeamBtn.textContent = 'Đang tải...';
+        try {
+            const response = await fetch(prefillUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (!response.ok) {
+                throw new Error('Không thể lấy dữ liệu đội');
+            }
+            const data = await response.json();
+            if (!data.found) {
+                alert(data.message || 'Không có dữ liệu đội để sử dụng');
+                return;
+            }
+            teamNameInput.value = data.teamName || '';
+            representativeInput.value = data.representativeName || '';
+            contactEmailInput.value = data.contactEmail || '';
+            contactPhoneInput.value = data.contactPhone || '';
+            if (data.teamId) {
+                teamIdInput.value = String(data.teamId);
+            }
+            if (!teamDescriptionInput.value) {
+                teamDescriptionInput.value = 'Đội đã có sẵn trên hệ thống';
+            }
+            if (data.logoUrl) {
+                teamLogoPlaceholder.innerHTML = '<img src="' + data.logoUrl + '" alt="Logo đội bóng" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+            } else {
+                teamLogoPlaceholder.textContent = (data.teamName || 'CLUB NAME').substring(0, 12);
+            }
+            playerList.innerHTML = '';
+            if (Array.isArray(data.players) && data.players.length > 0) {
+                data.players.forEach(player => {
+                    playerList.appendChild(createPlayerItem(player.fullName, player.jerseyNumber, player.avatarUrl));
+                });
+            }
+            updateAddPlayerBoxVisibility();
+        } catch (error) {
+            alert('Không thể tải dữ liệu đội. Vui lòng thử lại.');
+        } finally {
+            useExistingTeamBtn.disabled = false;
+            useExistingTeamBtn.textContent = previousText;
+        }
+    }
+
+    useExistingTeamBtn.addEventListener('click', useExistingTeamInfo);
+
+    signUpForm.addEventListener('submit', event => {
+        if (!teamIdInput.value) {
+            event.preventDefault();
+            alert("Vui lòng chọn đội bóng để đăng ký.");
+        }
+    });
+
     function addPlayer() {
+        if (playerList.querySelectorAll('.player-item').length >= MAX_PLAYERS) {
+            alert("Đã đủ 10 thành viên.");
+            return;
+        }
         const name = document.getElementById('newName').value;
         const number = document.getElementById('newNumber').value;
 
@@ -99,24 +209,13 @@
             return;
         }
 
-        const playerList = document.getElementById('playerList');
-        const newItem = document.createElement('div');
-        newItem.className = 'player-item';
-        newItem.innerHTML = `
-            <img src="https://i.pravatar.cc/150?u=${Math.random()}" class="player-avatar">
-            <div class="player-info">
-                <div>Số áo: <strong>${number}</strong></div>
-                <div>Họ và tên: <strong>${name}</strong></div>
-            </div>
-            <button class="remove-btn" onclick="this.parentElement.remove()">X</button>
-        `;
-
-        playerList.appendChild(newItem);
-
-        // Reset input
+        playerList.appendChild(createPlayerItem(name, number, null));
         document.getElementById('newName').value = '';
         document.getElementById('newNumber').value = '';
+        updateAddPlayerBoxVisibility();
     }
+
+    updateAddPlayerBoxVisibility();
 </script>
 
 </body>

@@ -45,6 +45,11 @@ public class TournamentRegistrationService {
 	}
 
 	@Transactional(readOnly = true)
+	public Optional<TournamentRegistration> findById(Long id) {
+		return registrationRepository.findById(id);
+	}
+
+	@Transactional(readOnly = true)
 	public List<TournamentRegistration> listApprovedByTeamId(Long teamId) {
 		return registrationRepository.findByTeamIdAndStatusWithTournament(teamId, RegistrationStatus.APPROVED);
 	}
