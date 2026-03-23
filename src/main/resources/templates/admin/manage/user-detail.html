@@ -667,40 +667,49 @@
 
             <section class="user-detail-container">
                 <h1 class="user-detail__title">CHI TIẾT NGƯỜI DÙNG</h1>
+                <p th:if="${userLockMessage != null}" class="auth-hint" th:text="${userLockMessage}">---</p>
 
                 <div class="user-detail__body">
                     <div class="user-info-list">
                         <div class="info-row">
                             <label>Họ và Tên:</label>
-                            <span>Huỳnh Văn A</span>
+                            <span th:text="${user != null and user.fullName != null and !#strings.isEmpty(user.fullName) ? user.fullName : 'Chưa cập nhật'}">---</span>
                         </div>
                         <div class="info-row">
                             <label>Địa chỉ:</label>
-                            <span>Thủ Đức, TPHCM</span>
+                            <span th:text="${user != null and user.address != null and !#strings.isEmpty(user.address) ? user.address : 'Chưa cập nhật'}">---</span>
                         </div>
                         <div class="info-row">
                             <label>Ngày đăng ký:</label>
-                            <span>dd/mm/yyyy</span>
+                            <span th:text="${registeredAt ?: '—'}">—</span>
                         </div>
                         <div class="info-row">
                             <label>Vai trò:</label>
-                            <span>User</span>
+                            <span th:text="${roleLabel ?: '—'}">—</span>
                         </div>
                         <div class="info-row">
                             <label>Đội:</label>
-                            <span>22DTHC3</span>
-                            <a class="btn-team-info" th:href="@{/admin/manage/user-team-detail}">Xem chi tiết đội</a>
+                            <a class="btn-team-info" th:if="${hasTeam}" th:href="@{/admin/manage/user-team-detail(userId=${userId})}">Xem chi tiết đội</a>
                         </div>
                         <div class="info-row">
                             <label>Trạng thái:</label>
-                            <span>Đang kích hoạt</span>
+                            <span th:text="${statusLabel ?: '—'}">—</span>
                         </div>
                     </div>
 
                     <div class="user-avatar-side">
                         <p>Ảnh đại diện</p>
                         <div class="avatar-circle-large">
-                            <img src="/assets/figma/avatar.jpg" alt="User Avatar">
+                            <img
+                                th:if="${user != null and user.avatarUrl != null and !#strings.isEmpty(user.avatarUrl)}"
+                                th:src="${user.avatarUrl}"
+                                alt="User Avatar"
+                            >
+                            <img
+                                th:unless="${user != null and user.avatarUrl != null and !#strings.isEmpty(user.avatarUrl)}"
+                                src="/assets/figma/avatar.jpg"
+                                alt="User Avatar"
+                            >
                         </div>
                     </div>
                 </div>
@@ -708,13 +717,17 @@
                 <div class="user-detail__actions">
                     <a
                         class="btn-action btn--blue-dark"
-                        th:href="@{/admin/manage/user-transaction-history}"
+                        th:href="@{/admin/manage/user-transaction-history(userId=${userId})}"
                         style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"
                     >Xem lịch sử giao dịch</a>
 
                     <div class="btn-group-right">
                         <a href="/admin/manage/user" class="btn-action btn--grey" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Quay lại</a>
-                        <button class="btn-action btn--sky">Khóa tài khoản này</button>
+                        <form th:if="${userId != null}" method="post" th:action="@{/admin/manage/user/toggle-lock}" style="margin:0;">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <input type="hidden" name="userId" th:value="${userId}" />
+                            <button class="btn-action btn--sky" type="submit" th:text="${isLocked ? 'Mở khóa tài khoản' : 'Khóa tài khoản này'}">Khóa tài khoản này</button>
+                        </form>
                     </div>
                 </div>
             </section>

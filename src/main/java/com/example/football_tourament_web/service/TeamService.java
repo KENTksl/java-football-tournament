@@ -28,6 +28,11 @@ public class TeamService {
 	}
 
 	@Transactional(readOnly = true)
+	public Optional<Team> findByIdWithCaptain(Long id) {
+		return teamRepository.findByIdWithCaptain(id);
+	}
+
+	@Transactional(readOnly = true)
 	public Optional<Team> findByName(String name) {
 		return teamRepository.findByNameIgnoreCase(name);
 	}
@@ -35,6 +40,21 @@ public class TeamService {
 	@Transactional(readOnly = true)
 	public Optional<Team> findCaptainTeam(Long captainUserId) {
 		return teamRepository.findFirstByCaptainId(captainUserId);
+	}
+
+	@Transactional(readOnly = true)
+	public Optional<Team> findCaptainTeamWithCaptain(Long captainUserId) {
+		if (captainUserId == null) return Optional.empty();
+		List<Team> teams = teamRepository.findByCaptainIdWithCaptainOrderByCreatedAtDesc(captainUserId);
+		if (teams == null || teams.isEmpty()) return Optional.empty();
+		return Optional.ofNullable(teams.get(0));
+	}
+
+	@Transactional(readOnly = true)
+	public List<Team> listByCaptainWithCaptain(Long captainUserId) {
+		if (captainUserId == null) return List.of();
+		List<Team> teams = teamRepository.findByCaptainIdWithCaptainOrderByCreatedAtDesc(captainUserId);
+		return teams == null ? List.of() : teams;
 	}
 
 	@Transactional(readOnly = true)
