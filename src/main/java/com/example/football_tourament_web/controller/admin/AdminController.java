@@ -506,28 +506,17 @@ public class AdminController {
 	@GetMapping({"/admin/manage/user-detail"})
 	public String manageUserDetail(
 			@RequestParam(value = "userId", required = false) Long userId,
-			Model model
+			Model model,
+			RedirectAttributes redirectAttributes
 	) {
 		model.addAttribute("userId", userId);
 		if (userId == null) {
-			model.addAttribute("user", null);
-			model.addAttribute("registeredAt", "—");
-			model.addAttribute("roleLabel", "—");
-			model.addAttribute("statusLabel", "—");
-			model.addAttribute("teamName", "—");
-			model.addAttribute("hasTeam", false);
-			return "admin/manage/user-detail";
+			return "redirect:/admin/manage/user";
 		}
 
 		AppUser user = userService.findById(userId).orElse(null);
 		if (user == null) {
-			model.addAttribute("user", null);
-			model.addAttribute("registeredAt", "—");
-			model.addAttribute("roleLabel", "—");
-			model.addAttribute("statusLabel", "—");
-			model.addAttribute("teamName", "—");
-			model.addAttribute("hasTeam", false);
-			return "admin/manage/user-detail";
+			return "redirect:/admin/manage/user";
 		}
 
 		var team = teamService.findCaptainTeam(userId).orElse(null);
@@ -549,20 +538,14 @@ public class AdminController {
 			RedirectAttributes redirectAttributes
 	) {
 		if (userId == null) {
-			redirectAttributes.addFlashAttribute("userLockMessage", "Thiếu userId");
 			return "redirect:/admin/manage/user";
 		}
 		AppUser user = userService.findById(userId).orElse(null);
 		if (user == null) {
-			redirectAttributes.addFlashAttribute("userLockMessage", "Không tìm thấy người dùng");
 			return "redirect:/admin/manage/user";
 		}
 		UserStatus next = user.getStatus() == UserStatus.LOCKED ? UserStatus.ACTIVE : UserStatus.LOCKED;
 		userService.updateStatus(userId, next);
-		redirectAttributes.addFlashAttribute(
-				"userLockMessage",
-				next == UserStatus.LOCKED ? "Đã khóa tài khoản người dùng" : "Đã mở khóa tài khoản người dùng"
-		);
 		return "redirect:/admin/manage/user-detail?userId=" + userId;
 	}
 

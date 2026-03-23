@@ -405,6 +405,7 @@
             <section class="user-card" aria-label="Quản lý người dùng">
                 <div class="user-card__header">
                     <h1 class="user-card__title">Quản lý Người dùng</h1>
+                    <p th:if="${userLockMessage != null}" class="auth-hint" th:text="${userLockMessage}">---</p>
                 </div>
 
                 <div class="tableWrap" style="border: none; background: transparent;">
