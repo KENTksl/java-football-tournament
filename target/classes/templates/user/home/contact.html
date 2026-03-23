@@ -41,15 +41,29 @@
               <div class="contact-card__title">Thông tin liên hệ</div>
               <div class="contact-info" aria-label="Thông tin liên hệ">
                 <a class="contact-info__row" href="https://www.google.com/maps/search/?api=1&query=TP.%20Th%E1%BB%A7%20%C4%90%E1%BB%A9c%2C%20TP.%20HCM" target="_blank" rel="noopener">
-                  <span class="contact-info__icon"><img th:src="@{/assets/figma/icon-map-pin.svg}" alt="" /></span>
+                  <span class="contact-info__icon">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                      <circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="2" />
+                    </svg>
+                  </span>
                   <span>TP. Thủ Đức, TP. HCM</span>
                 </a>
                 <a class="contact-info__row" href="tel:0123456789">
-                  <span class="contact-info__icon"><img th:src="@{/assets/figma/icon-phone.svg}" alt="" /></span>
+                  <span class="contact-info__icon">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M22 16.9v3a2 2 0 0 1-2.2 2c-9.6-.9-17.2-8.5-18.1-18.1A2 2 0 0 1 3.7 1h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.6a2 2 0 0 1-.5 2.1L7.8 8.4a16 16 0 0 0 7.8 7.8l1-1a2 2 0 0 1 2.1-.5c.8.3 1.7.5 2.6.6A2 2 0 0 1 22 16.9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </span>
                   <span>0123 456 789</span>
                 </a>
                 <a class="contact-info__row" href="mailto:sporttournament@example.com">
-                  <span class="contact-info__icon"><img th:src="@{/assets/figma/icon-mail.svg}" alt="" /></span>
+                  <span class="contact-info__icon">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M4 6h16v12H4V6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                      <path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </span>
                   <span>sporttournament@example.com</span>
                 </a>
               </div>
