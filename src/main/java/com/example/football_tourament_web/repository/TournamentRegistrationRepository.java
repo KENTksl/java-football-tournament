@@ -33,6 +33,16 @@ public interface TournamentRegistrationRepository extends JpaRepository<Tourname
 			@Param("excludedStatus") RegistrationStatus excludedStatus
 	);
 
+	@Query("""
+			select count(distinct r.team.id)
+			from TournamentRegistration r
+			where r.tournament.id = :tournamentId and r.status = :status
+			""")
+	long countDistinctTeamByTournamentIdAndStatus(
+			@Param("tournamentId") Long tournamentId,
+			@Param("status") RegistrationStatus status
+	);
+
 	List<TournamentRegistration> findByRegisteredByIdOrderByCreatedAtDesc(Long userId);
 
 	Optional<TournamentRegistration> findByTournamentIdAndTeamId(Long tournamentId, Long teamId);

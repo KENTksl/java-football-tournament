@@ -26,7 +26,7 @@ public class TournamentController {
 
 	@GetMapping({"", "/"})
 	public String tournamentList(Model model) {
-		var tournaments = tournamentService.listTournaments();
+		var tournaments = tournamentService.listTournamentsNewestFirst();
 		model.addAttribute("tournaments", tournaments);
 		model.addAttribute("registeredTeamCounts", userTournamentViewService.buildRegisteredTeamCountMap(tournaments));
 		model.addAttribute("registeredTeamPercents", userTournamentViewService.buildRegisteredTeamPercentMap(tournaments));
@@ -41,9 +41,16 @@ public class TournamentController {
 	}
 
 	@GetMapping("/sign-up")
-	public String signUp(@RequestParam(value = "id", required = false) Long id, Authentication authentication, Model model) {
+	public String signUp(
+			@RequestParam(value = "id", required = false) Long id,
+			@RequestParam(value = "embedded", required = false, defaultValue = "false") boolean embedded,
+			Authentication authentication,
+			Model model
+	) {
 		attachTournament(model, id);
 		model.addAttribute("signUpTeams", userTournamentViewService.listSignUpTeamOptions(authentication));
+		model.addAttribute("signUpTeamPrefills", userTournamentViewService.listSignUpTeamPrefills(authentication));
+		model.addAttribute("embedded", embedded);
 		return "user/tournament/Sign_up";
 	}
 
@@ -51,12 +58,16 @@ public class TournamentController {
 	public String signUpSubmit(
 			@RequestParam(value = "tournamentId", required = false) Long tournamentId,
 			@RequestParam(value = "teamId", required = false) Long teamId,
+			@RequestParam(value = "embedded", required = false, defaultValue = "false") boolean embedded,
 			Authentication authentication,
 			RedirectAttributes redirectAttributes
 	) {
 		var result = userTournamentViewService.submitRegistration(authentication, tournamentId, teamId);
 		redirectAttributes.addFlashAttribute("registrationMessage", result.message());
 		redirectAttributes.addFlashAttribute("registrationSuccess", result.success());
+		if (embedded) {
+			return "redirect:/user/tournament/sign-up?id=" + (tournamentId == null ? "" : tournamentId) + "&embedded=true";
+		}
 		return "redirect:/user/tournament/sign-up?id=" + (tournamentId == null ? "" : tournamentId);
 	}
 
@@ -87,6 +98,7 @@ public class TournamentController {
 	@GetMapping("/competing-teams")
 	public String competingTeams(@RequestParam(value = "id", required = false) Long id, Model model) {
 		attachTournament(model, id);
+		model.addAttribute("teamCards", userTournamentViewService.buildTournamentTeams(id));
 		return "user/tournament/Competing_Teams";
 	}
 

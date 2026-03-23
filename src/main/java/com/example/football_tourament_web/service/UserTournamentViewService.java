@@ -151,6 +151,36 @@ public class UserTournamentViewService {
 				.toList();
 	}
 
+	@Transactional(readOnly = true)
+	public List<SignUpTeamPrefill> listSignUpTeamPrefills(Authentication authentication) {
+		var user = requireCurrentUser(authentication);
+		if (user == null) {
+			return List.of();
+		}
+		List<SignUpTeamPrefill> result = new ArrayList<>();
+		for (var team : teamService.listByCaptain(user.getId())) {
+			if (team == null || team.getId() == null) {
+				continue;
+			}
+			var players = playerRepository.findByTeamIdOrderByJerseyNumberAsc(team.getId()).stream()
+					.map(player -> new PlayerPrefill(player.getFullName(), player.getJerseyNumber(), player.getAvatarUrl()))
+					.toList();
+			String representativeName = team.getCaptain() != null ? team.getCaptain().getFullName() : user.getFullName();
+			String contactEmail = team.getCaptain() != null ? team.getCaptain().getEmail() : user.getEmail();
+			String contactPhone = team.getCaptain() != null ? team.getCaptain().getPhone() : user.getPhone();
+			result.add(new SignUpTeamPrefill(
+					team.getId(),
+					team.getName(),
+					representativeName,
+					contactEmail,
+					contactPhone,
+					team.getLogoUrl(),
+					players
+			));
+		}
+		return result;
+	}
+
 	@Transactional
 	public RegistrationSubmitResult submitRegistration(Authentication authentication, Long tournamentId, Long teamId) {
 		var user = requireCurrentUser(authentication);
@@ -340,7 +370,10 @@ public class UserTournamentViewService {
 		var team = teamOpt.get();
 
 		boolean belongsToTournament = tournamentRegistrationService.listByTournamentIdWithTeam(tournamentId).stream()
-				.anyMatch(r -> r != null && r.getTeam() != null && teamId.equals(r.getTeam().getId()));
+				.anyMatch(r -> r != null
+						&& r.getStatus() == RegistrationStatus.APPROVED
+						&& r.getTeam() != null
+						&& teamId.equals(r.getTeam().getId()));
 		if (!belongsToTournament) {
 			return TeamSingleLineupView.notFound("Đội bóng không thuộc giải đấu này");
 		}
@@ -633,7 +666,7 @@ public class UserTournamentViewService {
 			boolean allAssigned = true;
 
 			for (TournamentRegistration registration : registrations) {
-				if (registration == null || registration.getStatus() == RegistrationStatus.REJECTED) {
+				if (registration == null || registration.getStatus() != RegistrationStatus.APPROVED) {
 					continue;
 				}
 				if (registration.getTeam() == null || registration.getTeam().getId() == null) {
@@ -894,6 +927,17 @@ public class UserTournamentViewService {
 	}
 
 	public record SignUpTeamOption(Long id, String name) {
+	}
+
+	public record SignUpTeamPrefill(
+			Long teamId,
+			String teamName,
+			String representativeName,
+			String contactEmail,
+			String contactPhone,
+			String logoUrl,
+			List<PlayerPrefill> players
+	) {
 	}
 
 	public record RegistrationSubmitResult(boolean success, String message) {

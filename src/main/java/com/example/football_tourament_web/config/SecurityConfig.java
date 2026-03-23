@@ -121,6 +121,8 @@ public class SecurityConfig {
 				.invalidateHttpSession(true)
 				.permitAll());
 
+		http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
+
 		return http.build();
 	}
 }

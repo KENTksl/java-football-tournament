@@ -1482,7 +1482,7 @@ public class HomeController {
 	}
 
 	private Path uploadBaseDir(String folder) {
-		return Paths.get(System.getProperty("user.home"), ".football_tournament_web", "uploads", folder).toAbsolutePath().normalize();
+		return Paths.get("src", "main", "resources", "static", "uploads", folder).toAbsolutePath().normalize();
 	}
 
 	private static class AvatarTooLargeException extends RuntimeException {

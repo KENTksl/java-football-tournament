@@ -38,7 +38,13 @@
                 <span class="back-link__icon">←</span>
                 Quay lại danh sách
             </a>
-            <a th:if="${tournament != null and tournament.status != null and tournament.status.name() == 'UPCOMING' and !tournamentIsFull}" th:href="@{/user/tournament/sign-up(id=${tournament.id})}" class="register-btn">Đăng kí giải đấu</a>
+            <button type="button"
+                    th:if="${tournament != null and tournament.status != null and tournament.status.name() == 'UPCOMING' and !tournamentIsFull}"
+                    class="register-btn"
+                    data-open-signup-modal
+                    th:attr="data-signup-url=@{/user/tournament/sign-up(id=${tournament.id},embedded=true)}">
+                Đăng kí giải đấu
+            </button>
             <span th:if="${tournament != null and tournament.status != null and tournament.status.name() == 'UPCOMING' and tournamentIsFull}" class="register-btn" style="background:#6b7280;">Giải đã đủ đội</span>
         </div>
 
@@ -344,6 +350,17 @@
     </section>
 </div>
 
+<div class="signup-overlay" id="signupOverlay" aria-hidden="true">
+    <div class="signup-overlay__backdrop" data-close-signup-overlay></div>
+    <section class="signup-overlay__dialog" role="dialog" aria-modal="true">
+        <header class="signup-overlay__header">
+            <h3>Đăng kí giải đấu</h3>
+            <button type="button" class="signup-overlay__close" data-close-signup-overlay aria-label="Đóng">×</button>
+        </header>
+        <iframe id="signupOverlayFrame" class="signup-overlay__frame" src="about:blank"></iframe>
+    </section>
+</div>
+
 <script>
     const tabs = document.querySelectorAll('.tournament-section > .tabs .tab');
     const schedulePanel = document.querySelector('[data-tab-panel="schedule"]');
@@ -449,6 +466,8 @@
     const lineupAwayPitch = document.getElementById('lineupAwayPitch');
     const lineupHomeBench = document.getElementById('lineupHomeBench');
     const lineupAwayBench = document.getElementById('lineupAwayBench');
+    const signupOverlay = document.getElementById('signupOverlay');
+    const signupOverlayFrame = document.getElementById('signupOverlayFrame');
 
     const openMatchModal = () => {
         matchDetailModal.classList.add('is-open');
@@ -553,6 +572,37 @@
     window.addEventListener('keydown', event => {
         if (event.key === 'Escape' && matchDetailModal.classList.contains('is-open')) {
             closeMatchModal();
+        }
+    });
+
+    const openSignupOverlay = signupUrl => {
+        if (!signupUrl) return;
+        signupOverlayFrame.src = signupUrl;
+        signupOverlay.classList.add('is-open');
+        signupOverlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    };
+
+    const closeSignupOverlay = () => {
+        signupOverlay.classList.remove('is-open');
+        signupOverlay.setAttribute('aria-hidden', 'true');
+        signupOverlayFrame.src = 'about:blank';
+        document.body.style.overflow = '';
+    };
+
+    document.querySelectorAll('[data-open-signup-modal]').forEach(button => {
+        button.addEventListener('click', () => {
+            openSignupOverlay(button.dataset.signupUrl);
+        });
+    });
+
+    document.querySelectorAll('[data-close-signup-overlay]').forEach(button => {
+        button.addEventListener('click', closeSignupOverlay);
+    });
+
+    window.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && signupOverlay.classList.contains('is-open')) {
+            closeSignupOverlay();
         }
     });
 </script>

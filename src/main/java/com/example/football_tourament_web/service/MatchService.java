@@ -11,6 +11,7 @@ import com.example.football_tourament_web.model.entity.Team;
 import com.example.football_tourament_web.model.entity.Tournament;
 import com.example.football_tourament_web.model.entity.TournamentRegistration;
 import com.example.football_tourament_web.model.enums.MatchStatus;
+import com.example.football_tourament_web.model.enums.RegistrationStatus;
 import com.example.football_tourament_web.model.enums.TournamentMode;
 import com.example.football_tourament_web.repository.MatchRepository;
 import com.example.football_tourament_web.service.TournamentRegistrationService;
@@ -177,7 +178,10 @@ public class MatchService {
 		if (knockoutAlreadyExists) return false;
 
 		List<TournamentRegistration> regs = tournamentRegistrationService.listByTournamentIdWithTeam(tournamentId).stream()
-				.filter(r -> r != null && r.getTeam() != null && r.getTeam().getId() != null)
+				.filter(r -> r != null
+						&& r.getStatus() == RegistrationStatus.APPROVED
+						&& r.getTeam() != null
+						&& r.getTeam().getId() != null)
 				.collect(Collectors.toList());
 
 		Map<String, List<Team>> teamsByGroup = new HashMap<>();

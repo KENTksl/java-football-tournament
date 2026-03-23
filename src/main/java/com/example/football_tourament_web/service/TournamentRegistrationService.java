@@ -31,7 +31,7 @@ public class TournamentRegistrationService {
 	@Transactional(readOnly = true)
 	public long countRegisteredTeams(Long tournamentId) {
 		if (tournamentId == null) return 0;
-		return registrationRepository.countDistinctTeamByTournamentIdAndStatusNot(tournamentId, RegistrationStatus.REJECTED);
+		return registrationRepository.countDistinctTeamByTournamentIdAndStatus(tournamentId, RegistrationStatus.APPROVED);
 	}
 
 	@Transactional(readOnly = true)

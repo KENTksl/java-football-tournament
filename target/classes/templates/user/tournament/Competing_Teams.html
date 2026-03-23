@@ -25,11 +25,11 @@
 <main>
     <div class="container">
         <div class="back-link-bar">
-            <a href="/user/tournament/match-schedule" class="back-link">
+            <a th:href="@{/user/tournament/match-schedule(id=${tournament != null ? tournament.id : null})}" class="back-link">
                 <span class="back-link__icon">←</span>
                 Quay lại lịch đấu
             </a>
-            <a href="/user/tournament/sign-up" class="page-btn">Đăng kí giải đấu</a>
+            <a th:href="@{/user/tournament/sign-up(id=${tournament != null ? tournament.id : null})}" class="page-btn">Đăng kí giải đấu</a>
         </div>
 
         <div class="tournament-section">
@@ -53,400 +53,32 @@
                 </div>
 
                 <div class="tournament-details">
-                    <div class="tournament-name">HUTECH mở rộng lần 31</div>
+                    <div class="tournament-name" th:text="${tournament != null and tournament.name != null and !#strings.isEmpty(tournament.name) ? tournament.name : 'Giải đấu'}">HUTECH mở rộng lần 31</div>
                     <div class="tournament-meta">
-                        <span>BTC: Đỗ Thành Nhân</span>
-                        <span>Hình thức: Knockout</span>
-                        <span>Số đội: 8</span>
-                        <span>Trạng thái: <span class="status-badge">Đang diễn ra</span></span>
-                        <span>Mô tả: Giải đấu phong trào dành cho các đội sinh viên.</span>
+                        <span th:text="${'BTC: ' + (tournament != null and tournament.organizer != null and !#strings.isEmpty(tournament.organizer) ? tournament.organizer : 'Chưa cập nhật')}">BTC: Đỗ Thành Nhân</span>
+                        <span th:text="${'Hình thức: ' + (tournament != null and tournament.mode != null ? tournament.mode.displayName : 'Chưa cập nhật')}">Hình thức: Knockout</span>
+                        <span th:text="${'Số đội: ' + (tournament != null and tournament.teamLimit != null ? tournament.teamLimit : 0)}">Số đội: 8</span>
+                        <span>Trạng thái: <span class="status-badge" th:text="${tournament != null and tournament.status != null ? tournament.status.displayName : 'Chưa xác định'}">Đang diễn ra</span></span>
+                        <span th:text="${'Mô tả: ' + (tournament != null and tournament.description != null and !#strings.isEmpty(tournament.description) ? tournament.description : 'Đang cập nhật')}">Mô tả: Giải đấu phong trào dành cho các đội sinh viên.</span>
                     </div>
                 </div>
             </div>
 
             <div class="tabs">
-                <a class="tab" href="/user/tournament/match-schedule">Lịch đấu</a>
+                <a class="tab" th:href="@{/user/tournament/match-schedule(id=${tournament != null ? tournament.id : null})}">Lịch đấu</a>
                 <button type="button" class="tab">BXH</button>
                 <button type="button" class="tab">Thống kê</button>
                 <button type="button" class="tab">Biểu đồ</button>
                 <button type="button" class="tab">Bracket</button>
-                <a class="tab tab--active" href="/user/tournament/competing-teams">Các đội</a>
+                <a class="tab tab--active" th:href="@{/user/tournament/competing-teams(id=${tournament != null ? tournament.id : null})}">Các đội</a>
             </div>
         </div>
 
-        <section class="teams-section">
-            <div class="teams-toolbar">
-                <div>
-                    <h2 class="teams-title">Danh sách đội tham gia</h2>
-                    <div class="teams-count">8 đội đã xác nhận tham gia</div>
-                </div>
-                <input class="search-box" type="text" placeholder="Tìm theo tên đội...">
-            </div>
-
-            <div class="team-grid">
-                <article class="team-card">
-                    <div class="team-card__cover">A</div>
-                    <div class="team-card__body">
-                        <div class="team-card__head">
-                            <div class="team-card__logo"></div>
-                            <h3 class="team-card__name">CNTT United</h3>
-                        </div>
-                        <div class="team-card__meta">
-                            <div>Đội trưởng: Nguyễn Minh Khang</div>
-                            <div>Mã đội: #TU01</div>
-                        </div>
-                        <div class="team-card__actions">
-                            <span class="member-chip">16 thành viên</span>
-                            <button type="button" class="detail-btn" data-open-team-modal data-team-name="CNTT United">Xem đội hình</button>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="team-card">
-                    <div class="team-card__cover">B</div>
-                    <div class="team-card__body">
-                        <div class="team-card__head">
-                            <div class="team-card__logo"></div>
-                            <h3 class="team-card__name">Ô Tô FC</h3>
-                        </div>
-                        <div class="team-card__meta">
-                            <div>Đội trưởng: Trần Quốc Vương</div>
-                            <div>Mã đội: #TU02</div>
-                        </div>
-                        <div class="team-card__actions">
-                            <span class="member-chip">14 thành viên</span>
-                            <button type="button" class="detail-btn" data-open-team-modal data-team-name="Ô Tô FC">Xem đội hình</button>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="team-card">
-                    <div class="team-card__cover">C</div>
-                    <div class="team-card__body">
-                        <div class="team-card__head">
-                            <div class="team-card__logo"></div>
-                            <h3 class="team-card__name">Xây Dựng Stars</h3>
-                        </div>
-                        <div class="team-card__meta">
-                            <div>Đội trưởng: Lê Thành Long</div>
-                            <div>Mã đội: #TU03</div>
-                        </div>
-                        <div class="team-card__actions">
-                            <span class="member-chip">17 thành viên</span>
-                            <button type="button" class="detail-btn" data-open-team-modal data-team-name="Xây Dựng Stars">Xem đội hình</button>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="team-card">
-                    <div class="team-card__cover">D</div>
-                    <div class="team-card__body">
-                        <div class="team-card__head">
-                            <div class="team-card__logo"></div>
-                            <h3 class="team-card__name">Cơ Khí Legends</h3>
-                        </div>
-                        <div class="team-card__meta">
-                            <div>Đội trưởng: Võ Trường An</div>
-                            <div>Mã đội: #TU04</div>
-                        </div>
-                        <div class="team-card__actions">
-                            <span class="member-chip">15 thành viên</span>
-                            <button type="button" class="detail-btn" data-open-team-modal data-team-name="Cơ Khí Legends">Xem đội hình</button>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="team-card">
-                    <div class="team-card__cover">E</div>
-                    <div class="team-card__body">
-                        <div class="team-card__head">
-                            <div class="team-card__logo"></div>
-                            <h3 class="team-card__name">Điện Tử Power</h3>
-                        </div>
-                        <div class="team-card__meta">
-                            <div>Đội trưởng: Hoàng Việt Dũng</div>
-                            <div>Mã đội: #TU05</div>
-                        </div>
-                        <div class="team-card__actions">
-                            <span class="member-chip">13 thành viên</span>
-                            <button type="button" class="detail-btn" data-open-team-modal data-team-name="Điện Tử Power">Xem đội hình</button>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="team-card">
-                    <div class="team-card__cover">F</div>
-                    <div class="team-card__body">
-                        <div class="team-card__head">
-                            <div class="team-card__logo"></div>
-                            <h3 class="team-card__name">Kinh Tế Warriors</h3>
-                        </div>
-                        <div class="team-card__meta">
-                            <div>Đội trưởng: Phạm Nhật Minh</div>
-                            <div>Mã đội: #TU06</div>
-                        </div>
-                        <div class="team-card__actions">
-                            <span class="member-chip">18 thành viên</span>
-                            <button type="button" class="detail-btn" data-open-team-modal data-team-name="Kinh Tế Warriors">Xem đội hình</button>
-                        </div>
-                    </div>
-                </article>
-            </div>
-        </section>
+        <th:block th:replace="~{user/tournament/fragments/teams :: teams}"></th:block>
     </div>
 </main>
 
 <th:block th:replace="~{user/fragments/footer :: footer('tournament')}"></th:block>
-<div class="modal" id="teamLineupModal" aria-hidden="true">
-    <div class="modal__backdrop" data-close-team-modal></div>
-    <section class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="teamLineupModalTitle">
-        <header class="modal__top">
-            <h2 class="modal__title" id="teamLineupModalTitle">CHI TIẾT ĐỘI HÌNH</h2>
-            <button type="button" class="modal__close" data-close-team-modal aria-label="Đóng">×</button>
-        </header>
-        <div class="modal__body">
-            <div class="lineup-panel">
-                <h3 class="lineup-team" id="lineupTeamName">CNTT United</h3>
-                <div class="pitch" data-pitch>
-                    <div class="slot slot--fw" data-slot>FW</div>
-                    <div class="slot slot--df" data-slot>DF</div>
-                    <div class="slot slot--gk" data-slot>GK</div>
-                </div>
-                <div class="bench-title">Đội hình dự bị</div>
-                <div class="bench" data-bench>
-                    <div class="player">A1</div>
-                    <div class="player">A2</div>
-                    <div class="player">A3</div>
-                    <div class="player">A4</div>
-                    <div class="player">A5</div>
-                </div>
-            </div>
-        </div>
-    </section>
-</div>
-<script>
-    const teamLineupModal = document.getElementById('teamLineupModal');
-    const lineupTeamName = document.getElementById('lineupTeamName');
-    const openTeamModalButtons = document.querySelectorAll('[data-open-team-modal]');
-    const closeTeamModalButtons = document.querySelectorAll('[data-close-team-modal]');
-    const slots = teamLineupModal.querySelectorAll('[data-slot]');
-    const bench = teamLineupModal.querySelector('[data-bench]');
-    const players = teamLineupModal.querySelectorAll('.player');
-    let dragState = null;
-
-    const resetModalLineup = () => {
-        players.forEach(player => {
-            bench.appendChild(player);
-            player.dataset.slotId = '';
-            player.style.position = '';
-            player.style.left = '';
-            player.style.top = '';
-            player.style.transform = '';
-            player.style.width = '';
-            player.style.height = '';
-            player.style.zIndex = '';
-        });
-        slots.forEach(slot => {
-            slot.dataset.occupiedBy = '';
-            slot.classList.remove('is-filled', 'is-target');
-        });
-    };
-
-    const openTeamModal = teamName => {
-        resetModalLineup();
-        lineupTeamName.textContent = teamName;
-        teamLineupModal.classList.add('is-open');
-        teamLineupModal.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
-    };
-
-    const closeTeamModal = () => {
-        teamLineupModal.classList.remove('is-open');
-        teamLineupModal.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
-    };
-
-    openTeamModalButtons.forEach(button => {
-        button.addEventListener('click', () => openTeamModal(button.dataset.teamName || 'Đội bóng'));
-    });
-
-    closeTeamModalButtons.forEach(button => {
-        button.addEventListener('click', closeTeamModal);
-    });
-
-    const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
-
-    const resetSlotHighlight = () => {
-        slots.forEach(slot => slot.classList.remove('is-target'));
-    };
-
-    const clearSlotOccupancy = slotId => {
-        if (!slotId) {
-            return;
-        }
-        const slot = teamLineupModal.querySelector('[data-slot-id="' + slotId + '"]');
-        if (slot) {
-            slot.dataset.occupiedBy = '';
-            slot.classList.remove('is-filled');
-        }
-    };
-
-    const setPlayerToBench = player => {
-        bench.appendChild(player);
-        player.dataset.slotId = '';
-        player.style.position = '';
-        player.style.left = '';
-        player.style.top = '';
-        player.style.transform = '';
-        player.style.width = '';
-        player.style.height = '';
-        player.style.zIndex = '';
-    };
-
-    const setPlayerToSlot = (player, slot) => {
-        const occupiedBy = slot.dataset.occupiedBy;
-        if (occupiedBy && occupiedBy !== player.dataset.playerId) {
-            const oldPlayer = teamLineupModal.querySelector('[data-player-id="' + occupiedBy + '"]');
-            if (oldPlayer) {
-                clearSlotOccupancy(oldPlayer.dataset.slotId);
-                setPlayerToBench(oldPlayer);
-            }
-        }
-        clearSlotOccupancy(player.dataset.slotId);
-        const pitch = slot.closest('[data-pitch]');
-        const pitchRect = pitch.getBoundingClientRect();
-        const slotRect = slot.getBoundingClientRect();
-        const leftPercent = clamp((((slotRect.left + slotRect.width / 2) - pitchRect.left) / pitchRect.width) * 100, 8, 92);
-        const topPercent = clamp((((slotRect.top + slotRect.height / 2) - pitchRect.top) / pitchRect.height) * 100, 8, 92);
-        pitch.appendChild(player);
-        slot.dataset.occupiedBy = player.dataset.playerId;
-        slot.classList.add('is-filled');
-        player.dataset.slotId = slot.dataset.slotId;
-        player.style.position = 'absolute';
-        player.style.left = leftPercent + '%';
-        player.style.top = topPercent + '%';
-        player.style.transform = 'translate(-50%, -50%)';
-        player.style.width = '';
-        player.style.height = '';
-        player.style.zIndex = '';
-    };
-
-    const findNearestSlot = (clientX, clientY, player) => {
-        const threshold = 70;
-        let target = null;
-        let minDistance = Number.POSITIVE_INFINITY;
-        slots.forEach(slot => {
-            const occupiedBy = slot.dataset.occupiedBy;
-            if (occupiedBy && occupiedBy !== player.dataset.playerId) {
-                return;
-            }
-            const rect = slot.getBoundingClientRect();
-            const cx = rect.left + rect.width / 2;
-            const cy = rect.top + rect.height / 2;
-            const distance = Math.hypot(clientX - cx, clientY - cy);
-            if (distance < threshold && distance < minDistance) {
-                target = slot;
-                minDistance = distance;
-            }
-        });
-        return target;
-    };
-
-    const onDragMove = event => {
-        if (!dragState) {
-            return;
-        }
-        dragState.player.style.left = event.clientX - dragState.offsetX + 'px';
-        dragState.player.style.top = event.clientY - dragState.offsetY + 'px';
-        resetSlotHighlight();
-        const slot = findNearestSlot(event.clientX, event.clientY, dragState.player);
-        if (slot) {
-            slot.classList.add('is-target');
-            dragState.targetSlot = slot;
-        } else {
-            dragState.targetSlot = null;
-        }
-        const benchTarget = document.elementFromPoint(event.clientX, event.clientY)?.closest('[data-bench]');
-        if (benchTarget) {
-            bench.classList.add('is-target');
-            dragState.targetBench = bench;
-        } else {
-            bench.classList.remove('is-target');
-            dragState.targetBench = null;
-        }
-    };
-
-    const onDragEnd = event => {
-        if (!dragState) {
-            return;
-        }
-        const slot = dragState.targetSlot || findNearestSlot(event.clientX, event.clientY, dragState.player);
-        const benchTarget = dragState.targetBench || document.elementFromPoint(event.clientX, event.clientY)?.closest('[data-bench]');
-        if (slot) {
-            setPlayerToSlot(dragState.player, slot);
-        } else if (benchTarget) {
-            clearSlotOccupancy(dragState.player.dataset.slotId || '');
-            setPlayerToBench(dragState.player);
-        } else if (dragState.fromSlotId) {
-            const fromSlot = teamLineupModal.querySelector('[data-slot-id="' + dragState.fromSlotId + '"]');
-            if (fromSlot) {
-                setPlayerToSlot(dragState.player, fromSlot);
-            } else {
-                setPlayerToBench(dragState.player);
-            }
-        } else {
-            setPlayerToBench(dragState.player);
-        }
-        dragState.player.classList.remove('is-dragging');
-        dragState.player.style.pointerEvents = '';
-        resetSlotHighlight();
-        bench.classList.remove('is-target');
-        document.removeEventListener('pointermove', onDragMove);
-        document.removeEventListener('pointerup', onDragEnd);
-        dragState = null;
-    };
-
-    slots.forEach((slot, index) => {
-        slot.dataset.slotId = 'slot-' + (index + 1);
-        slot.dataset.occupiedBy = '';
-    });
-
-    players.forEach((player, index) => {
-        player.dataset.playerId = 'player-' + (index + 1);
-        player.dataset.slotId = '';
-        player.addEventListener('pointerdown', event => {
-            event.preventDefault();
-            const rect = player.getBoundingClientRect();
-            dragState = {
-                player,
-                fromSlotId: player.dataset.slotId || '',
-                targetSlot: null,
-                targetBench: null,
-                offsetX: event.clientX - rect.left,
-                offsetY: event.clientY - rect.top
-            };
-            clearSlotOccupancy(dragState.fromSlotId);
-            player.classList.add('is-dragging');
-            player.style.width = rect.width + 'px';
-            player.style.height = rect.height + 'px';
-            player.style.position = 'fixed';
-            player.style.left = rect.left + 'px';
-            player.style.top = rect.top + 'px';
-            player.style.transform = '';
-            player.style.zIndex = '1300';
-            player.style.pointerEvents = 'none';
-            document.body.appendChild(player);
-            document.addEventListener('pointermove', onDragMove);
-            document.addEventListener('pointerup', onDragEnd);
-        });
-    });
-
-    window.addEventListener('keydown', event => {
-        if (event.key === 'Escape' && teamLineupModal.classList.contains('is-open')) {
-            closeTeamModal();
-        }
-    });
-</script>
 </body>
 </html>
 

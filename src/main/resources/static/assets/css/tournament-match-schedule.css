@@ -277,6 +277,71 @@
             padding: 22px 26px 26px;
         }
 
+        .signup-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1600;
+            display: none;
+        }
+
+        .signup-overlay.is-open {
+            display: block;
+        }
+
+        .signup-overlay__backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.58);
+        }
+
+        .signup-overlay__dialog {
+            position: relative;
+            width: min(1200px, 96vw);
+            height: min(92vh, 980px);
+            margin: 2vh auto 0;
+            background: #fff;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .signup-overlay__header {
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #fafafa;
+        }
+
+        .signup-overlay__header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .signup-overlay__close {
+            border: none;
+            background: #111827;
+            color: #fff;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        .signup-overlay__frame {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: #fff;
+        }
+
         .score-strip {
             margin-bottom: 14px;
             border: 1px solid #ece1b6;

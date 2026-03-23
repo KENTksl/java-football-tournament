@@ -12,15 +12,11 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        Path persistentUploadDir = Paths.get(System.getProperty("user.home"), ".football_tournament_web", "uploads").toAbsolutePath().normalize();
-        Path externalUploadDir = Paths.get("uploads").toAbsolutePath().normalize();
-        Path legacyUploadDir = Paths.get("src", "main", "resources", "static", "uploads").toAbsolutePath().normalize();
-        String persistentLocation = ensureTrailingSlash(persistentUploadDir.toUri().toString());
-        String externalLocation = ensureTrailingSlash(externalUploadDir.toUri().toString());
-        String legacyLocation = ensureTrailingSlash(legacyUploadDir.toUri().toString());
+        Path uploadDir = Paths.get("src", "main", "resources", "static", "uploads").toAbsolutePath().normalize();
+        String uploadLocation = ensureTrailingSlash(uploadDir.toUri().toString());
 
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations(persistentLocation, externalLocation, legacyLocation);
+                .addResourceLocations(uploadLocation);
     }
 
     private String ensureTrailingSlash(String value) {

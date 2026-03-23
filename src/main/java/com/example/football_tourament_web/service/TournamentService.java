@@ -2,6 +2,7 @@ package com.example.football_tourament_web.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Comparator;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,15 @@ public class TournamentService {
 	@Transactional(readOnly = true)
 	public List<Tournament> listTournaments() {
 		return tournamentRepository.findAll();
+	}
+
+	@Transactional(readOnly = true)
+	public List<Tournament> listTournamentsNewestFirst() {
+		return tournamentRepository.findAll().stream()
+				.sorted(Comparator
+						.comparing(Tournament::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder()))
+						.thenComparing(Tournament::getId, Comparator.nullsLast(Comparator.reverseOrder())))
+				.toList();
 	}
 
 	@Transactional(readOnly = true)
