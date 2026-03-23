@@ -16,7 +16,9 @@ import com.example.football_tourament_web.model.enums.RegistrationStatus;
 import com.example.football_tourament_web.model.enums.TeamSide;
 import com.example.football_tourament_web.model.enums.TournamentMode;
 import com.example.football_tourament_web.model.enums.TournamentStatus;
+import com.example.football_tourament_web.model.enums.TransactionStatus;
 import com.example.football_tourament_web.model.enums.UserRole;
+import com.example.football_tourament_web.model.enums.UserStatus;
 import com.example.football_tourament_web.repository.PlayerRepository;
 import com.example.football_tourament_web.service.MatchEventService;
 import com.example.football_tourament_web.service.MatchLineupService;
@@ -26,14 +28,17 @@ import com.example.football_tourament_web.service.TournamentRegistrationService;
 import com.example.football_tourament_web.service.TournamentService;
 import com.example.football_tourament_web.service.UserService;
 import com.example.football_tourament_web.service.TransactionService;
+import com.example.football_tourament_web.service.TransactionService;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -49,11 +54,14 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.HashSet;
+import java.util.Locale;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -496,18 +504,202 @@ public class AdminController {
 	}
 
 	@GetMapping({"/admin/manage/user-detail"})
-	public String manageUserDetail() {
+	public String manageUserDetail(
+			@RequestParam(value = "userId", required = false) Long userId,
+			Model model
+	) {
+		model.addAttribute("userId", userId);
+		if (userId == null) {
+			model.addAttribute("user", null);
+			model.addAttribute("registeredAt", "—");
+			model.addAttribute("roleLabel", "—");
+			model.addAttribute("statusLabel", "—");
+			model.addAttribute("teamName", "—");
+			model.addAttribute("hasTeam", false);
+			return "admin/manage/user-detail";
+		}
+
+		AppUser user = userService.findById(userId).orElse(null);
+		if (user == null) {
+			model.addAttribute("user", null);
+			model.addAttribute("registeredAt", "—");
+			model.addAttribute("roleLabel", "—");
+			model.addAttribute("statusLabel", "—");
+			model.addAttribute("teamName", "—");
+			model.addAttribute("hasTeam", false);
+			return "admin/manage/user-detail";
+		}
+
+		var team = teamService.findCaptainTeam(userId).orElse(null);
+		String teamName = team == null ? null : team.getName();
+
+		model.addAttribute("user", user);
+		model.addAttribute("registeredAt", formatDate(user.getCreatedAt()));
+		model.addAttribute("roleLabel", displayUserRole(user.getRole()));
+		model.addAttribute("statusLabel", displayUserStatus(user.getStatus()));
+		model.addAttribute("isLocked", user.getStatus() == UserStatus.LOCKED);
+		model.addAttribute("teamName", teamName == null || teamName.isBlank() ? "Chưa có đội" : teamName);
+		model.addAttribute("hasTeam", teamName != null && !teamName.isBlank());
 		return "admin/manage/user-detail";
 	}
 
+	@PostMapping("/admin/manage/user/toggle-lock")
+	public String toggleUserLock(
+			@RequestParam(value = "userId", required = false) Long userId,
+			RedirectAttributes redirectAttributes
+	) {
+		if (userId == null) {
+			redirectAttributes.addFlashAttribute("userLockMessage", "Thiếu userId");
+			return "redirect:/admin/manage/user";
+		}
+		AppUser user = userService.findById(userId).orElse(null);
+		if (user == null) {
+			redirectAttributes.addFlashAttribute("userLockMessage", "Không tìm thấy người dùng");
+			return "redirect:/admin/manage/user";
+		}
+		UserStatus next = user.getStatus() == UserStatus.LOCKED ? UserStatus.ACTIVE : UserStatus.LOCKED;
+		userService.updateStatus(userId, next);
+		redirectAttributes.addFlashAttribute(
+				"userLockMessage",
+				next == UserStatus.LOCKED ? "Đã khóa tài khoản người dùng" : "Đã mở khóa tài khoản người dùng"
+		);
+		return "redirect:/admin/manage/user-detail?userId=" + userId;
+	}
+
 	@GetMapping({"/admin/manage/user-team-detail"})
-	public String manageUserTeamDetail() {
+	public String manageUserTeamDetail(
+			@RequestParam(value = "userId", required = false) Long userId,
+			@RequestParam(value = "teamId", required = false) Long teamId,
+			Model model
+	) {
+		model.addAttribute("userId", userId);
+
+		List<Team> teams = List.of();
+		if (userId != null) {
+			teams = teamService.listByCaptainWithCaptain(userId);
+		}
+		model.addAttribute("teams", teams);
+
+		Team team = null;
+		if (teamId != null) {
+			team = teamService.findByIdWithCaptain(teamId).orElse(null);
+		} else if (userId != null) {
+			team = teams.isEmpty() ? null : teams.get(0);
+		}
+		model.addAttribute("selectedTeamId", team == null ? null : team.getId());
+
+		if (team == null || team.getId() == null) {
+			model.addAttribute("teamName", "Chưa có đội");
+			model.addAttribute("teamStatus", "—");
+			model.addAttribute("captainName", "—");
+			model.addAttribute("createdAt", "—");
+			model.addAttribute("memberCount", 0);
+			model.addAttribute("tournamentCount", 0);
+			model.addAttribute("teamLogoUrl", null);
+			model.addAttribute("members", List.of());
+			return "admin/manage/user-team-detail";
+		}
+
+		String captainName = team.getCaptain() == null ? null : team.getCaptain().getFullName();
+		long memberCount = playerRepository.countByTeamId(team.getId());
+		List<Player> members = playerRepository.findByTeamIdOrderByJerseyNumberAsc(team.getId());
+
+		long tournamentCount = 0;
+		var approvedRegs = tournamentRegistrationService.listApprovedByTeamId(team.getId());
+		if (approvedRegs != null && !approvedRegs.isEmpty()) {
+			var seenTournamentIds = new HashSet<Long>();
+			for (var r : approvedRegs) {
+				if (r == null || r.getTournament() == null || r.getTournament().getId() == null) continue;
+				seenTournamentIds.add(r.getTournament().getId());
+			}
+			tournamentCount = seenTournamentIds.size();
+		}
+
+		model.addAttribute("teamName", team.getName());
+		model.addAttribute("teamStatus", "Đang hoạt động");
+		model.addAttribute("captainName", captainName == null || captainName.isBlank() ? "Chưa cập nhật" : captainName);
+		model.addAttribute("createdAt", formatDate(team.getCreatedAt()));
+		model.addAttribute("memberCount", memberCount);
+		model.addAttribute("tournamentCount", tournamentCount);
+		model.addAttribute("teamLogoUrl", team.getLogoUrl());
+		model.addAttribute("members", members);
 		return "admin/manage/user-team-detail";
 	}
 
 	@GetMapping({"/admin/manage/user-transaction-history"})
-	public String manageUserTransactionHistory() {
+	public String manageUserTransactionHistory(
+			@RequestParam(value = "userId", required = false) Long userId,
+			Model model
+	) {
+		model.addAttribute("userId", userId);
+		if (userId == null) {
+			model.addAttribute("transactions", List.of());
+			return "admin/manage/user-transaction-history";
+		}
+
+		List<AdminTransactionRow> rows = transactionService.listByUserId(userId).stream()
+				.map(t -> {
+					String code = t == null ? null : t.getCode();
+					String description = t == null ? null : t.getDescription();
+					String amountText = formatMoney(t == null ? null : t.getAmount());
+					String timeText = formatDateTime(t == null ? null : t.getCreatedAt());
+					TransactionStatus status = t == null ? null : t.getStatus();
+					String statusLabel = transactionStatusLabel(status);
+					String statusClass = transactionStatusClass(status);
+					return new AdminTransactionRow(code, description, amountText, timeText, statusLabel, statusClass);
+				})
+				.toList();
+
+		model.addAttribute("transactions", rows);
 		return "admin/manage/user-transaction-history";
+	}
+
+	private String displayUserRole(UserRole role) {
+		if (role == null) return "—";
+		return switch (role) {
+			case ADMIN -> "Admin";
+			case USER -> "User";
+		};
+	}
+
+	private String displayUserStatus(UserStatus status) {
+		if (status == null) return "—";
+		return switch (status) {
+			case ACTIVE -> "Đang kích hoạt";
+			case LOCKED -> "Đã khóa";
+		};
+	}
+
+	private String formatDateTime(java.time.Instant instant) {
+		if (instant == null) return null;
+		return DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+				.format(instant.atZone(ZoneId.systemDefault()).toLocalDateTime());
+	}
+
+	private String formatMoney(java.math.BigDecimal amount) {
+		if (amount == null) return null;
+		NumberFormat nf = NumberFormat.getNumberInstance(new Locale("vi", "VN"));
+		nf.setMaximumFractionDigits(0);
+		nf.setMinimumFractionDigits(0);
+		return nf.format(amount) + " đ";
+	}
+
+	private String transactionStatusLabel(TransactionStatus status) {
+		if (status == null) return "Đang chờ";
+		return switch (status) {
+			case SUCCESS -> "Thành công";
+			case FAILED -> "Thất bại";
+			case PENDING -> "Đang chờ";
+		};
+	}
+
+	private String transactionStatusClass(TransactionStatus status) {
+		if (status == null) return "status--pending";
+		return switch (status) {
+			case SUCCESS -> "status--success";
+			case FAILED -> "status--failed";
+			case PENDING -> "status--pending";
+		};
 	}
 
 
@@ -1311,6 +1503,16 @@ public class AdminController {
 	}
 
 	private record PagedResult<T>(List<T> items, int currentPage, int pageSize, int totalPages) {
+	}
+
+	private record AdminTransactionRow(
+			String code,
+			String description,
+			String amountText,
+			String timeText,
+			String statusLabel,
+			String statusClass
+	) {
 	}
 
 	public record PlayerDto(Long id, String fullName, Integer jerseyNumber, String position, String avatarUrl) {

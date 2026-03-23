@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -35,7 +36,8 @@ public class SecurityConfig {
 						.username(u.getEmail())
 						.password(u.getPasswordHash() == null ? "" : u.getPasswordHash())
 						.authorities(List.of(new SimpleGrantedAuthority("ROLE_" + u.getRole().name())))
-						.disabled(u.getStatus() != UserStatus.ACTIVE)
+						.disabled(false)
+						.accountLocked(u.getStatus() == UserStatus.LOCKED)
 						.build())
 				.orElseThrow(() -> new UsernameNotFoundException("User not found"));
 	}
@@ -103,7 +105,13 @@ public class SecurityConfig {
 				.usernameParameter("email")
 				.passwordParameter("password")
 				.successHandler(successHandler)
-				.failureUrl("/dang-nhap?error")
+				.failureHandler((request, response, exception) -> {
+					if (exception instanceof LockedException) {
+						response.sendRedirect("/dang-nhap?locked");
+						return;
+					}
+					response.sendRedirect("/dang-nhap?error");
+				})
 				.permitAll());
 
 		http.logout(logout -> logout

@@ -51,6 +51,7 @@
             <h2>Thông tin đăng nhập</h2>
             <p th:if="${param.registered}" class="auth-hint">Đăng ký thành công. Vui lòng đăng nhập.</p>
             <p th:if="${param.error}" class="auth-hint">Email hoặc mật khẩu không đúng.</p>
+            <p th:if="${param.locked}" class="auth-hint">Tài khoản của bạn đã bị khóa. Vui lòng liên hệ admin để được hỗ trợ.</p>
             <p th:if="${param.logout}" class="auth-hint">Bạn đã đăng xuất.</p>
             <form class="profile-form" method="post" th:action="@{/dang-nhap}">
               <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
