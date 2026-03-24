@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -161,6 +162,22 @@ public class UserTeamService {
 			Authentication authentication,
 			Model model
 	) {
+		// Tạo team + thêm members cần chạy trong transaction để đảm bảo tính nhất quán
+		// và tránh lỗi remove/save ngoài transaction khi repository sử dụng thao tác write
+		return createTeamTx(teamForm, bindingResult, teamLogo, memberNames, memberJerseys, memberAvatars, authentication, model);
+	}
+
+	@Transactional
+	protected String createTeamTx(
+			@Valid TeamCreateForm teamForm,
+			BindingResult bindingResult,
+			MultipartFile teamLogo,
+			List<String> memberNames,
+			List<Integer> memberJerseys,
+			MultipartFile[] memberAvatars,
+			Authentication authentication,
+			Model model
+	) {
 		AppUser user = requireCurrentUser(authentication);
 		if (user == null) {
 			return "redirect:/dang-nhap";
@@ -239,6 +256,24 @@ public class UserTeamService {
 	}
 
 	public String updateTeam(
+			Long teamId,
+			@Valid TeamCreateForm teamForm,
+			BindingResult bindingResult,
+			String existingLogoUrl,
+			MultipartFile teamLogo,
+			List<String> memberNames,
+			List<Integer> memberJerseys,
+			List<String> existingMemberAvatars,
+			MultipartFile[] memberAvatars,
+			Authentication authentication,
+			Model model
+	) {
+		// Cập nhật team + thay thế toàn bộ thành viên cần transaction để xử lý delete + save atomically
+		return updateTeamTx(teamId, teamForm, bindingResult, existingLogoUrl, teamLogo, memberNames, memberJerseys, existingMemberAvatars, memberAvatars, authentication, model);
+	}
+
+	@Transactional
+	protected String updateTeamTx(
 			Long teamId,
 			@Valid TeamCreateForm teamForm,
 			BindingResult bindingResult,
