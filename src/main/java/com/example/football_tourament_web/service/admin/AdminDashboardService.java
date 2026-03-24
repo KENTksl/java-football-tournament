@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 public class AdminDashboardService {
 	private final TournamentService tournamentService;
@@ -21,14 +23,24 @@ public class AdminDashboardService {
 		this.matchService = matchService;
 	}
 
+	@Transactional(readOnly = true)
 	public Map<String, Object> buildGeneralOverviewModel() {
 		Map<String, Object> model = new HashMap<>();
-		model.put("totalTournaments", tournamentService.countTournaments());
-		model.put("totalTeams", teamService.countTeams());
-		model.put("activeTournaments", tournamentService.countTournamentsByStatus(TournamentStatus.LIVE));
-		model.put("completedTournaments", tournamentService.countTournamentsByStatus(TournamentStatus.FINISHED));
-		model.put("recentWinners", tournamentService.getRecentWinners());
-		model.put("matchFrequency", matchService.getMatchFrequencyForLast7Months());
+		try {
+			model.put("totalTournaments", tournamentService.countTournaments());
+			model.put("totalTeams", teamService.countTeams());
+			model.put("activeTournaments", tournamentService.countTournamentsByStatus(TournamentStatus.LIVE));
+			model.put("completedTournaments", tournamentService.countTournamentsByStatus(TournamentStatus.FINISHED));
+			model.put("recentWinners", tournamentService.getRecentWinners());
+			model.put("matchFrequency", matchService.getMatchFrequencyForLast7Months());
+		} catch (Exception ex) {
+			model.put("totalTournaments", 0L);
+			model.put("totalTeams", 0L);
+			model.put("activeTournaments", 0L);
+			model.put("completedTournaments", 0L);
+			model.put("recentWinners", java.util.Collections.emptyList());
+			model.put("matchFrequency", java.util.Collections.emptyList());
+		}
 		return model;
 	}
 }

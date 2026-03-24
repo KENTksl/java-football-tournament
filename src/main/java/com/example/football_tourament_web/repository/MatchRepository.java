@@ -9,6 +9,7 @@ import com.example.football_tourament_web.model.entity.Match;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 public interface MatchRepository extends JpaRepository<Match, Long> {
@@ -37,8 +38,17 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
 			""")
 	Optional<Match> findByIdWithDetails(@Param("matchId") Long matchId);
 
-	@Query("SELECT COUNT(m) FROM Match m WHERE m.scheduledAt >= :start AND m.scheduledAt < :end")
-	long countMatchesByScheduledAtBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+	@Query("""
+			SELECT COUNT(m)
+			FROM Match m
+			WHERE (m.scheduledAt >= :start AND m.scheduledAt < :end)
+			   OR (m.scheduledAt IS NULL AND m.createdAt >= :startInstant AND m.createdAt < :endInstant)
+			""")
+	long countMatchesByScheduleOrCreation(
+			@Param("start") LocalDateTime start,
+			@Param("end") LocalDateTime end,
+			@Param("startInstant") Instant startInstant,
+			@Param("endInstant") Instant endInstant);
 
 	@Query("""
 			select m

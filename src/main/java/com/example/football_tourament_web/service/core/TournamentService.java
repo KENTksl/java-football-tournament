@@ -60,7 +60,7 @@ public class TournamentService {
 
 	@Transactional(readOnly = true)
 	public List<Tournament> getRecentWinners() {
-		return tournamentRepository.findTop4ByWinnerIsNotNullOrderByIdDesc();
+		return tournamentRepository.findRecentWinners().stream().limit(4).toList();
 	}
 }
 

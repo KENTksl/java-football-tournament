@@ -13,6 +13,7 @@ import com.example.football_tourament_web.model.enums.PitchType;
 import com.example.football_tourament_web.model.enums.RegistrationStatus;
 import com.example.football_tourament_web.model.enums.TeamSide;
 import com.example.football_tourament_web.model.enums.TournamentMode;
+import com.example.football_tourament_web.model.enums.TournamentStatus;
 import com.example.football_tourament_web.repository.PlayerRepository;
 import com.example.football_tourament_web.service.core.MatchEventService;
 import com.example.football_tourament_web.service.core.MatchLineupService;
@@ -459,9 +460,10 @@ public class AdminMatchHistoryService {
 		}
 
 		// Knockout tie requires penalty and cannot be equal
-		boolean isKnockout = match.getTournament() != null && match.getTournament().getMode() != TournamentMode.GROUP_STAGE;
 		boolean isGroupRound = match.getRoundName() != null && match.getRoundName().trim().toLowerCase().startsWith("bảng");
-		if (isKnockout && !isGroupRound && match.getHomeScore().equals(match.getAwayScore())) {
+		boolean isKnockoutMatch = (match.getTournament() != null && match.getTournament().getMode() == TournamentMode.KNOCKOUT) || !isGroupRound;
+
+		if (isKnockoutMatch && match.getHomeScore().equals(match.getAwayScore())) {
 			if (match.getHomePenalty() == null || match.getAwayPenalty() == null) {
 				return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=pen_required";
 			}
@@ -472,6 +474,17 @@ public class AdminMatchHistoryService {
 
 		match.setStatus(MatchStatus.FINISHED);
 		matchService.save(match);
+
+		if ("Chung kết".equalsIgnoreCase(match.getRoundName() != null ? match.getRoundName().trim() : "")) {
+			Team winner = matchService.winnerOf(match);
+			if (winner != null) {
+				Tournament tournament = match.getTournament();
+				tournament.setWinner(winner);
+				tournament.setStatus(TournamentStatus.FINISHED);
+				tournamentService.save(tournament);
+			}
+		}
+
 		matchService.generateNextKnockoutRoundIfReady(tournamentId, match.getRoundName());
 		matchService.generateQuarterFinalsFromGroupsIfReady(tournamentId);
 		return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=finish";

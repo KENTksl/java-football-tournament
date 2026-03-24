@@ -454,7 +454,7 @@
                     <tbody>
                     <tr th:each="t, iter : ${recentWinners}">
                         <td class="muted" th:text="${iter.count}">1</td>
-                        <td th:text="${t.winner.name}">FC Test 196267</td>
+                        <td th:text="${t.winner != null ? t.winner.name : '—'}">FC Test 196267</td>
                         <td th:text="${t.name}">Hutech mở rộng lần 1</td>
                     </tr>
                     <tr th:if="${recentWinners.empty}">
