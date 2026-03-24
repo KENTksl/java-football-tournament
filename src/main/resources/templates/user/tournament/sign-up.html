@@ -85,12 +85,6 @@
     </div>
 </div>
 
-<div id="teamPrefillPlayersData" style="display:none;">
-    <div th:each="prefill : ${signUpTeamPrefills}" th:attr="data-team-id=${prefill.teamId}">
-        <span th:each="player : ${prefill.players}" class="player-data"
-              th:attr="data-name=${player.fullName},data-number=${player.jerseyNumber},data-avatar=${player.avatarUrl}"></span>
-    </div>
-</div>
 <script th:inline="javascript">
     const teamLogoInput = document.getElementById('teamLogoInput');
     const teamLogoPlaceholder = document.getElementById('teamLogoPlaceholder');
@@ -183,20 +177,26 @@
             teamLogoPlaceholder.innerHTML = `<img src="${opt.dataset.logo}">`;
         }
 
-        playerList.innerHTML = '';
+        playerList.innerHTML = '<div class="empty-state">Đang tải danh sách thành viên...</div>';
         const teamId = opt.value;
-        const playerDataRoot = document.querySelector(`[data-team-id="${teamId}"]`);
 
-        if (playerDataRoot) {
-            const players = playerDataRoot.querySelectorAll('.player-data');
-            players.forEach(p => {
-                playerList.appendChild(createPlayerItem(p.dataset.name, p.dataset.number, p.dataset.avatar));
+        fetch(`/user/tournament/sign-up/team-prefill?teamId=${encodeURIComponent(teamId)}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(res => res.ok ? res.json() : Promise.reject())
+            .then(data => {
+                playerList.innerHTML = '';
+                const players = Array.isArray(data?.players) ? data.players : [];
+                players.forEach(p => {
+                    playerList.appendChild(createPlayerItem(p.fullName, p.jerseyNumber, p.avatarUrl));
+                });
+                if (playerList.querySelectorAll('.player-item').length === 0) {
+                    playerList.innerHTML = '<div class="empty-state">Đội hiện tại chưa có thành viên được cập nhật.</div>';
+                }
+                updatePlayerCount();
+            })
+            .catch(() => {
+                playerList.innerHTML = '<div class="empty-state">Không thể tải danh sách thành viên.</div>';
+                updatePlayerCount();
             });
-        }
-        if (playerList.querySelectorAll('.player-item').length === 0) {
-            playerList.innerHTML = '<div class="empty-state">Đội hiện tại chưa có thành viên được cập nhật.</div>';
-        }
-        updatePlayerCount();
     });
 
     setExistingTeamMode(false);
