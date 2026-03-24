@@ -8,6 +8,8 @@ import com.example.football_tourament_web.model.entity.Tournament;
 import com.example.football_tourament_web.model.entity.TournamentRegistration;
 import com.example.football_tourament_web.model.enums.MatchStatus;
 import com.example.football_tourament_web.model.enums.TournamentStatus;
+import com.example.football_tourament_web.repository.MatchEventRepository;
+import com.example.football_tourament_web.repository.MatchLineupSlotRepository;
 import com.example.football_tourament_web.repository.MatchRepository;
 import com.example.football_tourament_web.repository.PlayerRepository;
 import com.example.football_tourament_web.service.common.FileStorageService;
@@ -39,6 +41,8 @@ public class UserTeamService {
 	private final PlayerRepository playerRepository;
 	private final TournamentRegistrationService tournamentRegistrationService;
 	private final MatchRepository matchRepository;
+	private final MatchEventRepository matchEventRepository;
+	private final MatchLineupSlotRepository matchLineupSlotRepository;
 	private final FileStorageService fileStorageService;
 	private final ViewFormatService viewFormatService;
 	private final ImageService imageService;
@@ -52,6 +56,8 @@ public class UserTeamService {
 			PlayerRepository playerRepository,
 			TournamentRegistrationService tournamentRegistrationService,
 			MatchRepository matchRepository,
+			MatchEventRepository matchEventRepository,
+			MatchLineupSlotRepository matchLineupSlotRepository,
 			FileStorageService fileStorageService,
 			ViewFormatService viewFormatService,
 			ImageService imageService
@@ -61,6 +67,8 @@ public class UserTeamService {
 		this.playerRepository = playerRepository;
 		this.tournamentRegistrationService = tournamentRegistrationService;
 		this.matchRepository = matchRepository;
+		this.matchEventRepository = matchEventRepository;
+		this.matchLineupSlotRepository = matchLineupSlotRepository;
 		this.fileStorageService = fileStorageService;
 		this.viewFormatService = viewFormatService;
 		this.imageService = imageService;
@@ -135,6 +143,9 @@ public class UserTeamService {
 				}
 
 				if (!isCreate && !isEdit) {
+					TeamEditLock lock = buildTeamEditLock(selectedTeam.getId());
+					model.addAttribute("teamEditLocked", lock.locked());
+					model.addAttribute("teamEditLockMessage", lock.message());
 					model.addAttribute("activeTeamTab", tab == null || tab.isBlank() ? "info" : tab);
 					attachTeamDetailModel(model, selectedTeam, tournamentId);
 				}
@@ -240,6 +251,22 @@ public class UserTeamService {
 		return "redirect:/thong-tin-doi?teamId=" + team.getId();
 	}
 
+	private TeamEditLock buildTeamEditLock(Long teamId) {
+		if (teamId == null) return new TeamEditLock(false, "");
+		List<Match> matches = matchRepository.findByTeamIdWithDetails(teamId);
+		boolean hasNonFinished = matches.stream()
+				.anyMatch(m -> m != null && m.getStatus() != null && m.getStatus() != MatchStatus.FINISHED);
+		if (hasNonFinished) {
+			return new TeamEditLock(true, "Đội đang có trận đấu (sắp diễn ra/đang diễn ra) nên không thể chỉnh sửa đội hình lúc này.");
+		}
+		boolean hasEventHistory = matchEventRepository.countByPlayerTeamId(teamId) > 0;
+		boolean hasLineupHistory = matchLineupSlotRepository.countByPlayerTeamId(teamId) > 0;
+		if (hasEventHistory || hasLineupHistory) {
+			return new TeamEditLock(true, "Đội đã có lịch sử thi đấu nên không thể chỉnh sửa danh sách cầu thủ để đảm bảo dữ liệu trận đấu không bị sai.");
+		}
+		return new TeamEditLock(false, "");
+	}
+
 	@Transactional
 	public String updateTeam(
 			Long teamId,
@@ -265,6 +292,11 @@ public class UserTeamService {
 			return "redirect:/thong-tin-doi";
 		}
 		Team team = teamOpt.get();
+
+		TeamEditLock lock = buildTeamEditLock(team.getId());
+		if (lock.locked()) {
+			return "redirect:/thong-tin-doi?teamId=" + team.getId() + "&editLocked=1";
+		}
 
 		if (bindingResult.hasErrors()) {
 			return renderEditTeamError(model, user, team, teamForm, bindingResult);
@@ -336,6 +368,9 @@ public class UserTeamService {
 		}
 
 		return "redirect:/thong-tin-doi?teamId=" + team.getId();
+	}
+
+	private record TeamEditLock(boolean locked, String message) {
 	}
 
 	private String renderCreateTeamError(Model model, AppUser user, TeamCreateForm teamForm, BindingResult bindingResult) {

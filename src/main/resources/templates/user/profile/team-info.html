@@ -237,7 +237,13 @@
             <div th:if="${!isCreate and !isEdit and selectedTeam != null}">
               <div class="team-header team-header--sub">
                 <h3 class="team-subtitle" th:text="${selectedTeam.name}">Đội</h3>
-                <a class="profile-btn" th:href="@{/thong-tin-doi(teamId=${selectedTeam.id}, edit=1)}">Chỉnh sửa</a>
+                <a class="profile-btn" th:if="${teamEditLocked == null or !teamEditLocked}" th:href="@{/thong-tin-doi(teamId=${selectedTeam.id}, edit=1)}">Chỉnh sửa</a>
+              </div>
+              <div class="auth-hint" th:if="${teamEditLocked}">
+                <div th:text="${teamEditLockMessage}">Đội đang đá không sửa được.</div>
+              </div>
+              <div class="auth-hint" th:if="${param.editLocked != null}">
+                <div>Đội này đang có trận đấu hoặc đã có lịch sử thi đấu nên không thể chỉnh sửa danh sách cầu thủ.</div>
               </div>
               <div
                 class="team-detail"

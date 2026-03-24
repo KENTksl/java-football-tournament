@@ -29,5 +29,12 @@ public interface MatchEventRepository extends JpaRepository<MatchEvent, Long> {
 			""")
 	List<MatchEvent> findByTournamentId(@Param("tournamentId") Long tournamentId);
 
+	@Query("""
+			select count(e)
+			from MatchEvent e
+			where e.player.team.id = :teamId
+			""")
+	long countByPlayerTeamId(@Param("teamId") Long teamId);
+
 	void deleteByMatchId(Long matchId);
 }

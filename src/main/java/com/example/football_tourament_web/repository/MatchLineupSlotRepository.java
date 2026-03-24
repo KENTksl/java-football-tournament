@@ -20,5 +20,12 @@ public interface MatchLineupSlotRepository extends JpaRepository<MatchLineupSlot
 			""")
 	List<MatchLineupSlot> findByMatchIdWithPlayerOrderByTeamSideAscSlotIndexAsc(@Param("matchId") Long matchId);
 
+	@Query("""
+			select count(s)
+			from MatchLineupSlot s
+			where s.player.team.id = :teamId
+			""")
+	long countByPlayerTeamId(@Param("teamId") Long teamId);
+
 	void deleteByMatchId(Long matchId);
 }
