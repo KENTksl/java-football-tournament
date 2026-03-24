@@ -658,6 +658,11 @@
             background-color: #6b7280;
         }
 
+        .badge--live {
+            background-color: #f59e0b;
+            color: #111827;
+        }
+
         /* Màu xanh hoàn thành */
 
         .btn--warning {
@@ -1044,14 +1049,16 @@
             border: 1px dashed #ccc;
             border-radius: 8px;
             padding: 10px;
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
             gap: 10px;
             min-height: 80px;
+            overflow: visible;
         }
 
         .player-card {
             text-align: center;
-            width: 60px;
+            width: 100%;
             cursor: grab;
             user-select: none;
         }
@@ -1083,6 +1090,9 @@
             border-radius: 4px;
             padding: 2px;
             margin-top: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .position-slot.drag-over .slot-circle {
@@ -1199,6 +1209,32 @@
             box-sizing: border-box;
         }
 
+        .match-header-info form {
+            align-items: center !important;
+        }
+
+        .match-header-info .form-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+        }
+
+        .match-header-info .form-group label {
+            display: inline-flex !important;
+            align-items: center;
+            margin: 0 !important;
+            white-space: nowrap;
+            width: auto !important;
+            min-width: 0 !important;
+            flex: 0 0 auto;
+        }
+
+        .match-header-info .form-group input {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
 
         .btn-save-schedule {
             background: #00d2d3;
@@ -1211,6 +1247,15 @@
             gap: 8px;
             cursor: pointer;
             white-space: nowrap;
+        }
+
+        .event-icon {
+            width: 18px;
+            height: 18px;
+            object-fit: contain;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 6px;
         }
 
         .group-tab-panel {
@@ -1339,7 +1384,7 @@
                                                   th:if="${m.status == T(com.example.football_tourament_web.model.enums.MatchStatus).FINISHED}">Hoàn thành</span>
                                             <span class="badge badge--pending"
                                                   th:if="${m.status == T(com.example.football_tourament_web.model.enums.MatchStatus).SCHEDULED}">Sắp diễn ra</span>
-                                            <span class="badge badge--pending"
+                                            <span class="badge badge--live"
                                                   th:if="${m.status == T(com.example.football_tourament_web.model.enums.MatchStatus).LIVE}">Đang diễn ra</span>
                                         </td>
                                         <td style="text-align:center;">
@@ -1417,7 +1462,7 @@
                                                   th:if="${m.status == T(com.example.football_tourament_web.model.enums.MatchStatus).FINISHED}">Hoàn thành</span>
                                             <span class="badge badge--pending"
                                                   th:if="${m.status == T(com.example.football_tourament_web.model.enums.MatchStatus).SCHEDULED}">Sắp diễn ra</span>
-                                            <span class="badge badge--pending"
+                                            <span class="badge badge--live"
                                                   th:if="${m.status == T(com.example.football_tourament_web.model.enums.MatchStatus).LIVE}">Đang diễn ra</span>
                                         </td>
                                         <td style="text-align:center;">
@@ -1495,7 +1540,7 @@
                                                   th:if="${m.status == T(com.example.football_tourament_web.model.enums.MatchStatus).FINISHED}">Hoàn thành</span>
                                             <span class="badge badge--pending"
                                                   th:if="${m.status == T(com.example.football_tourament_web.model.enums.MatchStatus).SCHEDULED}">Sắp diễn ra</span>
-                                            <span class="badge badge--pending"
+                                            <span class="badge badge--live"
                                                   th:if="${m.status == T(com.example.football_tourament_web.model.enums.MatchStatus).LIVE}">Đang diễn ra</span>
                                         </td>
                                         <td style="text-align:center;">
@@ -1573,7 +1618,7 @@
                                                   th:if="${m.status == T(com.example.football_tourament_web.model.enums.MatchStatus).FINISHED}">Hoàn thành</span>
                                             <span class="badge badge--pending"
                                                   th:if="${m.status == T(com.example.football_tourament_web.model.enums.MatchStatus).SCHEDULED}">Sắp diễn ra</span>
-                                            <span class="badge badge--pending"
+                                            <span class="badge badge--live"
                                                   th:if="${m.status == T(com.example.football_tourament_web.model.enums.MatchStatus).LIVE}">Đang diễn ra</span>
                                         </td>
                                         <td style="text-align:center;">
@@ -1646,7 +1691,7 @@
                                         th:if="${match.status == T(com.example.football_tourament_web.model.enums.MatchStatus).FINISHED}">Hoàn thành</span>
                                     <span class="badge badge--pending"
                                         th:if="${match.status == T(com.example.football_tourament_web.model.enums.MatchStatus).SCHEDULED}">Sắp diễn ra</span>
-                                    <span class="badge badge--pending"
+                                    <span class="badge badge--live"
                                         th:if="${match.status == T(com.example.football_tourament_web.model.enums.MatchStatus).LIVE}">Đang diễn ra</span>
                                 </td>
                                 <td style="text-align: center;">
@@ -1697,6 +1742,7 @@
                             style="font-size: 13px; font-weight: 600; color: #666; display: block; margin-bottom: 5px;">Ngày
                             thi đấu</label>
                         <input name="date" type="date" style="width:100%; padding: 8px;"
+                               th:attr="min=${tournamentStartDate != null ? #temporals.format(tournamentStartDate,'yyyy-MM-dd') : ''},max=${tournamentEndDate != null ? #temporals.format(tournamentEndDate,'yyyy-MM-dd') : ''}"
                                th:value="${selectedMatch != null && selectedMatch.scheduledAt != null ? #temporals.format(selectedMatch.scheduledAt, 'yyyy-MM-dd') : ''}">
                     </div>
                     <div class="form-group" style="flex:1">
@@ -1926,7 +1972,18 @@
                                             <td style="text-align:center;" th:text="${ev.minute}">0</td>
                                             <td th:text="${ev.teamName}">Đội</td>
                                             <td th:text="${ev.playerName}">Cầu thủ</td>
-                                            <td th:text="${ev.type == T(com.example.football_tourament_web.model.enums.MatchEventType).GOAL ? 'Bàn thắng' : (ev.type == T(com.example.football_tourament_web.model.enums.MatchEventType).YELLOW ? 'Thẻ vàng' : 'Thẻ đỏ')}">Bàn thắng</td>
+                                            <td>
+                                                <img class="event-icon"
+                                                     th:if="${ev.type == T(com.example.football_tourament_web.model.enums.MatchEventType).GOAL}"
+                                                     src="/uploads/event/football.png" alt="GOAL">
+                                                <img class="event-icon"
+                                                     th:if="${ev.type == T(com.example.football_tourament_web.model.enums.MatchEventType).YELLOW}"
+                                                     src="/uploads/event/yellow-card.png" alt="YELLOW">
+                                                <img class="event-icon"
+                                                     th:if="${ev.type == T(com.example.football_tourament_web.model.enums.MatchEventType).RED}"
+                                                     src="/uploads/event/red.png" alt="RED">
+                                                <span th:text="${ev.type == T(com.example.football_tourament_web.model.enums.MatchEventType).GOAL ? 'Bàn thắng' : (ev.type == T(com.example.football_tourament_web.model.enums.MatchEventType).YELLOW ? 'Thẻ vàng' : 'Thẻ đỏ')}">Bàn thắng</span>
+                                            </td>
                                             <td style="text-align:center;">
                                                 <form th:action="@{/admin/match-history/delete-event}" method="post" style="margin:0;">
                                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
@@ -2003,6 +2060,7 @@
                 if (saved === 'event') window.showToast('Cập nhật diễn biến thành công');
                 if (saved === 'finish') window.showToast('Kết thúc trận đấu thành công');
                 if (saved === 'groups') window.showToast('Xếp bảng ngẫu nhiên thành công');
+                if (saved === 'invalid_schedule') window.showToast('Ngày thi đấu phải nằm trong thời gian của giải', 'error');
                 params.delete('saved');
                 const nextQuery = params.toString();
                 window.history.replaceState({}, '', nextQuery ? (window.location.pathname + '?' + nextQuery) : window.location.pathname);

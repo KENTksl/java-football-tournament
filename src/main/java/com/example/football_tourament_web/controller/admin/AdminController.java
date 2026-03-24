@@ -791,7 +791,9 @@ public class AdminController {
 		model.addAttribute("tournamentMode", tournament.getMode());
 		model.addAttribute("tournamentTeamLimit", tournament.getTeamLimit());
 		model.addAttribute("tournamentPitchType", tournament.getPitchType());
-		List<Match> allMatches = matchService.listByTournamentIdWithDetails(id);
+		model.addAttribute("tournamentStartDate", tournament.getStartDate());
+		model.addAttribute("tournamentEndDate", tournament.getEndDate());
+		List<Match> allMatches = updateMatchStatusesByTime(matchService.listByTournamentIdWithDetails(id));
 		List<Match> knockoutOnly = new ArrayList<>();
 		for (Match m : allMatches) {
 			if (m == null || m.getRoundName() == null) continue;
@@ -815,14 +817,17 @@ public class AdminController {
 			groupTeams.put("C", new ArrayList<>());
 			groupTeams.put("D", new ArrayList<>());
 
-			List<TournamentRegistration> registrations = tournamentRegistrationService.listByTournamentIdWithTeam(id);
+			List<TournamentRegistration> registrations = tournamentRegistrationService.listApprovedByTournamentIdWithTeam(id);
 			List<Long> seenTeamIds = new ArrayList<>();
 			boolean allAssigned = true;
 			int teamCount = 0;
 
 			for (TournamentRegistration r : registrations) {
 				if (r == null) continue;
+<<<<<<< Updated upstream
 				if (r.getStatus() != RegistrationStatus.APPROVED) continue;
+=======
+>>>>>>> Stashed changes
 				if (r.getTeam() == null || r.getTeam().getId() == null) continue;
 
 				Long teamId = r.getTeam().getId();
@@ -846,7 +851,7 @@ public class AdminController {
 				if (!hasGroupMatches) {
 					boolean generated = matchService.generateGroupStageMatchesIfMissing(tournament, registrations);
 					if (generated) {
-						matchesForGroups = matchService.listByTournamentIdWithDetails(id);
+						matchesForGroups = updateMatchStatusesByTime(matchService.listByTournamentIdWithDetails(id));
 					}
 				}
 			}
@@ -961,7 +966,7 @@ public class AdminController {
 				if (hasAnyGroupMatch && allGroupMatchesFinished && !knockoutExists) {
 					boolean created = matchService.generateQuarterFinalsFromGroupsIfReady(id);
 					if (created) {
-						List<Match> refreshed = matchService.listByTournamentIdWithDetails(id);
+						List<Match> refreshed = updateMatchStatusesByTime(matchService.listByTournamentIdWithDetails(id));
 						List<Match> refreshedKnockout = new ArrayList<>();
 						for (Match m : refreshed) {
 							if (m == null || m.getRoundName() == null) continue;
@@ -1057,6 +1062,30 @@ public class AdminController {
 		return "admin/tournament/match-history";
 	}
 
+	private List<Match> updateMatchStatusesByTime(List<Match> matches) {
+		if (matches == null || matches.isEmpty()) return matches;
+		LocalDateTime now = LocalDateTime.now();
+		List<Match> toUpdate = new ArrayList<>();
+		for (Match m : matches) {
+			if (m == null) continue;
+			if (m.getStatus() == null) {
+				m.setStatus(MatchStatus.SCHEDULED);
+				toUpdate.add(m);
+				continue;
+			}
+			if (m.getStatus() == MatchStatus.FINISHED) continue;
+			if (m.getScheduledAt() == null) continue;
+			if (!m.getScheduledAt().isAfter(now) && m.getStatus() != MatchStatus.LIVE) {
+				m.setStatus(MatchStatus.LIVE);
+				toUpdate.add(m);
+			}
+		}
+		if (!toUpdate.isEmpty()) {
+			matchService.saveAll(toUpdate);
+		}
+		return matches;
+	}
+
 	@PostMapping("/admin/match-history/random-groups")
 	public String randomGroups(@RequestParam(value = "tournamentId", required = false) Long tournamentId) {
 		if (tournamentId == null) {
@@ -1077,13 +1106,16 @@ public class AdminController {
 			return "redirect:/admin/match-history?id=" + tournamentId;
 		}
 
-		List<TournamentRegistration> registrations = tournamentRegistrationService.listByTournamentIdWithTeam(tournamentId);
+		List<TournamentRegistration> registrations = tournamentRegistrationService.listApprovedByTournamentIdWithTeam(tournamentId);
 		List<TournamentRegistration> uniqueRegs = new ArrayList<>();
 		List<Long> seenTeamIds = new ArrayList<>();
 
 		for (TournamentRegistration r : registrations) {
 			if (r == null) continue;
+<<<<<<< Updated upstream
 			if (r.getStatus() != RegistrationStatus.APPROVED) continue;
+=======
+>>>>>>> Stashed changes
 			if (r.getTeam() == null || r.getTeam().getId() == null) continue;
 			Long teamId = r.getTeam().getId();
 			if (seenTeamIds.contains(teamId)) continue;
@@ -1218,13 +1250,16 @@ public class AdminController {
 			return "redirect:/admin/match-history?id=" + tournamentId;
 		}
 
-		List<TournamentRegistration> registrations = tournamentRegistrationService.listByTournamentIdWithTeam(tournamentId);
+		List<TournamentRegistration> registrations = tournamentRegistrationService.listApprovedByTournamentIdWithTeam(tournamentId);
 		List<Team> teams = new ArrayList<>();
 		List<Long> seenTeamIds = new ArrayList<>();
 
 		for (TournamentRegistration registration : registrations) {
 			if (registration == null) continue;
+<<<<<<< Updated upstream
 			if (registration.getStatus() != RegistrationStatus.APPROVED) continue;
+=======
+>>>>>>> Stashed changes
 			if (registration.getTeam() == null || registration.getTeam().getId() == null) continue;
 			Long teamId = registration.getTeam().getId();
 			if (seenTeamIds.contains(teamId)) continue;
@@ -1276,6 +1311,11 @@ public class AdminController {
 			return "redirect:/admin/match-history?id=" + tournamentId;
 		}
 
+		Tournament tournament = tournamentService.findById(tournamentId).orElse(null);
+		if (tournament == null) {
+			return "redirect:/admin/match-history?id=" + tournamentId;
+		}
+
 		String nextLocation = location == null ? "" : location.trim();
 		match.setLocation(nextLocation.isBlank() ? null : nextLocation);
 
@@ -1284,7 +1324,16 @@ public class AdminController {
 			String d = date == null ? "" : date.trim();
 			String t = time == null ? "" : time.trim();
 			if (!d.isBlank() && !t.isBlank()) {
-				scheduledAt = LocalDate.parse(d).atTime(LocalTime.parse(t));
+				LocalDate selectedDate = LocalDate.parse(d);
+				LocalDate start = tournament.getStartDate();
+				LocalDate end = tournament.getEndDate();
+				if (start != null && selectedDate.isBefore(start)) {
+					return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=invalid_schedule";
+				}
+				if (end != null && selectedDate.isAfter(end)) {
+					return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=invalid_schedule";
+				}
+				scheduledAt = selectedDate.atTime(LocalTime.parse(t));
 			}
 		} catch (Exception ignored) {
 			scheduledAt = null;
@@ -1682,13 +1731,16 @@ public class AdminController {
 	}
 
 	private List<TeamListItem> buildTeamListItems(Long tournamentId) {
-		List<TournamentRegistration> registrations = tournamentRegistrationService.listByTournamentIdWithTeam(tournamentId);
+		List<TournamentRegistration> registrations = tournamentRegistrationService.listApprovedByTournamentIdWithTeam(tournamentId);
 		List<TeamListItem> teams = new ArrayList<>();
 		List<Long> seenTeamIds = new ArrayList<>();
 
 		for (TournamentRegistration registration : registrations) {
 			if (registration == null) continue;
+<<<<<<< Updated upstream
 			if (registration.getStatus() != RegistrationStatus.APPROVED) continue;
+=======
+>>>>>>> Stashed changes
 			if (registration.getTeam() == null || registration.getTeam().getId() == null) continue;
 
 			Long teamId = registration.getTeam().getId();
