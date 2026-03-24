@@ -830,7 +830,7 @@
             if (memberCountEl) memberCountEl.textContent = String(players.length);
             if (memberListEl) {
                 memberListEl.innerHTML = players.map((p, idx) => {
-                    const avatar = p?.avatarUrl ? p.avatarUrl : "/assets/figma/avatar.jpg";
+                    const avatar = p?.avatarUrl ? p.avatarUrl : "/img/figma-avatar.png";
                     const name = (p?.fullName || "").toString();
                     return `
                         <div class="player-item">

@@ -142,7 +142,7 @@
                             />
                             <img
                               th:unless="${m.avatarUrl != null and !#strings.isEmpty(m.avatarUrl)}"
-                              th:src="@{/assets/figma/avatar.jpg}"
+                              th:src="@{/img/figma-avatar.png}"
                               alt=""
                             />
                           </div>
@@ -172,7 +172,7 @@
                   />
                   <img
                     th:unless="${teamLogoUrl != null and !#strings.isEmpty(teamLogoUrl)}"
-                    th:src="@{/assets/figma/home-hero.png}"
+                    th:src="@{/img/home-hero.jpg}"
                     alt="Team Avatar"
                     style="width: 100%; height: 100%; object-fit: cover; display: block;"
                   />

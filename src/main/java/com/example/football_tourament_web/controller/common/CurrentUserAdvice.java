@@ -5,14 +5,17 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
-import com.example.football_tourament_web.service.UserService;
+import com.example.football_tourament_web.service.common.ImageService;
+import com.example.football_tourament_web.service.core.UserService;
 
 @ControllerAdvice
 public class CurrentUserAdvice {
 	private final UserService userService;
+	private final ImageService imageService;
 
-	public CurrentUserAdvice(UserService userService) {
+	public CurrentUserAdvice(UserService userService, ImageService imageService) {
 		this.userService = userService;
+		this.imageService = imageService;
 	}
 
 	@ModelAttribute
@@ -34,7 +37,7 @@ public class CurrentUserAdvice {
 			if (avatarSrc == null || avatarSrc.isBlank()) {
 				avatarSrc = user.getAvatar();
 			}
-			model.addAttribute("currentUserAvatarUrl", avatarSrc);
+			model.addAttribute("currentUserAvatarUrl", imageService.resolveUserAvatarUrl(avatarSrc));
 		});
 	}
 }
