@@ -37,6 +37,7 @@ import com.example.football_tourament_web.model.entity.Player;
 import com.example.football_tourament_web.model.entity.Team;
 import com.example.football_tourament_web.model.entity.Tournament;
 import com.example.football_tourament_web.model.entity.Transaction;
+import com.example.football_tourament_web.model.entity.ContactMessage;
 import com.example.football_tourament_web.model.enums.Gender;
 import com.example.football_tourament_web.model.enums.MatchStatus;
 import com.example.football_tourament_web.model.enums.TransactionStatus;
@@ -44,6 +45,7 @@ import com.example.football_tourament_web.model.enums.TournamentStatus;
 import com.example.football_tourament_web.repository.MatchRepository;
 import com.example.football_tourament_web.repository.PlayerRepository;
 import com.example.football_tourament_web.service.CbsSportsNewsService;
+import com.example.football_tourament_web.service.ContactMessageService;
 import com.example.football_tourament_web.service.MomoPaymentService;
 import com.example.football_tourament_web.service.TeamService;
 import com.example.football_tourament_web.service.TournamentService;
@@ -77,6 +79,7 @@ public class HomeController {
 	private final TeamService teamService;
 	private final MatchRepository matchRepository;
 	private final PlayerRepository playerRepository;
+	private final ContactMessageService contactMessageService;
 	private final HttpClient httpClient;
 	private static final Pattern LAT_PATTERN = Pattern.compile("\"lat\"\\s*:\\s*\"([^\"]+)\"");
 	private static final Pattern LON_PATTERN = Pattern.compile("\"lon\"\\s*:\\s*\"([^\"]+)\"");
@@ -91,7 +94,8 @@ public class HomeController {
 			TournamentRegistrationService tournamentRegistrationService,
 			TeamService teamService,
 			MatchRepository matchRepository,
-			PlayerRepository playerRepository
+			PlayerRepository playerRepository,
+			ContactMessageService contactMessageService
 	) {
 		this.cbsSportsNewsService = cbsSportsNewsService;
 		this.userService = userService;
@@ -102,6 +106,7 @@ public class HomeController {
 		this.teamService = teamService;
 		this.matchRepository = matchRepository;
 		this.playerRepository = playerRepository;
+		this.contactMessageService = contactMessageService;
 		this.httpClient = HttpClient.newBuilder()
 				.followRedirects(HttpClient.Redirect.NORMAL)
 				.connectTimeout(Duration.ofSeconds(10))
@@ -209,6 +214,32 @@ public class HomeController {
 	@GetMapping({"/lien-he", "/lien-he.html"})
 	public String contact() {
 		return "user/home/contact";
+	}
+
+	@PostMapping("/lien-he")
+	public String submitContactMessage(
+			@RequestParam(name = "name", required = false) String name,
+			@RequestParam(name = "email", required = false) String email,
+			@RequestParam(name = "message", required = false) String message
+	) {
+		String n = name == null ? "" : name.trim();
+		String e = email == null ? "" : email.trim();
+		String m = message == null ? "" : message.trim();
+
+		if (n.isBlank() || e.isBlank() || m.isBlank()) {
+			return "redirect:/lien-he?error";
+		}
+
+		try {
+			ContactMessage cm = new ContactMessage();
+			cm.setName(n);
+			cm.setEmail(e);
+			cm.setMessage(m);
+			contactMessageService.save(cm);
+		} catch (Exception ex) {
+			return "redirect:/lien-he?error";
+		}
+		return "redirect:/lien-he?sent";
 	}
 
 	@GetMapping("/api/geocode")

@@ -65,6 +65,20 @@ public class TournamentRegistrationService {
 		return registrationRepository.findByTeamIdAndStatusWithTournament(teamId, RegistrationStatus.APPROVED);
 	}
 
+	@Transactional(readOnly = true)
+	public List<TournamentRegistration> listRecentPendingWithDetails(int limit) {
+		List<TournamentRegistration> items = registrationRepository.findByStatusWithDetailsOrderByCreatedAtDesc(RegistrationStatus.PENDING);
+		if (items == null) return List.of();
+		if (limit <= 0) return List.of();
+		if (items.size() <= limit) return items;
+		return items.subList(0, limit);
+	}
+
+	@Transactional(readOnly = true)
+	public long countPending() {
+		return registrationRepository.countByStatus(RegistrationStatus.PENDING);
+	}
+
 	@Transactional
 	public TournamentRegistration save(TournamentRegistration registration) {
 		return registrationRepository.save(registration);

@@ -923,17 +923,17 @@
                                 <tr th:if="${tournaments == null or #lists.isEmpty(tournaments)}">
                                     <td colspan="7" style="color: var(--muted); font-weight: 700;">Chưa có giải đấu</td>
                                 </tr>
-                                <tr th:each="t, iter : ${tournaments}">
+                                <tr th:each="t, iter : ${tournamentRows}">
                                     <td th:text="${iter.count}">1</td>
                                     <td th:text="${t.name}">Hutech mở rộng lần 1</td>
                                     <td th:text="${t.organizer}">Nguyễn Nhật Hào</td>
-                                    <td th:text="${t.mode == T(com.example.football_tourament_web.model.enums.TournamentMode).GROUP_STAGE ? 'Chia bảng đấu (Group Stage)' : 'Knockout'}">Knockout</td>
-                                    <td th:text="${(registeredTeamCounts[t.id] ?: 0) + '/' + (t.teamLimit ?: 0)}">4/4</td>
+                                    <td th:text="${t.modeLabel}">Knockout</td>
+                                    <td th:text="${t.teamCountText}">4/4</td>
                                     <td>
                                         <span
                                             class="status-badge"
-                                            th:classappend="${t.status != null ? ' status-badge--' + #strings.toLowerCase(t.status.name()) : ''}"
-                                            th:text="${t.status == T(com.example.football_tourament_web.model.enums.TournamentStatus).UPCOMING ? 'Sắp diễn ra' : (t.status == T(com.example.football_tourament_web.model.enums.TournamentStatus).LIVE ? 'Đang đá' : 'Đã kết thúc')}"
+                                            th:classappend="${t.statusClass != null ? ' ' + t.statusClass : ''}"
+                                            th:text="${t.statusLabel}"
                                         >Sắp diễn ra</span>
                                     </td>
                                     <td>

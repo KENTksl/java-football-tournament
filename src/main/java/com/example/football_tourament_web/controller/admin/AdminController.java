@@ -9,6 +9,7 @@ import com.example.football_tourament_web.model.entity.Team;
 import com.example.football_tourament_web.model.entity.Tournament;
 import com.example.football_tourament_web.model.entity.TournamentRegistration;
 import com.example.football_tourament_web.model.entity.Transaction;
+import com.example.football_tourament_web.model.entity.ContactMessage;
 import com.example.football_tourament_web.model.enums.MatchEventType;
 import com.example.football_tourament_web.model.enums.PitchType;
 import com.example.football_tourament_web.model.enums.MatchStatus;
@@ -24,6 +25,7 @@ import com.example.football_tourament_web.service.MatchEventService;
 import com.example.football_tourament_web.service.MatchLineupService;
 import com.example.football_tourament_web.service.MatchService;
 import com.example.football_tourament_web.service.TeamService;
+import com.example.football_tourament_web.service.ContactMessageService;
 import com.example.football_tourament_web.service.TournamentRegistrationService;
 import com.example.football_tourament_web.service.TournamentService;
 import com.example.football_tourament_web.service.UserService;
@@ -33,11 +35,13 @@ import com.example.football_tourament_web.service.TransactionService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -79,6 +83,7 @@ public class AdminController {
 	private final TournamentRegistrationService tournamentRegistrationService;
 	private final PlayerRepository playerRepository;
 	private final TransactionService transactionService;
+	private final ContactMessageService contactMessageService;
 
 	public AdminController(
 			TournamentService tournamentService,
@@ -89,7 +94,8 @@ public class AdminController {
 			UserService userService,
 			TournamentRegistrationService tournamentRegistrationService,
 			PlayerRepository playerRepository,
-			TransactionService transactionService
+			TransactionService transactionService,
+			ContactMessageService contactMessageService
 	) {
 		this.tournamentService = tournamentService;
 		this.teamService = teamService;
@@ -100,6 +106,106 @@ public class AdminController {
 		this.tournamentRegistrationService = tournamentRegistrationService;
 		this.playerRepository = playerRepository;
 		this.transactionService = transactionService;
+		this.contactMessageService = contactMessageService;
+	}
+
+	@ModelAttribute
+	public void attachAdminTopbarModel(Model model) {
+		try {
+			List<AdminTopbarMessage> messages = contactMessageService.listRecent(5).stream()
+					.map(m -> new AdminTopbarMessage(
+							m.getId(),
+							m.getName(),
+							m.getEmail(),
+							m.getMessage(),
+							formatDateTime(m.getCreatedAt())
+					))
+					.toList();
+			model.addAttribute("adminTopMessages", messages);
+			model.addAttribute("adminUnreadMessageCount", contactMessageService.countUnread());
+		} catch (Exception ex) {
+			model.addAttribute("adminTopMessages", List.of());
+			model.addAttribute("adminUnreadMessageCount", 0L);
+		}
+
+		List<AdminTopbarNotification> notifications = new ArrayList<>();
+		try {
+			for (TournamentRegistration r : tournamentRegistrationService.listRecentPendingWithDetails(5)) {
+				String teamName = r.getTeam() == null ? "Đội" : (r.getTeam().getName() == null ? "Đội" : r.getTeam().getName());
+				String tournamentName = r.getTournament() == null ? "giải đấu" : (r.getTournament().getName() == null ? "giải đấu" : r.getTournament().getName());
+				String title = "Đội đăng ký giải";
+				String detail = teamName + " • " + tournamentName;
+				String href = "/admin/team-detail?id=" + r.getId();
+				notifications.add(new AdminTopbarNotification(title, detail, formatDateTime(r.getCreatedAt()), href));
+			}
+			model.addAttribute("adminPendingRegistrationCount", tournamentRegistrationService.countPending());
+		} catch (Exception ex) {
+			model.addAttribute("adminPendingRegistrationCount", 0L);
+		}
+
+		try {
+			List<Transaction> txs = transactionService.listAll().stream().limit(5).toList();
+			for (Transaction t : txs) {
+				String userName = t.getUser() == null ? "Người dùng" : (t.getUser().getFullName() == null ? "Người dùng" : t.getUser().getFullName());
+				String title = "Giao dịch mới";
+				String detail = userName + " • " + (formatMoney(t.getAmount()) == null ? "" : formatMoney(t.getAmount()));
+				String href = "/admin/invoice-management?status=ALL&search=" + (t.getCode() == null ? "" : t.getCode());
+				notifications.add(new AdminTopbarNotification(title, detail, formatDateTime(t.getCreatedAt()), href));
+			}
+		} catch (Exception ex) {
+			// ignore, keep notifications list possibly empty
+		}
+		model.addAttribute("adminTopNotifications", notifications);
+	}
+
+	@GetMapping("/admin/api/topbar/messages")
+	@ResponseBody
+	public ResponseEntity<AdminTopbarMessagesResponse> topbarMessages() {
+		try {
+			List<AdminTopbarMessage> messages = contactMessageService.listRecent(5).stream()
+					.map(m -> new AdminTopbarMessage(
+							m.getId(),
+							m.getName(),
+							m.getEmail(),
+							m.getMessage(),
+							formatDateTime(m.getCreatedAt())
+					))
+					.toList();
+			long unread = contactMessageService.countUnread();
+			return ResponseEntity.ok(new AdminTopbarMessagesResponse(unread, messages));
+		} catch (Exception ex) {
+			return ResponseEntity.ok(new AdminTopbarMessagesResponse(0, List.of()));
+		}
+	}
+
+	@GetMapping("/admin/api/topbar/notifications")
+	@ResponseBody
+	public ResponseEntity<AdminTopbarNotificationsResponse> topbarNotifications() {
+		try {
+			List<AdminTopbarNotification> notifications = new ArrayList<>();
+			for (TournamentRegistration r : tournamentRegistrationService.listRecentPendingWithDetails(5)) {
+				String teamName = r.getTeam() == null ? "Đội" : (r.getTeam().getName() == null ? "Đội" : r.getTeam().getName());
+				String tournamentName = r.getTournament() == null ? "giải đấu" : (r.getTournament().getName() == null ? "giải đấu" : r.getTournament().getName());
+				String title = "Đội đăng ký giải";
+				String detail = teamName + " • " + tournamentName;
+				String href = "/admin/team-detail?id=" + r.getId();
+				notifications.add(new AdminTopbarNotification(title, detail, formatDateTime(r.getCreatedAt()), href));
+			}
+
+			List<Transaction> txs = transactionService.listAll().stream().limit(5).toList();
+			for (Transaction t : txs) {
+				String userName = t.getUser() == null ? "Người dùng" : (t.getUser().getFullName() == null ? "Người dùng" : t.getUser().getFullName());
+				String title = "Giao dịch mới";
+				String detail = userName + " • " + (formatMoney(t.getAmount()) == null ? "" : formatMoney(t.getAmount()));
+				String href = "/admin/invoice-management?status=ALL&search=" + (t.getCode() == null ? "" : t.getCode());
+				notifications.add(new AdminTopbarNotification(title, detail, formatDateTime(t.getCreatedAt()), href));
+			}
+
+			long pending = tournamentRegistrationService.countPending();
+			return ResponseEntity.ok(new AdminTopbarNotificationsResponse(pending, notifications));
+		} catch (Exception ex) {
+			return ResponseEntity.ok(new AdminTopbarNotificationsResponse(0, List.of()));
+		}
 	}
 
 	@GetMapping({"/admin", "/admin/general-overview"})
@@ -179,6 +285,34 @@ public class AdminController {
 		}
 		model.addAttribute("tournaments", tournaments);
 		model.addAttribute("registeredTeamCounts", registeredTeamCounts);
+		List<AdminTournamentRow> tournamentRows = tournaments.stream()
+				.filter(t -> t != null && t.getId() != null)
+				.map(t -> {
+					long registered = registeredTeamCounts.getOrDefault(t.getId(), 0L);
+					int limit = t.getTeamLimit() == null ? 0 : t.getTeamLimit();
+					String teamCountText = registered + "/" + limit;
+					String modeLabel = t.getMode() == TournamentMode.GROUP_STAGE ? "Chia bảng đấu (Group Stage)" : "Knockout";
+					TournamentStatus s = t.getStatus();
+					String statusLabel = s == TournamentStatus.UPCOMING ? "Sắp diễn ra" : (s == TournamentStatus.LIVE ? "Đang đá" : "Đã kết thúc");
+					String statusClass = s == TournamentStatus.UPCOMING ? "status-badge--upcoming" : (s == TournamentStatus.LIVE ? "status-badge--live" : "status-badge--finished");
+					return new AdminTournamentRow(
+							t.getId(),
+							t.getName(),
+							t.getOrganizer(),
+							modeLabel,
+							teamCountText,
+							statusLabel,
+							statusClass,
+							t.getMode() == null ? null : t.getMode().name(),
+							t.getPitchType() == null ? null : t.getPitchType().name(),
+							t.getTeamLimit(),
+							t.getStartDate() == null ? null : t.getStartDate().toString(),
+							t.getEndDate() == null ? null : t.getEndDate().toString(),
+							t.getDescription()
+					);
+				})
+				.toList();
+		model.addAttribute("tournamentRows", tournamentRows);
 		return "admin/manage/manage-tournament";
 	}
 
@@ -384,9 +518,9 @@ public class AdminController {
 		int size = 10;
 		PagedResult<TeamRegistrationRow> paged = paginate(allRows, page, size);
 		
-		model.addAttribute("registrationRows", paged.items());
-		model.addAttribute("currentPage", paged.currentPage());
-		model.addAttribute("totalPages", paged.totalPages());
+		model.addAttribute("registrationRows", paged.getItems());
+		model.addAttribute("currentPage", paged.getCurrentPage());
+		model.addAttribute("totalPages", paged.getTotalPages());
 		model.addAttribute("currentSearch", search);
 		return "admin/team/team-management";
 	}
@@ -753,10 +887,10 @@ public class AdminController {
 		applyTournamentContext(model, tournament);
 		List<TeamListItem> allTeams = buildTeamListItems(id);
 		PagedResult<TeamListItem> paged = paginate(allTeams, page, size);
-		model.addAttribute("teams", paged.items());
-		model.addAttribute("currentPage", paged.currentPage());
-		model.addAttribute("pageSize", paged.pageSize());
-		model.addAttribute("totalPages", paged.totalPages());
+		model.addAttribute("teams", paged.getItems());
+		model.addAttribute("currentPage", paged.getCurrentPage());
+		model.addAttribute("pageSize", paged.getPageSize());
+		model.addAttribute("totalPages", paged.getTotalPages());
 		return "admin/tournament/team-list";
 	}
 
@@ -804,10 +938,10 @@ public class AdminController {
 
 		List<Match> knockoutSource = tournament.getMode() == TournamentMode.KNOCKOUT ? allMatches : knockoutOnly;
 		PagedResult<Match> paged = paginate(knockoutSource, page, size);
-		model.addAttribute("knockoutMatches", paged.items());
-		model.addAttribute("currentPage", paged.currentPage());
-		model.addAttribute("pageSize", paged.pageSize());
-		model.addAttribute("totalPages", paged.totalPages());
+		model.addAttribute("knockoutMatches", paged.getItems());
+		model.addAttribute("currentPage", paged.getCurrentPage());
+		model.addAttribute("pageSize", paged.getPageSize());
+		model.addAttribute("totalPages", paged.getTotalPages());
 		model.addAttribute("pairingLocked", !allMatches.isEmpty());
 
 		if (tournament.getMode() == TournamentMode.GROUP_STAGE) {
@@ -824,10 +958,7 @@ public class AdminController {
 
 			for (TournamentRegistration r : registrations) {
 				if (r == null) continue;
-<<<<<<< Updated upstream
 				if (r.getStatus() != RegistrationStatus.APPROVED) continue;
-=======
->>>>>>> Stashed changes
 				if (r.getTeam() == null || r.getTeam().getId() == null) continue;
 
 				Long teamId = r.getTeam().getId();
@@ -975,10 +1106,10 @@ public class AdminController {
 							refreshedKnockout.add(m);
 						}
 						PagedResult<Match> p2 = paginate(refreshedKnockout, page, size);
-						model.addAttribute("knockoutMatches", p2.items());
-						model.addAttribute("currentPage", p2.currentPage());
-						model.addAttribute("pageSize", p2.pageSize());
-						model.addAttribute("totalPages", p2.totalPages());
+						model.addAttribute("knockoutMatches", p2.getItems());
+						model.addAttribute("currentPage", p2.getCurrentPage());
+						model.addAttribute("pageSize", p2.getPageSize());
+						model.addAttribute("totalPages", p2.getTotalPages());
 					}
 				}
 			}
@@ -1112,10 +1243,7 @@ public class AdminController {
 
 		for (TournamentRegistration r : registrations) {
 			if (r == null) continue;
-<<<<<<< Updated upstream
 			if (r.getStatus() != RegistrationStatus.APPROVED) continue;
-=======
->>>>>>> Stashed changes
 			if (r.getTeam() == null || r.getTeam().getId() == null) continue;
 			Long teamId = r.getTeam().getId();
 			if (seenTeamIds.contains(teamId)) continue;
@@ -1256,10 +1384,7 @@ public class AdminController {
 
 		for (TournamentRegistration registration : registrations) {
 			if (registration == null) continue;
-<<<<<<< Updated upstream
 			if (registration.getStatus() != RegistrationStatus.APPROVED) continue;
-=======
->>>>>>> Stashed changes
 			if (registration.getTeam() == null || registration.getTeam().getId() == null) continue;
 			Long teamId = registration.getTeam().getId();
 			if (seenTeamIds.contains(teamId)) continue;
@@ -1566,7 +1691,23 @@ public class AdminController {
 		return new PagedResult<>(pageItems, safePage, safeSize, totalPages);
 	}
 
-	private record PagedResult<T>(List<T> items, int currentPage, int pageSize, int totalPages) {
+	public static final class PagedResult<T> {
+		private final List<T> items;
+		private final int currentPage;
+		private final int pageSize;
+		private final int totalPages;
+
+		public PagedResult(List<T> items, int currentPage, int pageSize, int totalPages) {
+			this.items = items;
+			this.currentPage = currentPage;
+			this.pageSize = pageSize;
+			this.totalPages = totalPages;
+		}
+
+		public List<T> getItems() { return items; }
+		public int getCurrentPage() { return currentPage; }
+		public int getPageSize() { return pageSize; }
+		public int getTotalPages() { return totalPages; }
 	}
 
 	public static final class AdminTransactionRow {
@@ -1737,10 +1878,7 @@ public class AdminController {
 
 		for (TournamentRegistration registration : registrations) {
 			if (registration == null) continue;
-<<<<<<< Updated upstream
 			if (registration.getStatus() != RegistrationStatus.APPROVED) continue;
-=======
->>>>>>> Stashed changes
 			if (registration.getTeam() == null || registration.getTeam().getId() == null) continue;
 
 			Long teamId = registration.getTeam().getId();
@@ -1847,6 +1985,154 @@ public class AdminController {
 		public int getGoalDiff() {
 			return goalsFor - goalsAgainst;
 		}
+	}
+
+	public static final class AdminTopbarMessage {
+		private final Long id;
+		private final String name;
+		private final String email;
+		private final String message;
+		private final String timeText;
+
+		public AdminTopbarMessage(Long id, String name, String email, String message, String timeText) {
+			this.id = id;
+			this.name = name;
+			this.email = email;
+			this.message = message;
+			this.timeText = timeText;
+		}
+
+		public Long getId() {
+			return id;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public String getEmail() {
+			return email;
+		}
+
+		public String getMessage() {
+			return message;
+		}
+
+		public String getTimeText() {
+			return timeText;
+		}
+	}
+
+	public static final class AdminTopbarNotification {
+		private final String title;
+		private final String detail;
+		private final String timeText;
+		private final String href;
+
+		public AdminTopbarNotification(String title, String detail, String timeText, String href) {
+			this.title = title;
+			this.detail = detail;
+			this.timeText = timeText;
+			this.href = href;
+		}
+
+		public String getTitle() {
+			return title;
+		}
+
+		public String getDetail() {
+			return detail;
+		}
+
+		public String getTimeText() {
+			return timeText;
+		}
+
+		public String getHref() {
+			return href;
+		}
+	}
+
+	public static final class AdminTopbarMessagesResponse {
+		private final long unreadCount;
+		private final List<AdminTopbarMessage> items;
+
+		public AdminTopbarMessagesResponse(long unreadCount, List<AdminTopbarMessage> items) {
+			this.unreadCount = unreadCount;
+			this.items = items;
+		}
+
+		public long getUnreadCount() {
+			return unreadCount;
+		}
+
+		public List<AdminTopbarMessage> getItems() {
+			return items;
+		}
+	}
+
+	public static final class AdminTopbarNotificationsResponse {
+		private final long pendingCount;
+		private final List<AdminTopbarNotification> items;
+
+		public AdminTopbarNotificationsResponse(long pendingCount, List<AdminTopbarNotification> items) {
+			this.pendingCount = pendingCount;
+			this.items = items;
+		}
+
+		public long getPendingCount() {
+			return pendingCount;
+		}
+
+		public List<AdminTopbarNotification> getItems() {
+			return items;
+		}
+	}
+
+	public static final class AdminTournamentRow {
+		private final Long id;
+		private final String name;
+		private final String organizer;
+		private final String modeLabel;
+		private final String teamCountText;
+		private final String statusLabel;
+		private final String statusClass;
+		private final String mode;
+		private final String pitchType;
+		private final Integer teamLimit;
+		private final String startDate;
+		private final String endDate;
+		private final String description;
+
+		public AdminTournamentRow(Long id, String name, String organizer, String modeLabel, String teamCountText, String statusLabel, String statusClass, String mode, String pitchType, Integer teamLimit, String startDate, String endDate, String description) {
+			this.id = id;
+			this.name = name;
+			this.organizer = organizer;
+			this.modeLabel = modeLabel;
+			this.teamCountText = teamCountText;
+			this.statusLabel = statusLabel;
+			this.statusClass = statusClass;
+			this.mode = mode;
+			this.pitchType = pitchType;
+			this.teamLimit = teamLimit;
+			this.startDate = startDate;
+			this.endDate = endDate;
+			this.description = description;
+		}
+
+		public Long getId() { return id; }
+		public String getName() { return name; }
+		public String getOrganizer() { return organizer; }
+		public String getModeLabel() { return modeLabel; }
+		public String getTeamCountText() { return teamCountText; }
+		public String getStatusLabel() { return statusLabel; }
+		public String getStatusClass() { return statusClass; }
+		public String getMode() { return mode; }
+		public String getPitchType() { return pitchType; }
+		public Integer getTeamLimit() { return teamLimit; }
+		public String getStartDate() { return startDate; }
+		public String getEndDate() { return endDate; }
+		public String getDescription() { return description; }
 	}
 
 }

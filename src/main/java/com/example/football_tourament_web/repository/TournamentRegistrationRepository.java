@@ -12,6 +12,7 @@ import com.example.football_tourament_web.model.enums.RegistrationStatus;
 
 public interface TournamentRegistrationRepository extends JpaRepository<TournamentRegistration, Long> {
 	List<TournamentRegistration> findByTournamentId(Long tournamentId);
+	long countByStatus(RegistrationStatus status);
 
 	@Query("""
 			select r
@@ -79,6 +80,17 @@ public interface TournamentRegistrationRepository extends JpaRepository<Tourname
 			where r.id = :id
 			""")
 	Optional<TournamentRegistration> findByIdWithTeamAndTournament(@Param("id") Long id);
+
+	@Query("""
+			select r
+			from TournamentRegistration r
+			join fetch r.team tm
+			left join fetch tm.captain c
+			left join fetch r.tournament t
+			where r.status = :status
+			order by r.createdAt desc
+			""")
+	List<TournamentRegistration> findByStatusWithDetailsOrderByCreatedAtDesc(@Param("status") RegistrationStatus status);
 
 	@Query("""
 			select r

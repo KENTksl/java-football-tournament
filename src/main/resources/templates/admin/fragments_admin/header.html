@@ -12,15 +12,48 @@
     </div>
 
     <div class="topbar__right">
-        <div class="pill">Tin nhắn</div>
-        <button class="iconBtn" type="button" aria-label="Tin nhắn">
-            <img src="/assets/general-overview/top-mail.png" alt="">
-        </button>
+        <div class="topbarMenu" data-topbar-menu="messages">
+            <div class="pill">Tin nhắn</div>
+            <button class="iconBtn topbarMenu__btn" type="button" aria-label="Tin nhắn" aria-haspopup="true" aria-expanded="false">
+                <svg class="topbarIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M4 6h16v12H4V6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                    <path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span id="topbarMessagesBadge" class="topbarMenu__badge" th:if="${adminUnreadMessageCount != null and adminUnreadMessageCount > 0}" th:text="${adminUnreadMessageCount}">0</span>
+            </button>
+            <div class="topbarMenu__panel" aria-label="Danh sách tin nhắn">
+                <div class="topbarMenu__head">Tin nhắn</div>
+                <div id="topbarMessagesList" class="topbarMenu__list">
+                    <div class="topbarItem" th:each="m : ${adminTopMessages}">
+                        <div class="topbarItem__title" th:text="${m.name ?: 'Ẩn danh'}">Ẩn danh</div>
+                        <div class="topbarItem__meta" th:text="${(m.email ?: '---') + ' • ' + (m.timeText ?: '')}">---</div>
+                        <div class="topbarItem__desc" th:text="${m.message ?: ''}"></div>
+                    </div>
+                    <div class="topbarItem topbarItem--empty" th:if="${adminTopMessages == null or #lists.isEmpty(adminTopMessages)}">Chưa có tin nhắn.</div>
+                </div>
+            </div>
+        </div>
 
-        <div class="pill">Thông báo</div>
-        <button class="iconBtn" type="button" aria-label="Thông báo">
-            <img src="/assets/general-overview/top-notification.png" alt="">
-        </button>
+        <div class="topbarMenu" data-topbar-menu="notifications">
+            <div class="pill">Thông báo</div>
+            <button class="iconBtn topbarMenu__btn" type="button" aria-label="Thông báo" aria-haspopup="true" aria-expanded="false">
+                <svg class="topbarIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 7h18s-3 0-3-7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M9.7 21a2.3 2.3 0 0 0 4.6 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <span id="topbarNotificationsBadge" class="topbarMenu__badge" th:if="${adminPendingRegistrationCount != null and adminPendingRegistrationCount > 0}" th:text="${adminPendingRegistrationCount}">0</span>
+            </button>
+            <div class="topbarMenu__panel" aria-label="Danh sách thông báo">
+                <div class="topbarMenu__head">Thông báo</div>
+                <div id="topbarNotificationsList" class="topbarMenu__list">
+                    <a class="topbarItem topbarItem--link" th:each="n : ${adminTopNotifications}" th:href="${n.href}">
+                        <div class="topbarItem__title" th:text="${n.title ?: 'Thông báo'}">Thông báo</div>
+                        <div class="topbarItem__meta" th:text="${(n.detail ?: '---') + ' • ' + (n.timeText ?: '')}">---</div>
+                    </a>
+                    <div class="topbarItem topbarItem--empty" th:if="${adminTopNotifications == null or #lists.isEmpty(adminTopNotifications)}">Chưa có thông báo.</div>
+                </div>
+            </div>
+        </div>
 
         <div class="profile" aria-label="Người dùng">
             <div class="profile__avatar">
@@ -30,4 +63,139 @@
             <img class="profile__dropdown" src="/assets/general-overview/top-dropdown.png" alt="">
         </div>
     </div>
+    <script>
+        (() => {
+            const menus = Array.from(document.querySelectorAll(".topbarMenu"));
+            if (!menus.length) return;
+
+            const closeAll = () => {
+                menus.forEach(m => {
+                    m.classList.remove("is-open");
+                    const btn = m.querySelector(".topbarMenu__btn");
+                    if (btn) btn.setAttribute("aria-expanded", "false");
+                });
+            };
+
+            menus.forEach(menu => {
+                const btn = menu.querySelector(".topbarMenu__btn");
+                if (!btn) return;
+                btn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const next = !menu.classList.contains("is-open");
+                    closeAll();
+                    if (next) {
+                        menu.classList.add("is-open");
+                        btn.setAttribute("aria-expanded", "true");
+                    }
+                });
+            });
+
+            document.addEventListener("click", closeAll);
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape") closeAll();
+            });
+
+            const renderMessages = (payload) => {
+                const badge = document.getElementById("topbarMessagesBadge");
+                const list = document.getElementById("topbarMessagesList");
+                if (!list) return;
+
+                const unread = payload && typeof payload.unreadCount === "number" ? payload.unreadCount : 0;
+                if (badge) {
+                    if (unread > 0) {
+                        badge.textContent = String(unread);
+                        badge.style.display = "grid";
+                    } else {
+                        badge.style.display = "none";
+                    }
+                }
+
+                const items = payload && Array.isArray(payload.items) ? payload.items : [];
+                list.textContent = "";
+                if (!items.length) {
+                    const empty = document.createElement("div");
+                    empty.className = "topbarItem topbarItem--empty";
+                    empty.textContent = "Chưa có tin nhắn.";
+                    list.appendChild(empty);
+                    return;
+                }
+                items.forEach(m => {
+                    const item = document.createElement("div");
+                    item.className = "topbarItem";
+                    const title = document.createElement("div");
+                    title.className = "topbarItem__title";
+                    title.textContent = (m && m.name) ? m.name : "Ẩn danh";
+                    const meta = document.createElement("div");
+                    meta.className = "topbarItem__meta";
+                    const email = (m && m.email) ? m.email : "---";
+                    const timeText = (m && m.timeText) ? m.timeText : "";
+                    meta.textContent = email + (timeText ? (" • " + timeText) : "");
+                    const desc = document.createElement("div");
+                    desc.className = "topbarItem__desc";
+                    desc.textContent = (m && m.message) ? m.message : "";
+                    item.appendChild(title);
+                    item.appendChild(meta);
+                    item.appendChild(desc);
+                    list.appendChild(item);
+                });
+            };
+
+            const renderNotifications = (payload) => {
+                const badge = document.getElementById("topbarNotificationsBadge");
+                const list = document.getElementById("topbarNotificationsList");
+                if (!list) return;
+
+                const pending = payload && typeof payload.pendingCount === "number" ? payload.pendingCount : 0;
+                if (badge) {
+                    if (pending > 0) {
+                        badge.textContent = String(pending);
+                        badge.style.display = "grid";
+                    } else {
+                        badge.style.display = "none";
+                    }
+                }
+
+                const items = payload && Array.isArray(payload.items) ? payload.items : [];
+                list.textContent = "";
+                if (!items.length) {
+                    const empty = document.createElement("div");
+                    empty.className = "topbarItem topbarItem--empty";
+                    empty.textContent = "Chưa có thông báo.";
+                    list.appendChild(empty);
+                    return;
+                }
+                items.forEach(n => {
+                    const a = document.createElement("a");
+                    a.className = "topbarItem topbarItem--link";
+                    a.href = (n && n.href) ? n.href : "#";
+                    const title = document.createElement("div");
+                    title.className = "topbarItem__title";
+                    title.textContent = (n && n.title) ? n.title : "Thông báo";
+                    const meta = document.createElement("div");
+                    meta.className = "topbarItem__meta";
+                    const detail = (n && n.detail) ? n.detail : "---";
+                    const timeText = (n && n.timeText) ? n.timeText : "";
+                    meta.textContent = detail + (timeText ? (" • " + timeText) : "");
+                    a.appendChild(title);
+                    a.appendChild(meta);
+                    list.appendChild(a);
+                });
+            };
+
+            const refresh = async () => {
+                try {
+                    const [mRes, nRes] = await Promise.all([
+                        fetch("/admin/api/topbar/messages", { headers: { "Accept": "application/json" } }),
+                        fetch("/admin/api/topbar/notifications", { headers: { "Accept": "application/json" } })
+                    ]);
+                    if (mRes.ok) renderMessages(await mRes.json());
+                    if (nRes.ok) renderNotifications(await nRes.json());
+                } catch (e) {
+                }
+            };
+
+            refresh();
+            window.setInterval(refresh, 12000);
+        })();
+    </script>
 </header>
