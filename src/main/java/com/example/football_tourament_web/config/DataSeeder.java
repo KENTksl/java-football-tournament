@@ -345,6 +345,10 @@ public class DataSeeder implements CommandLineRunner {
 		finalMatch.setStatus(MatchStatus.FINISHED);
 
 		matchRepository.saveAll(List.of(semi1, semi2, finalMatch));
+
+		tournament.setWinner(team4);
+		tournament.setStatus(TournamentStatus.FINISHED);
+		tournamentRepository.save(tournament);
 	}
 
 	private void seedTransactionsIfMissing(AppUser user) {

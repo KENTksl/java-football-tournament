@@ -15,8 +15,10 @@ import com.example.football_tourament_web.model.enums.RegistrationStatus;
 import com.example.football_tourament_web.model.enums.TournamentMode;
 import com.example.football_tourament_web.repository.MatchRepository;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -337,7 +339,7 @@ public class MatchService {
 		return matches;
 	}
 
-	private static Team winnerOf(Match match) {
+	public Team winnerOf(Match match) {
 		if (match == null) return null;
 		if (match.getHomeTeam() == null || match.getAwayTeam() == null) return null;
 		Integer homeScore = match.getHomeScore();
@@ -373,7 +375,11 @@ public class MatchService {
 			YearMonth ym = YearMonth.from(now).minusMonths(i);
 			LocalDateTime start = ym.atDay(1).atStartOfDay();
 			LocalDateTime end = ym.plusMonths(1).atDay(1).atStartOfDay();
-			frequency.add(matchRepository.countMatchesByScheduledAtBetween(start, end));
+
+			Instant startInstant = start.atZone(ZoneId.systemDefault()).toInstant();
+			Instant endInstant = end.atZone(ZoneId.systemDefault()).toInstant();
+
+			frequency.add(matchRepository.countMatchesByScheduleOrCreation(start, end, startInstant, endInstant));
 		}
 		return frequency;
 	}
