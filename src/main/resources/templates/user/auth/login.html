@@ -60,6 +60,7 @@
             <p th:if="${param.logout}" class="auth-hint">Bạn đã đăng xuất.</p>
             <form class="profile-form" method="post" th:action="@{/dang-nhap}">
               <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+              <input type="hidden" name="redirect" th:value="${param.redirect != null ? param.redirect[0] : ''}" />
               <div class="profile-field">
                 <label for="email">Email</label>
                 <input

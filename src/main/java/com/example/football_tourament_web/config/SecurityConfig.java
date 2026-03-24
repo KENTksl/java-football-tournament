@@ -1,5 +1,8 @@
 package com.example.football_tourament_web.config;
 
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.springframework.context.annotation.Bean;
@@ -13,11 +16,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
 
 import com.example.football_tourament_web.model.enums.UserStatus;
 import com.example.football_tourament_web.repository.AppUserRepository;
 
 import jakarta.servlet.MultipartConfigElement;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -44,12 +51,77 @@ public class SecurityConfig {
 
 	@Bean
 	public AuthenticationSuccessHandler authenticationSuccessHandler() {
+		RequestCache requestCache = new HttpSessionRequestCache();
 		return (request, response, authentication) -> {
 			boolean isAdmin = authentication.getAuthorities().stream()
 					.anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+			String target = null;
+
+			SavedRequest savedRequest = requestCache.getRequest(request, response);
+			if (savedRequest != null) {
+				target = safeRedirectTarget(savedRequest.getRedirectUrl(), request);
+				requestCache.removeRequest(request, response);
+			}
+
+			if (target == null) {
+				target = safeRedirectTarget(request.getParameter("redirect"), request);
+			}
+
+			if (target == null) {
+				target = isAdmin ? "/admin" : "/ca-nhan";
+			}
+			if (isAdmin && !target.startsWith("/admin")) {
+				target = "/admin";
+			}
 			response.setStatus(HttpServletResponse.SC_FOUND);
-			response.sendRedirect(isAdmin ? "/admin" : "/ca-nhan");
+			response.sendRedirect(target);
 		};
+	}
+
+	private static String safeRedirectTarget(String raw, HttpServletRequest request) {
+		if (raw == null) {
+			return null;
+		}
+		String value = raw.trim();
+		if (value.isBlank()) {
+			return null;
+		}
+		if (value.contains("\r") || value.contains("\n") || value.contains("\\")) {
+			return null;
+		}
+
+		try {
+			URI uri = new URI(value);
+			String scheme = uri.getScheme();
+			if (scheme != null) {
+				String host = uri.getHost();
+				if (host == null || !host.equalsIgnoreCase(request.getServerName())) {
+					return null;
+				}
+				int port = uri.getPort();
+				if (port != -1 && port != request.getServerPort()) {
+					return null;
+				}
+			}
+
+			String path = uri.getRawPath();
+			if (path == null || !path.startsWith("/") || path.startsWith("//")) {
+				return null;
+			}
+			if (uri.getRawFragment() != null && !uri.getRawFragment().isBlank()) {
+				return null;
+			}
+			String query = uri.getRawQuery();
+			if (query == null || query.isBlank()) {
+				return path;
+			}
+			return path + "?" + query;
+		} catch (Exception ex) {
+			if (!value.startsWith("/") || value.startsWith("//")) {
+				return null;
+			}
+			return value;
+		}
 	}
 
 	@Bean
@@ -62,6 +134,7 @@ public class SecurityConfig {
 		);
 
 		http.authorizeHttpRequests(auth -> auth
+				.requestMatchers("/user/tournament/sign-up", "/user/tournament/sign-up/**").hasAnyRole("USER", "ADMIN")
 				.requestMatchers(
 						"/assets/**",
 						"/uploads/**",
@@ -73,7 +146,6 @@ public class SecurityConfig {
 						"/lien-he.html",
 						"/tin-tuc",
 						"/tin-tuc.html",
-						"/user/tournament/**",
 						"/dang-nhap",
 						"/dang-nhap.html",
 						"/dang-ky",
@@ -82,6 +154,7 @@ public class SecurityConfig {
 						"/thanh-toan/momo/**",
 						"/order/momo-*"
 				).permitAll()
+				.requestMatchers("/user/tournament/**").permitAll()
 				.requestMatchers("/admin/**").hasRole("ADMIN")
 				.requestMatchers(
 						"/ca-nhan",
@@ -106,11 +179,16 @@ public class SecurityConfig {
 				.passwordParameter("password")
 				.successHandler(successHandler)
 				.failureHandler((request, response, exception) -> {
+					String redirect = safeRedirectTarget(request.getParameter("redirect"), request);
+					String suffix = "";
+					if (redirect != null) {
+						suffix = "&redirect=" + URLEncoder.encode(redirect, StandardCharsets.UTF_8);
+					}
 					if (exception instanceof LockedException) {
-						response.sendRedirect("/dang-nhap?locked");
+						response.sendRedirect("/dang-nhap?locked" + suffix);
 						return;
 					}
-					response.sendRedirect("/dang-nhap?error");
+					response.sendRedirect("/dang-nhap?error" + suffix);
 				})
 				.permitAll());
 

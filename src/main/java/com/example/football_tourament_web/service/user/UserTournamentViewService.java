@@ -204,9 +204,6 @@ public class UserTournamentViewService {
 			if (team == null || team.getId() == null) {
 				continue;
 			}
-			var players = playerRepository.findByTeamIdOrderByJerseyNumberAsc(team.getId()).stream()
-					.map(player -> new PlayerPrefill(player.getFullName(), player.getJerseyNumber(), player.getAvatarUrl()))
-					.toList();
 			String representativeName = team.getCaptain() != null ? team.getCaptain().getFullName() : user.getFullName();
 			String contactEmail = team.getCaptain() != null ? team.getCaptain().getEmail() : user.getEmail();
 			String contactPhone = team.getCaptain() != null ? team.getCaptain().getPhone() : user.getPhone();
@@ -217,7 +214,7 @@ public class UserTournamentViewService {
 					contactEmail,
 					contactPhone,
 					team.getLogoUrl(),
-					players
+					List.of()
 			));
 		}
 		return result;

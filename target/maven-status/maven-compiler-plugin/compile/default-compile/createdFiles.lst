@@ -35,7 +35,6 @@ com\example\football_tourament_web\service\user\UserHomeService$1.class
 com\example\football_tourament_web\model\enums\UserStatus.class
 com\example\football_tourament_web\service\user\UserTournamentViewService$1.class
 com\example\football_tourament_web\service\common\FileStorageService$FileTooLargeException.class
-com\example\football_tourament_web\config\SecurityConfig.class
 com\example\football_tourament_web\model\entity\Transaction.class
 com\example\football_tourament_web\model\enums\TeamSide.class
 com\example\football_tourament_web\model\enums\Gender.class
