@@ -308,12 +308,28 @@
             position: relative;
         }
 
+        .bracket-lines {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Horizontal spacing between rounds to avoid overlap */
+        .bracket-container[data-bracket="generic"] { --round-gap-x: 350px; }
+        .bracket-container[data-bracket="generic"] > .round { margin-right: var(--round-gap-x); }
+        .bracket-container[data-bracket="generic"] > .round:last-child { margin-right: 0; }
+
         .round {
             display: flex;
             flex-direction: column;
             position: relative;
             gap: 18px;
         }
+        .round[data-auto] { display: block; position: relative; }
+        .round[data-auto] .match-pair { position: absolute; left: 0; }
 
         .round--semis {
             gap: 100px;
@@ -517,7 +533,7 @@
               th:replace="~{admin/tournament/fragments/tournament-header-tabs :: headerTabs(${activeTab}, ${tournamentId}, ${tournamentName})}"
             ></th:block>
 
-            <div class="bracket-container" th:if="${bracketLayout == 'SEMIS_FINAL'}">
+            <div class="bracket-container" data-bracket="semis-final" th:if="${bracketLayout == 'SEMIS_FINAL'}">
                 <div class="round round--semis">
                     <div class="match-pair" th:each="m : ${bracketSemis}">
                         <div class="match-team"
@@ -593,8 +609,9 @@
                 </div>
             </div>
 
-            <div class="bracket-container" th:if="${bracketLayout != 'SEMIS_FINAL' and bracketRounds != null}">
-                <div th:each="round : ${bracketRounds}" class="round" style="margin-right: 90px;">
+            <div class="bracket-container" data-bracket="generic" th:if="${bracketLayout != 'SEMIS_FINAL' and bracketRounds != null}">
+                <svg class="bracket-lines" aria-hidden="true"></svg>
+                <div th:each="round : ${bracketRounds}" class="round">
                     <div class="match-pair" th:each="m : ${round.matches}">
                         <div class="match-team"
                              th:classappend="${m.homeWinner()} ? ' winner'">
@@ -610,11 +627,161 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="final-ranking" style="margin-left: 18px;"
+                     th:if="${bracketFinal != null and (bracketFinal.homeScore != null or bracketFinal.awayScore != null)}">
+                    <div class="ranking-item">
+                        <span class="rank-badge rank-1st">1st</span>
+                        <span class="team-name"
+                              th:text="${bracketFinal.homeWinner()} ? ${bracketFinal.homeTeamName} : ${bracketFinal.awayTeamName}">Đội vô địch</span>
+                    </div>
+                    <div class="ranking-item">
+                        <span class="rank-badge rank-2nd">2nd</span>
+                        <span class="team-name"
+                              th:text="${bracketFinal.homeWinner()} ? ${bracketFinal.awayTeamName} : ${bracketFinal.homeTeamName}">Á quân</span>
+                    </div>
+                    <div class="ranking-item" th:if="${bracketThird != null and (bracketThird.homeScore != null or bracketThird.awayScore != null)}">
+                        <span class="rank-badge rank-3rd">3rd</span>
+                        <span class="team-name"
+                              th:text="${bracketThird.homeWinner()} ? ${bracketThird.homeTeamName} : ${bracketThird.awayTeamName}">Hạng 3</span>
+                    </div>
+                    <div class="ranking-item" th:if="${bracketThird != null and (bracketThird.homeScore != null or bracketThird.awayScore != null)}">
+                        <span class="rank-badge rank-4th">4th</span>
+                        <span class="team-name"
+                              th:text="${bracketThird.homeWinner()} ? ${bracketThird.awayTeamName} : ${bracketThird.homeTeamName}">Hạng 4</span>
+                    </div>
+                </div>
             </div>
         </div>
 
         <footer th:replace="~{admin/fragments_admin/footer :: footer}"></footer>
     </main>
 </div>
+<script>
+    (() => {
+        const container = document.querySelector(".bracket-container[data-bracket='generic']");
+        if (!container) return;
+        const svg = container.querySelector(".bracket-lines");
+        if (!svg) return;
+
+        const toLocalPoint = (rect) => {
+            const base = container.getBoundingClientRect();
+            return {
+                x: rect.left - base.left,
+                y: rect.top - base.top,
+                w: rect.width,
+                h: rect.height,
+            };
+        };
+
+        const clearSvg = () => {
+            while (svg.firstChild) svg.removeChild(svg.firstChild);
+        };
+
+        const addLine = (x1, y1, x2, y2) => {
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", String(x1));
+            line.setAttribute("y1", String(y1));
+            line.setAttribute("x2", String(x2));
+            line.setAttribute("y2", String(y2));
+            line.setAttribute("stroke", "#000");
+            line.setAttribute("stroke-width", "2");
+            line.setAttribute("stroke-linecap", "round");
+            svg.appendChild(line);
+        };
+
+        const draw = () => {
+            const rounds = Array.from(container.querySelectorAll(":scope > .round"));
+            if (rounds.length < 2) return;
+
+            const base = container.getBoundingClientRect();
+            svg.setAttribute("viewBox", `0 0 ${base.width} ${base.height}`);
+            clearSvg();
+
+            // Collect matches per round
+            const matchesPerRound = rounds.map(r => Array.from(r.querySelectorAll(":scope > .match-pair")));
+            // Determine spacing from CSS variables (match height + gap)
+            const css = getComputedStyle(document.documentElement);
+            const mh = parseFloat(css.getPropertyValue("--match-height")) || 90;
+            const gap = parseFloat(css.getPropertyValue("--match-gap")) || 18;
+            const spacing = mh + gap;
+
+            // Pure math: top position by round r and index i for perfect pyramid
+            const topOf = (r, i) => {
+                const pow = 2 ** r;
+                return ((pow * i) + ((pow - 1) / 2)) * spacing;
+            };
+            const centerOf = (r, i) => topOf(r, i) + mh / 2;
+
+            // Round Y offsets in container coords
+            const roundY = rounds.map(rd => toLocalPoint(rd.getBoundingClientRect()).y);
+
+            // Position all rounds absolutely using computed tops
+            for (let r = 0; r < rounds.length; r++) {
+                const roundEl = rounds[r];
+                roundEl.setAttribute("data-auto", "true");
+                const roundRect = toLocalPoint(roundEl.getBoundingClientRect());
+                const ms = matchesPerRound[r];
+                let minTopRel = Infinity;
+                let maxBottomRel = -Infinity;
+                for (let i = 0; i < ms.length; i++) {
+                    const target = ms[i];
+                    const tRect = toLocalPoint(target.getBoundingClientRect());
+                    const topRel = topOf(r, i);
+                    target.style.position = "absolute";
+                    target.style.top = `${topRel}px`;
+                    minTopRel = Math.min(minTopRel, topRel);
+                    maxBottomRel = Math.max(maxBottomRel, topRel + tRect.h);
+                }
+                if (isFinite(minTopRel) && isFinite(maxBottomRel)) {
+                    roundEl.style.minHeight = `${Math.max((maxBottomRel - minTopRel), 0)}px`;
+                }
+            }
+
+            // Draw connectors between rounds using centers
+            for (let r = 0; r < rounds.length - 1; r++) {
+                const sources = matchesPerRound[r];
+                const targets = matchesPerRound[r + 1];
+                for (let i = 0; i < targets.length; i++) {
+                    const idxA = 2 * i;
+                    const idxB = 2 * i + 1;
+                    const a = sources[idxA];
+                    const b = sources[idxB];
+                    const t = targets[i];
+                    if (!a || !t) continue;
+                    const aRect = toLocalPoint(a.getBoundingClientRect());
+                    const tRect = toLocalPoint(t.getBoundingClientRect());
+                    const ax = aRect.x + aRect.w;
+                    const tx = tRect.x;
+                    const ay = roundY[r] + centerOf(r, idxA);
+                    if (!b) {
+                        const forkX = ax + (tx - ax) * 0.45;
+                        addLine(ax, ay, forkX, ay);
+                        addLine(forkX, ay, tx, ay);
+                        addLine(tx, ay, tx, roundY[r + 1] + centerOf(r + 1, i));
+                    } else {
+                        const bRect = toLocalPoint(b.getBoundingClientRect());
+                        const bx = bRect.x + bRect.w;
+                        const by = roundY[r] + centerOf(r, idxB);
+                        const yTop = Math.min(ay, by);
+                        const yBottom = Math.max(ay, by);
+                        const yMid = (ay + by) / 2;
+                        const forkX = Math.min(ax, bx) + (tx - Math.min(ax, bx)) * 0.45;
+                        addLine(ax, ay, forkX, ay);
+                        addLine(bx, by, forkX, by);
+                        addLine(forkX, yTop, forkX, yBottom);
+                        addLine(forkX, yMid, tx, yMid);
+                        addLine(tx, yMid, tx, roundY[r + 1] + centerOf(r + 1, i));
+                    }
+                }
+            }
+        };
+
+        const schedule = () => window.requestAnimationFrame(draw);
+        window.addEventListener("resize", schedule);
+        window.addEventListener("load", schedule);
+        schedule();
+    })();
+</script>
 </body>
 </html>
