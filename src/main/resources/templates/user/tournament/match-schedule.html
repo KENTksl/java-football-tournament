@@ -39,12 +39,17 @@
                 Quay lại danh sách
             </a>
             <button type="button"
-                    th:if="${tournament != null and tournament.status != null and tournament.status.name() == 'UPCOMING' and !tournamentIsFull}"
+                    th:if="${tournament != null and tournament.status != null and tournament.status.name() == 'UPCOMING' and !tournamentIsFull and currentUserEmail != null and !#strings.isEmpty(currentUserEmail)}"
                     class="register-btn"
                     data-open-signup-modal
                     th:attr="data-signup-url=@{/user/tournament/sign-up(id=${tournament.id},embedded=true)}">
                 Đăng kí giải đấu
             </button>
+            <a th:if="${tournament != null and tournament.status != null and tournament.status.name() == 'UPCOMING' and !tournamentIsFull and (currentUserEmail == null or #strings.isEmpty(currentUserEmail))}"
+               class="register-btn"
+               th:href="@{/dang-nhap(redirect=${'/user/tournament/sign-up?id=' + tournament.id + '&embedded=true'})}">
+                Đăng nhập để đăng ký
+            </a>
             <span th:if="${tournament != null and tournament.status != null and tournament.status.name() == 'UPCOMING' and tournamentIsFull}" class="register-btn" style="background:#6b7280;">Giải đã đủ đội</span>
         </div>
 

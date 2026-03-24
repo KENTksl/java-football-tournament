@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -46,6 +47,10 @@ public class UserTournamentController {
 			Authentication authentication,
 			Model model
 	) {
+		if (!isAuthenticated(authentication)) {
+			String redirect = "/user/tournament/sign-up?id=" + (id == null ? "" : id) + (embedded ? "&embedded=true" : "");
+			return "redirect:/dang-nhap?redirect=" + redirect;
+		}
 		attachTournament(model, id);
 		model.addAttribute("signUpTeams", userTournamentViewService.listSignUpTeamOptions(authentication));
 		model.addAttribute("signUpTeamPrefills", userTournamentViewService.listSignUpTeamPrefills(authentication));
@@ -57,11 +62,18 @@ public class UserTournamentController {
 	public String signUpSubmit(
 			@RequestParam(value = "tournamentId", required = false) Long tournamentId,
 			@RequestParam(value = "teamId", required = false) Long teamId,
+			@RequestParam(value = "teamName", required = false) String teamName,
+			@RequestParam(value = "logoFile", required = false) MultipartFile logoFile,
 			@RequestParam(value = "embedded", required = false, defaultValue = "false") boolean embedded,
 			Authentication authentication,
 			RedirectAttributes redirectAttributes
 	) {
-		var result = userTournamentViewService.submitRegistration(authentication, tournamentId, teamId);
+		if (!isAuthenticated(authentication)) {
+			String redirect = "/user/tournament/sign-up?id=" + (tournamentId == null ? "" : tournamentId) + (embedded ? "&embedded=true" : "");
+			return "redirect:/dang-nhap?redirect=" + redirect;
+		}
+
+		var result = userTournamentViewService.submitRegistration(authentication, tournamentId, teamId, teamName, logoFile);
 		redirectAttributes.addFlashAttribute("registrationMessage", result.message());
 		redirectAttributes.addFlashAttribute("registrationSuccess", result.success());
 		if (embedded) {
@@ -70,10 +82,23 @@ public class UserTournamentController {
 		return "redirect:/user/tournament/sign-up?id=" + (tournamentId == null ? "" : tournamentId);
 	}
 
+	private boolean isAuthenticated(Authentication authentication) {
+		return authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getName());
+	}
+
 	@GetMapping("/sign-up/prefill")
 	@ResponseBody
 	public UserTournamentViewService.TeamPrefillResponse signUpPrefill(Authentication authentication) {
 		return userTournamentViewService.buildTeamPrefill(authentication);
+	}
+
+	@GetMapping("/sign-up/team-prefill")
+	@ResponseBody
+	public UserTournamentViewService.TeamPrefillResponse signUpTeamPrefill(
+			@RequestParam(value = "teamId", required = false) Long teamId,
+			Authentication authentication
+	) {
+		return userTournamentViewService.buildTeamPrefillForTeam(authentication, teamId);
 	}
 
 	@GetMapping("/match-lineup")

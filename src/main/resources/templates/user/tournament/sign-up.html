@@ -73,19 +73,7 @@
                     </div>
 
                     <div id="playerList" class="player-list-container">
-                        <div class="empty-state">Chưa có thành viên nào được thêm.</div>
-                    </div>
-
-                    <div class="add-player-card" id="addPlayerBox">
-                        <div class="mini-input-row">
-                            <input type="text" id="newName" placeholder="Tên cầu thủ">
-                            <input type="number" id="newNumber" placeholder="Số áo" min="1" max="99">
-                        </div>
-                        <div class="mini-action-row">
-                            <label for="newImg" class="btn-avatar-label">Ảnh chân dung</label>
-                            <input type="file" id="newImg" hidden accept="image/*">
-                            <button type="button" class="btn-add-player" onclick="addPlayer()">THÊM</button>
-                        </div>
+                        <div class="empty-state">Bạn có thể cập nhật danh sách thành viên ở trang Thông tin đội sau khi gửi hồ sơ.</div>
                     </div>
                 </section>
             </div>
@@ -114,7 +102,6 @@
     const contactEmailInput = document.getElementById('contactEmailInput');
     const contactPhoneInput = document.getElementById('contactPhoneInput');
     const teamDescriptionInput = document.getElementById('teamDescriptionInput');
-    const addPlayerBox = document.getElementById('addPlayerBox');
     const MAX_PLAYERS = 10;
     let usingExistingTeam = false;
 
@@ -135,7 +122,7 @@
         }
     });
 
-    function createPlayerItem(name, number, avatarUrl, removable) {
+    function createPlayerItem(name, number, avatarUrl) {
         const playerItem = document.createElement('div');
         playerItem.className = 'player-item';
         const imageSrc = avatarUrl || '/img/figma-avatar.png';
@@ -147,15 +134,8 @@
                 <b>${name || 'Chưa có tên'}</b><br>
                 <small>Số áo: ${jerseyText}</small>
             </div>
-            ${removable ? '<button type="button" class="remove-btn" onclick="removePlayer(this)">Xóa</button>' : ''}
         `;
         return playerItem;
-    }
-
-    function isJerseyNumberUsed(number) {
-        const jersey = String(number).trim();
-        return Array.from(playerList.querySelectorAll('.player-item'))
-            .some(item => (item.dataset.jerseyNumber || '').trim() === jersey);
     }
 
     function setExistingTeamMode(enabled) {
@@ -168,65 +148,9 @@
         updatePlayerCount();
     }
 
-    function addPlayer() {
-        const name = document.getElementById('newName').value.trim();
-        const number = document.getElementById('newNumber').value.trim();
-        const jerseyNumber = Number(number);
-        const imageFile = document.getElementById('newImg').files[0];
-        const playerCount = playerList.querySelectorAll('.player-item').length;
-
-        if (playerCount >= MAX_PLAYERS) {
-            alert("Đã đạt giới hạn 10 cầu thủ!");
-            return;
-        }
-        if (!name || !number) {
-            alert("Vui lòng nhập tên và số áo!");
-            return;
-        }
-        if (!Number.isInteger(jerseyNumber) || jerseyNumber < 1 || jerseyNumber > 99) {
-            alert("Số áo phải là số nguyên từ 1 đến 99!");
-            return;
-        }
-        if (isJerseyNumberUsed(jerseyNumber)) {
-            alert("Số áo này đã được sử dụng, vui lòng chọn số khác!");
-            return;
-        }
-
-        const emptyState = playerList.querySelector('.empty-state');
-        if (emptyState) emptyState.remove();
-
-        if (!imageFile) {
-            playerList.appendChild(createPlayerItem(name, jerseyNumber, null, true));
-            updatePlayerCount();
-            document.getElementById('newName').value = '';
-            document.getElementById('newNumber').value = '';
-            document.getElementById('newImg').value = '';
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            playerList.appendChild(createPlayerItem(name, jerseyNumber, event.target.result, true));
-            updatePlayerCount();
-            document.getElementById('newName').value = '';
-            document.getElementById('newNumber').value = '';
-            document.getElementById('newImg').value = '';
-        };
-        reader.readAsDataURL(imageFile);
-    }
-
-    function removePlayer(btn) {
-        btn.closest('.player-item').remove();
-        if (playerList.querySelectorAll('.player-item').length === 0) {
-            playerList.innerHTML = '<div class="empty-state">Chưa có thành viên nào được thêm.</div>';
-        }
-        updatePlayerCount();
-    }
-
     function updatePlayerCount() {
         const count = playerList.querySelectorAll('.player-item').length;
         playerCountLabel.textContent = `${count}/${MAX_PLAYERS}`;
-        addPlayerBox.style.display = count >= MAX_PLAYERS ? 'none' : 'block';
     }
 
     const useBtn = document.getElementById('useExistingTeamBtn');
@@ -266,8 +190,11 @@
         if (playerDataRoot) {
             const players = playerDataRoot.querySelectorAll('.player-data');
             players.forEach(p => {
-                playerList.appendChild(createPlayerItem(p.dataset.name, p.dataset.number, p.dataset.avatar, true));
+                playerList.appendChild(createPlayerItem(p.dataset.name, p.dataset.number, p.dataset.avatar));
             });
+        }
+        if (playerList.querySelectorAll('.player-item').length === 0) {
+            playerList.innerHTML = '<div class="empty-state">Đội hiện tại chưa có thành viên được cập nhật.</div>';
         }
         updatePlayerCount();
     });

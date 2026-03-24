@@ -2,6 +2,7 @@ package com.example.football_tourament_web.service.user;
 
 import com.example.football_tourament_web.model.entity.Match;
 import com.example.football_tourament_web.model.entity.MatchEvent;
+import com.example.football_tourament_web.model.entity.Team;
 import com.example.football_tourament_web.model.entity.Tournament;
 import com.example.football_tourament_web.model.entity.TournamentRegistration;
 import com.example.football_tourament_web.model.enums.MatchStatus;
@@ -11,6 +12,7 @@ import com.example.football_tourament_web.model.enums.TeamSide;
 import com.example.football_tourament_web.model.enums.TournamentMode;
 import com.example.football_tourament_web.repository.MatchEventRepository;
 import com.example.football_tourament_web.repository.PlayerRepository;
+import com.example.football_tourament_web.service.common.FileStorageService;
 import com.example.football_tourament_web.service.core.MatchLineupService;
 import com.example.football_tourament_web.service.core.MatchService;
 import com.example.football_tourament_web.service.core.TeamService;
@@ -20,6 +22,7 @@ import com.example.football_tourament_web.service.core.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -39,6 +42,7 @@ public class UserTournamentViewService {
 	private final TeamService teamService;
 	private final UserService userService;
 	private final PlayerRepository playerRepository;
+	private final FileStorageService fileStorageService;
 
 	private final MatchEventRepository matchEventRepository;
 
@@ -50,7 +54,8 @@ public class UserTournamentViewService {
 			TeamService teamService,
 			UserService userService,
 			PlayerRepository playerRepository,
-			MatchEventRepository matchEventRepository
+			MatchEventRepository matchEventRepository,
+			FileStorageService fileStorageService
 	) {
 		this.tournamentService = tournamentService;
 		this.tournamentRegistrationService = tournamentRegistrationService;
@@ -60,6 +65,7 @@ public class UserTournamentViewService {
 		this.userService = userService;
 		this.playerRepository = playerRepository;
 		this.matchEventRepository = matchEventRepository;
+		this.fileStorageService = fileStorageService;
 	}
 
 	@Transactional(readOnly = true)
@@ -146,6 +152,36 @@ public class UserTournamentViewService {
 	}
 
 	@Transactional(readOnly = true)
+	public TeamPrefillResponse buildTeamPrefillForTeam(Authentication authentication, Long teamId) {
+		var user = requireCurrentUser(authentication);
+		if (user == null) {
+			return TeamPrefillResponse.notFound("Vui lòng đăng nhập để dùng dữ liệu đội");
+		}
+		if (teamId == null) {
+			return TeamPrefillResponse.notFound("Thiếu teamId");
+		}
+
+		Team team = teamService.findByIdWithCaptain(teamId).orElse(null);
+		if (team == null || team.getCaptain() == null || team.getCaptain().getId() == null || !team.getCaptain().getId().equals(user.getId())) {
+			return TeamPrefillResponse.notFound("Bạn không có quyền xem đội này");
+		}
+
+		var players = playerRepository.findByTeamIdOrderByJerseyNumberAsc(team.getId()).stream()
+				.map(player -> new PlayerPrefill(player.getFullName(), player.getJerseyNumber(), player.getAvatarUrl()))
+				.toList();
+
+		return TeamPrefillResponse.found(
+				team.getId(),
+				team.getName(),
+				team.getCaptain() != null ? team.getCaptain().getFullName() : user.getFullName(),
+				team.getCaptain() != null ? team.getCaptain().getEmail() : user.getEmail(),
+				team.getCaptain() != null ? team.getCaptain().getPhone() : user.getPhone(),
+				team.getLogoUrl(),
+				players
+		);
+	}
+
+	@Transactional(readOnly = true)
 	public List<SignUpTeamOption> listSignUpTeamOptions(Authentication authentication) {
 		var user = requireCurrentUser(authentication);
 		if (user == null) {
@@ -188,7 +224,13 @@ public class UserTournamentViewService {
 	}
 
 	@Transactional
-	public RegistrationSubmitResult submitRegistration(Authentication authentication, Long tournamentId, Long teamId) {
+	public RegistrationSubmitResult submitRegistration(
+			Authentication authentication,
+			Long tournamentId,
+			Long teamId,
+			String teamName,
+			MultipartFile logoFile
+	) {
 		var user = requireCurrentUser(authentication);
 		if (user == null) {
 			return RegistrationSubmitResult.failed("Vui lòng đăng nhập để đăng ký");
@@ -196,21 +238,54 @@ public class UserTournamentViewService {
 		if (tournamentId == null) {
 			return RegistrationSubmitResult.failed("Thiếu thông tin giải đấu");
 		}
-		if (teamId == null) {
-			return RegistrationSubmitResult.failed("Vui lòng chọn đội bóng để đăng ký");
-		}
 
 		Tournament tournament = tournamentService.findById(tournamentId).orElse(null);
 		if (tournament == null) {
 			return RegistrationSubmitResult.failed("Không tìm thấy giải đấu");
 		}
-		var teamOpt = teamService.findById(teamId);
-		if (teamOpt.isEmpty()) {
-			return RegistrationSubmitResult.failed("Không tìm thấy đội bóng");
-		}
-		var team = teamOpt.get();
-		if (team.getCaptain() == null || team.getCaptain().getId() == null || !team.getCaptain().getId().equals(user.getId())) {
-			return RegistrationSubmitResult.failed("Bạn không có quyền đăng ký đội bóng này");
+
+		Team team;
+		if (teamId != null) {
+			var teamOpt = teamService.findById(teamId);
+			if (teamOpt.isEmpty()) {
+				return RegistrationSubmitResult.failed("Không tìm thấy đội bóng");
+			}
+			team = teamOpt.get();
+			if (team.getCaptain() == null || team.getCaptain().getId() == null || !team.getCaptain().getId().equals(user.getId())) {
+				return RegistrationSubmitResult.failed("Bạn không có quyền đăng ký đội bóng này");
+			}
+		} else {
+			String name = teamName == null ? "" : teamName.trim();
+			if (name.isBlank()) {
+				return RegistrationSubmitResult.failed("Vui lòng nhập tên đội bóng");
+			}
+
+			if (teamService.findByName(name).isPresent()) {
+				return RegistrationSubmitResult.failed("Đã có đội với tên này, vui lòng đặt tên khác");
+			}
+
+			if (teamService.countByCaptain(user.getId()) >= 2) {
+				return RegistrationSubmitResult.failed("Bạn đã đạt giới hạn số đội có thể tạo");
+			}
+
+			String logoUrl = null;
+			try {
+				if (logoFile != null && !logoFile.isEmpty()) {
+					logoUrl = fileStorageService.storeValidatedImageUnderUploads(logoFile, "teams", 2L * 1024 * 1024);
+				}
+			} catch (FileStorageService.FileTooLargeException ex) {
+				return RegistrationSubmitResult.failed("Logo quá lớn (tối đa 2MB)");
+			} catch (FileStorageService.InvalidFileTypeException ex) {
+				return RegistrationSubmitResult.failed("Logo không đúng định dạng (jpg/png/webp)");
+			} catch (Exception ex) {
+				return RegistrationSubmitResult.failed("Không thể tải logo lên");
+			}
+
+			Team newTeam = new Team(name);
+			newTeam.setCaptain(user);
+			newTeam.setLogoUrl(logoUrl);
+			team = teamService.save(newTeam);
+			teamId = team.getId();
 		}
 
 		var existing = tournamentRegistrationService.findByTournamentAndTeam(tournamentId, teamId).orElse(null);
