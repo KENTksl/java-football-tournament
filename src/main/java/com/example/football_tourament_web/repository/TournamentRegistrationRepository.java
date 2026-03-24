@@ -43,8 +43,6 @@ public interface TournamentRegistrationRepository extends JpaRepository<Tourname
 			@Param("status") RegistrationStatus status
 	);
 
-<<<<<<< Updated upstream
-=======
 	@Query("""
 			select r
 			from TournamentRegistration r
@@ -58,7 +56,6 @@ public interface TournamentRegistrationRepository extends JpaRepository<Tourname
 			@Param("status") RegistrationStatus status
 	);
 
->>>>>>> Stashed changes
 	List<TournamentRegistration> findByRegisteredByIdOrderByCreatedAtDesc(Long userId);
 
 	Optional<TournamentRegistration> findByTournamentIdAndTeamId(Long tournamentId, Long teamId);
