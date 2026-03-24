@@ -4,6 +4,7 @@ import com.example.football_tourament_web.service.admin.AdminTournamentManagemen
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -53,6 +54,12 @@ public class AdminTournamentManagementController {
 		return "admin/manage/edit-tournament";
 	}
 
+	@GetMapping("/admin/manage/tournament/edit/{id}")
+	public String editTournamentPageByPath(@PathVariable("id") Long id, Model model) {
+		model.addAttribute("tournament", adminTournamentManagementService.findById(id));
+		return "admin/manage/edit-tournament";
+	}
+
 	@PostMapping("/admin/manage/tournament/edit")
 	public String editTournament(
 			@RequestParam("id") Long id,
@@ -70,8 +77,31 @@ public class AdminTournamentManagementController {
 		return "redirect:/admin/manage/tournament";
 	}
 
+	@PostMapping("/admin/manage/tournament/edit/{id}")
+	public String editTournamentByPath(
+			@PathVariable("id") Long id,
+			@RequestParam("name") String name,
+			@RequestParam("organizer") String organizer,
+			@RequestParam("mode") String mode,
+			@RequestParam("pitchType") String pitchType,
+			@RequestParam("teams") String teams,
+			@RequestParam("startDate") String startDate,
+			@RequestParam("endDate") String endDate,
+			@RequestParam(value = "description", required = false) String description,
+			@RequestParam(value = "image", required = false) MultipartFile image
+	) {
+		adminTournamentManagementService.editTournament(id, name, organizer, mode, pitchType, teams, startDate, endDate, description, image);
+		return "redirect:/admin/manage/tournament";
+	}
+
 	@PostMapping("/admin/manage/tournament/delete")
 	public String deleteTournament(@RequestParam("id") Long id) {
+		adminTournamentManagementService.deleteTournament(id);
+		return "redirect:/admin/manage/tournament";
+	}
+
+	@PostMapping("/admin/manage/tournament/delete/{id}")
+	public String deleteTournamentByPath(@PathVariable("id") Long id) {
 		adminTournamentManagementService.deleteTournament(id);
 		return "redirect:/admin/manage/tournament";
 	}

@@ -167,7 +167,7 @@
                             <tr th:each="m : ${groupMatches['A']}">
                                 <td th:text="${m.scheduledAt != null ? #temporals.format(m.scheduledAt, 'yyyy-MM-dd HH:mm') : 'Chưa xếp lịch'}">2026-01-01 20:00</td>
                                 <td th:text="${m.homeTeamName}">Đội 1</td>
-                                <td class="text-center fw-bold" th:text="${(m.homeScore != null and m.awayScore != null) ? (m.homeScore + ' : ' + m.awayScore) : ''}"></td>
+                                <td class="text-center fw-bold" th:text="${m.scoreLabel()}"></td>
                                 <td th:text="${m.awayTeamName}">Đội 2</td>
                                 <td th:text="${m.statusLabel}">Sắp diễn ra</td>
                                 <td class="text-center">
@@ -196,7 +196,7 @@
                             <tbody>
                             <tr th:if="${groupMatches == null or groupMatches['B'] == null or #lists.isEmpty(groupMatches['B'])}"><td colspan="6" class="text-center">Chưa có lịch thi đấu bảng B</td></tr>
                             <tr th:each="m : ${groupMatches['B']}">
-                                <td th:text="${m.scheduledAt != null ? #temporals.format(m.scheduledAt, 'yyyy-MM-dd HH:mm') : 'Chưa xếp lịch'}"></td><td th:text="${m.homeTeamName}"></td><td class="text-center fw-bold" th:text="${(m.homeScore != null and m.awayScore != null) ? (m.homeScore + ' : ' + m.awayScore) : ''}"></td><td th:text="${m.awayTeamName}"></td><td th:text="${m.statusLabel}"></td><td class="text-center"><button type="button" class="view-btn" data-open-match-modal th:attr="data-lineup-url=@{/user/tournament/match-lineup(tournamentId=${tournament != null ? tournament.id : null},matchId=${m.id})}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg></button></td>
+                                <td th:text="${m.scheduledAt != null ? #temporals.format(m.scheduledAt, 'yyyy-MM-dd HH:mm') : 'Chưa xếp lịch'}"></td><td th:text="${m.homeTeamName}"></td><td class="text-center fw-bold" th:text="${m.scoreLabel()}"></td><td th:text="${m.awayTeamName}"></td><td th:text="${m.statusLabel}"></td><td class="text-center"><button type="button" class="view-btn" data-open-match-modal th:attr="data-lineup-url=@{/user/tournament/match-lineup(tournamentId=${tournament != null ? tournament.id : null},matchId=${m.id})}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg></button></td>
                             </tr>
                             </tbody>
                         </table>
@@ -218,7 +218,7 @@
                             <tbody>
                             <tr th:if="${groupMatches == null or groupMatches['C'] == null or #lists.isEmpty(groupMatches['C'])}"><td colspan="6" class="text-center">Chưa có lịch thi đấu bảng C</td></tr>
                             <tr th:each="m : ${groupMatches['C']}">
-                                <td th:text="${m.scheduledAt != null ? #temporals.format(m.scheduledAt, 'yyyy-MM-dd HH:mm') : 'Chưa xếp lịch'}"></td><td th:text="${m.homeTeamName}"></td><td class="text-center fw-bold" th:text="${(m.homeScore != null and m.awayScore != null) ? (m.homeScore + ' : ' + m.awayScore) : ''}"></td><td th:text="${m.awayTeamName}"></td><td th:text="${m.statusLabel}"></td><td class="text-center"><button type="button" class="view-btn" data-open-match-modal th:attr="data-lineup-url=@{/user/tournament/match-lineup(tournamentId=${tournament != null ? tournament.id : null},matchId=${m.id})}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg></button></td>
+                                <td th:text="${m.scheduledAt != null ? #temporals.format(m.scheduledAt, 'yyyy-MM-dd HH:mm') : 'Chưa xếp lịch'}"></td><td th:text="${m.homeTeamName}"></td><td class="text-center fw-bold" th:text="${m.scoreLabel()}"></td><td th:text="${m.awayTeamName}"></td><td th:text="${m.statusLabel}"></td><td class="text-center"><button type="button" class="view-btn" data-open-match-modal th:attr="data-lineup-url=@{/user/tournament/match-lineup(tournamentId=${tournament != null ? tournament.id : null},matchId=${m.id})}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg></button></td>
                             </tr>
                             </tbody>
                         </table>
@@ -240,7 +240,7 @@
                             <tbody>
                             <tr th:if="${groupMatches == null or groupMatches['D'] == null or #lists.isEmpty(groupMatches['D'])}"><td colspan="6" class="text-center">Chưa có lịch thi đấu bảng D</td></tr>
                             <tr th:each="m : ${groupMatches['D']}">
-                                <td th:text="${m.scheduledAt != null ? #temporals.format(m.scheduledAt, 'yyyy-MM-dd HH:mm') : 'Chưa xếp lịch'}"></td><td th:text="${m.homeTeamName}"></td><td class="text-center fw-bold" th:text="${(m.homeScore != null and m.awayScore != null) ? (m.homeScore + ' : ' + m.awayScore) : ''}"></td><td th:text="${m.awayTeamName}"></td><td th:text="${m.statusLabel}"></td><td class="text-center"><button type="button" class="view-btn" data-open-match-modal th:attr="data-lineup-url=@{/user/tournament/match-lineup(tournamentId=${tournament != null ? tournament.id : null},matchId=${m.id})}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg></button></td>
+                                <td th:text="${m.scheduledAt != null ? #temporals.format(m.scheduledAt, 'yyyy-MM-dd HH:mm') : 'Chưa xếp lịch'}"></td><td th:text="${m.homeTeamName}"></td><td class="text-center fw-bold" th:text="${m.scoreLabel()}"></td><td th:text="${m.awayTeamName}"></td><td th:text="${m.statusLabel}"></td><td class="text-center"><button type="button" class="view-btn" data-open-match-modal th:attr="data-lineup-url=@{/user/tournament/match-lineup(tournamentId=${tournament != null ? tournament.id : null},matchId=${m.id})}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg></button></td>
                             </tr>
                             </tbody>
                         </table>
@@ -268,7 +268,7 @@
                                 <td th:text="${m.roundName != null ? m.roundName : 'Vòng'}">Tứ kết</td>
                                 <td th:text="${m.scheduledAt != null ? #temporals.format(m.scheduledAt, 'yyyy-MM-dd HH:mm') : 'Chưa xếp lịch'}">2026-01-01 20:00</td>
                                 <td th:text="${m.homeTeamName}">Đội 1</td>
-                                <td class="text-center fw-bold" th:text="${(m.homeScore != null and m.awayScore != null) ? (m.homeScore + ' : ' + m.awayScore) : ''}"></td>
+                                <td class="text-center fw-bold" th:text="${m.scoreLabel()}"></td>
                                 <td th:text="${m.awayTeamName}">Đội 2</td>
                                 <td th:text="${m.statusLabel}">Sắp diễn ra</td>
                                 <td class="text-center"><button type="button" class="view-btn" data-open-match-modal th:attr="data-lineup-url=@{/user/tournament/match-lineup(tournamentId=${tournament != null ? tournament.id : null},matchId=${m.id})}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg></button></td>
@@ -299,7 +299,7 @@
                             <td th:text="${m.roundName != null ? m.roundName : 'Vòng'}">Bán kết</td>
                             <td th:text="${m.scheduledAt != null ? #temporals.format(m.scheduledAt, 'yyyy-MM-dd HH:mm') : 'Chưa xếp lịch'}">2026-01-01 20:00</td>
                             <td th:text="${m.homeTeamName}">Đội 1</td>
-                            <td class="text-center fw-bold" th:text="${(m.homeScore != null and m.awayScore != null) ? (m.homeScore + ' : ' + m.awayScore) : ''}"></td>
+                            <td class="text-center fw-bold" th:text="${m.scoreLabel()}"></td>
                             <td th:text="${m.awayTeamName}">Đội 2</td>
                             <td th:text="${m.statusLabel}">Sắp diễn ra</td>
                             <td class="text-center"><button type="button" class="view-btn" data-open-match-modal th:attr="data-lineup-url=@{/user/tournament/match-lineup(tournamentId=${tournament != null ? tournament.id : null},matchId=${m.id})}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg></button></td>

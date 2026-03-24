@@ -824,6 +824,8 @@ public class UserTournamentViewService {
 				match.getAwayTeam() == null ? "—" : match.getAwayTeam().getName(),
 				match.getHomeScore(),
 				match.getAwayScore(),
+				match.getHomePenalty(),
+				match.getAwayPenalty(),
 				displayMatchStatus(match.getStatus())
 		);
 	}
@@ -1021,8 +1023,59 @@ public class UserTournamentViewService {
 			String awayTeamName,
 			Integer homeScore,
 			Integer awayScore,
+			Integer homePenalty,
+			Integer awayPenalty,
 			String statusLabel
 	) {
+		public String homeDisplayScore() {
+			if (homeScore == null) return "-";
+			if (awayScore != null && homeScore.equals(awayScore) && homePenalty != null && awayPenalty != null) {
+				return homeScore + " (" + homePenalty + ")";
+			}
+			return String.valueOf(homeScore);
+		}
+
+		public String awayDisplayScore() {
+			if (awayScore == null) return "-";
+			if (homeScore != null && homeScore.equals(awayScore) && homePenalty != null && awayPenalty != null) {
+				return awayScore + " (" + awayPenalty + ")";
+			}
+			return String.valueOf(awayScore);
+		}
+
+		public String scoreLabel() {
+			if (homeScore == null || awayScore == null) return "";
+			if (homeScore.equals(awayScore) && homePenalty != null && awayPenalty != null) {
+				return homeScore + " : " + awayScore + " (P: " + homePenalty + " - " + awayPenalty + ")";
+			}
+			return homeScore + " : " + awayScore;
+		}
+
+		public boolean decidedByPenalties() {
+			return homeScore != null && awayScore != null
+					&& homeScore.equals(awayScore)
+					&& homePenalty != null && awayPenalty != null;
+		}
+
+		public boolean homeWinner() {
+			if (homeScore == null || awayScore == null) return false;
+			if (homeScore > awayScore) return true;
+			if (awayScore > homeScore) return false;
+			if (homePenalty != null && awayPenalty != null) {
+				return homePenalty > awayPenalty;
+			}
+			return false;
+		}
+
+		public boolean awayWinner() {
+			if (homeScore == null || awayScore == null) return false;
+			if (awayScore > homeScore) return true;
+			if (homeScore > awayScore) return false;
+			if (homePenalty != null && awayPenalty != null) {
+				return awayPenalty > homePenalty;
+			}
+			return false;
+		}
 	}
 
 	public record ScheduleView(

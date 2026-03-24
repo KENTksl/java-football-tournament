@@ -20,6 +20,7 @@ import com.example.football_tourament_web.service.core.MatchService;
 import com.example.football_tourament_web.service.core.TournamentRegistrationService;
 import com.example.football_tourament_web.service.core.TournamentService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -268,7 +269,7 @@ public class AdminMatchHistoryService {
 		if (tournamentId == null) return "redirect:/admin/manage/tournament";
 		if (matchId == null) return "redirect:/admin/match-history?id=" + tournamentId;
 
-		Match match = matchService.findById(matchId).orElse(null);
+		Match match = matchService.findByIdWithDetails(matchId).orElse(null);
 		if (match == null || match.getTournament() == null || match.getTournament().getId() == null
 				|| !tournamentId.equals(match.getTournament().getId())) {
 			return "redirect:/admin/match-history?id=" + tournamentId;
@@ -306,18 +307,35 @@ public class AdminMatchHistoryService {
 		return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=schedule";
 	}
 
-	public String saveScore(Long tournamentId, Long matchId, Integer homeScore, Integer awayScore, int page, int size) {
+	@Transactional
+	public String saveScore(Long tournamentId, Long matchId, Integer homeScore, Integer awayScore, Integer homePen, Integer awayPen, int page, int size) {
 		if (tournamentId == null) return "redirect:/admin/manage/tournament";
 		if (matchId == null) return "redirect:/admin/match-history?id=" + tournamentId;
 
-		Match match = matchService.findById(matchId).orElse(null);
+		Match match = matchService.findByIdWithDetails(matchId).orElse(null);
 		if (match == null || match.getTournament() == null || match.getTournament().getId() == null
 				|| !tournamentId.equals(match.getTournament().getId())) {
 			return "redirect:/admin/match-history?id=" + tournamentId;
 		}
 
+		boolean isKnockout = match.getTournament() != null && match.getTournament().getMode() != TournamentMode.GROUP_STAGE;
+		boolean isGroupRound = match.getRoundName() != null && match.getRoundName().trim().toLowerCase().startsWith("bảng");
+
+		if (isKnockout && !isGroupRound && homeScore != null && awayScore != null && homeScore.equals(awayScore)) {
+			if (homePen != null && awayPen != null && homePen.equals(awayPen)) {
+				return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=pen_invalid";
+			}
+		}
+
 		match.setHomeScore(homeScore);
 		match.setAwayScore(awayScore);
+		if (homeScore != null && awayScore != null && !homeScore.equals(awayScore)) {
+			match.setHomePenalty(null);
+			match.setAwayPenalty(null);
+		} else {
+			match.setHomePenalty(homePen);
+			match.setAwayPenalty(awayPen);
+		}
 		matchService.save(match);
 
 		return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=score";
@@ -401,6 +419,7 @@ public class AdminMatchHistoryService {
 		return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=timeline&page=" + page + "&size=" + size + "&saved=event";
 	}
 
+	@Transactional
 	public String syncScoreFromEvents(Long tournamentId, Long matchId, int page, int size) {
 		if (tournamentId == null) return "redirect:/admin/manage/tournament";
 		if (matchId == null) return "redirect:/admin/match-history?id=" + tournamentId;
@@ -424,6 +443,7 @@ public class AdminMatchHistoryService {
 		return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=score";
 	}
 
+	@Transactional
 	public String finishMatch(Long tournamentId, Long matchId, int page, int size) {
 		if (tournamentId == null) return "redirect:/admin/manage/tournament";
 		if (matchId == null) return "redirect:/admin/match-history?id=" + tournamentId;
@@ -436,6 +456,18 @@ public class AdminMatchHistoryService {
 
 		if (match.getHomeScore() == null || match.getAwayScore() == null) {
 			return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=score_required";
+		}
+
+		// Knockout tie requires penalty and cannot be equal
+		boolean isKnockout = match.getTournament() != null && match.getTournament().getMode() != TournamentMode.GROUP_STAGE;
+		boolean isGroupRound = match.getRoundName() != null && match.getRoundName().trim().toLowerCase().startsWith("bảng");
+		if (isKnockout && !isGroupRound && match.getHomeScore().equals(match.getAwayScore())) {
+			if (match.getHomePenalty() == null || match.getAwayPenalty() == null) {
+				return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=pen_required";
+			}
+			if (match.getHomePenalty().equals(match.getAwayPenalty())) {
+				return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=pen_invalid";
+			}
 		}
 
 		match.setStatus(MatchStatus.FINISHED);

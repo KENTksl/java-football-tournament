@@ -343,7 +343,13 @@ public class MatchService {
 		Integer homeScore = match.getHomeScore();
 		Integer awayScore = match.getAwayScore();
 		if (homeScore == null || awayScore == null) return null;
-		if (homeScore.equals(awayScore)) return null;
+		if (homeScore.equals(awayScore)) {
+			Integer hp = match.getHomePenalty();
+			Integer ap = match.getAwayPenalty();
+			if (hp == null || ap == null) return null;
+			if (hp.equals(ap)) return null;
+			return hp > ap ? match.getHomeTeam() : match.getAwayTeam();
+		}
 		return homeScore > awayScore ? match.getHomeTeam() : match.getAwayTeam();
 	}
 

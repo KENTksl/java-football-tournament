@@ -4,7 +4,11 @@
     <th:block th:fragment="header(active)">
       <header class="header">
         <div class="container header-inner">
-          <div class="brand">SPORT TOURNAMENT</div>
+          <div class="brand">
+            <a th:href="@{/}" aria-label="SPORT TOURNAMENT">
+              <img src="/assets/logo/logo-signature.png" onerror="this.onerror=null;this.src='/assets/logo/logo-signature.svg';" alt="SPORT TOURNAMENT" height="36">
+            </a>
+          </div>
           <nav class="nav" aria-label="Điều hướng chính">
             <a th:href="@{/}" th:attr="aria-current=${active == 'home'} ? 'page' : null">TRANG CHỦ</a>
             <a th:href="@{/user/tournament}" th:attr="aria-current=${active == 'tournament'} ? 'page' : null">GIẢI ĐẤU</a>

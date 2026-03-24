@@ -146,6 +146,11 @@
     color: #e8b931;
 }
 
+.pen-winner {
+    color: #e8b931 !important;
+    font-weight: 800;
+}
+
 .bracket-pair {
     display: grid;
     gap: var(--match-gap);

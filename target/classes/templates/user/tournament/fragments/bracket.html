@@ -20,19 +20,19 @@
                 <div th:if="${round.roundName != 'Chung kết'}" class="bracket-pair-wrapper">
                     <!-- Quarter Finals usually pairs matches for visual lines, for now just list matches -->
                     <div th:each="m : ${round.matches}" class="bracket-match" style="margin-bottom: 30px;">
-                        <div class="bracket-team" th:classappend="${m.homeScore != null and m.awayScore != null and m.homeScore > m.awayScore ? 'bracket-winner' : ''}">
+                        <div class="bracket-team" th:classappend="${m.homeWinner()} ? 'bracket-winner'">
                             <div class="bracket-team-info">
                                 <div class="bracket-team-logo" th:text="${#strings.substring(m.homeTeamName, 0, 1).toUpperCase()}">M</div>
                                 <span class="bracket-team-name" th:text="${m.homeTeamName}">Man United</span>
                             </div>
-                            <span class="bracket-score" th:text="${m.homeScore != null ? m.homeScore : '-'}">3</span>
+                            <span class="bracket-score" th:classappend="${m.decidedByPenalties() and m.homeWinner()} ? ' pen-winner' : ''" th:text="${m.homeDisplayScore()}">3</span>
                         </div>
-                        <div class="bracket-team" th:classappend="${m.homeScore != null and m.awayScore != null and m.awayScore > m.homeScore ? 'bracket-winner' : ''}">
+                        <div class="bracket-team" th:classappend="${m.awayWinner()} ? 'bracket-winner'">
                             <div class="bracket-team-info">
                                 <div class="bracket-team-logo" th:text="${#strings.substring(m.awayTeamName, 0, 1).toUpperCase()}">C</div>
                                 <span class="bracket-team-name" th:text="${m.awayTeamName}">Chelsea FC</span>
                             </div>
-                            <span class="bracket-score" th:text="${m.awayScore != null ? m.awayScore : '-'}">1</span>
+                            <span class="bracket-score" th:classappend="${m.decidedByPenalties() and m.awayWinner()} ? ' pen-winner' : ''" th:text="${m.awayDisplayScore()}">1</span>
                         </div>
                     </div>
                 </div>
@@ -40,19 +40,19 @@
                 <!-- Special styling for Final match -->
                 <div th:if="${round.roundName == 'Chung kết'}" th:each="m : ${round.matches}" class="bracket-match">
                     <span class="final-badge">GRAND FINAL</span>
-                    <div class="bracket-team" th:classappend="${m.homeScore != null and m.awayScore != null and m.homeScore > m.awayScore ? 'bracket-winner' : ''}">
+                    <div class="bracket-team" th:classappend="${m.homeWinner()} ? 'bracket-winner'">
                         <div class="bracket-team-info">
                             <div class="bracket-team-logo" th:text="${#strings.substring(m.homeTeamName, 0, 1).toUpperCase()}">M</div>
                             <span class="bracket-team-name" th:text="${m.homeTeamName}">Man United</span>
                         </div>
-                        <span class="bracket-score" th:text="${m.homeScore != null ? m.homeScore : '-'}">1</span>
+                        <span class="bracket-score" th:classappend="${m.decidedByPenalties() and m.homeWinner()} ? ' pen-winner' : ''" th:text="${m.homeDisplayScore()}">1</span>
                     </div>
-                    <div class="bracket-team" th:classappend="${m.homeScore != null and m.awayScore != null and m.awayScore > m.homeScore ? 'bracket-winner' : ''}">
+                    <div class="bracket-team" th:classappend="${m.awayWinner()} ? 'bracket-winner'">
                         <div class="bracket-team-info">
                             <div class="bracket-team-logo" th:text="${#strings.substring(m.awayTeamName, 0, 1).toUpperCase()}">D</div>
                             <span class="bracket-team-name" th:text="${m.awayTeamName}">Dortmund</span>
                         </div>
-                        <span class="bracket-score" th:text="${m.awayScore != null ? m.awayScore : '-'}">0</span>
+                        <span class="bracket-score" th:classappend="${m.decidedByPenalties() and m.awayWinner()} ? ' pen-winner' : ''" th:text="${m.awayDisplayScore()}">0</span>
                     </div>
                 </div>
             </div>
