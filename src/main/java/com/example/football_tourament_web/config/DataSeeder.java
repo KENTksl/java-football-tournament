@@ -32,6 +32,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -119,25 +120,16 @@ public class DataSeeder implements CommandLineRunner {
 			buildPlayer(team4, "Cầu thủ Q", 11, "Cầu thủ", "FW")
 		));
 
-		var tournament31 = getOrCreateTournament31();
-		var tournament32 = getOrCreateTournament32();
-		var tournament34 = getOrCreateTournament34Knockout16();
-		var tournamentEpl16 = getOrCreateTournamentEplGroup16Pitch5();
-		var tournamentLaLiga8 = getOrCreateTournamentLaLigaKnockout8();
+		var tournamentKnockout4Pitch5 = getOrCreateTournament31();
+		var tournamentGroup16Pitch7 = getOrCreateTournament32();
+		var tournamentEpl16Pitch5 = getOrCreateTournamentEplGroup16Pitch5();
+		var tournamentLaLiga8Pitch7 = getOrCreateTournamentLaLigaKnockout8();
 
-		seedRegistrationIfMissing(tournament31, team1, userA, RegistrationStatus.APPROVED);
-		seedRegistrationIfMissing(tournament31, team2, userA, RegistrationStatus.APPROVED);
-		seedRegistrationIfMissing(tournament31, team3, userA, RegistrationStatus.APPROVED);
-		seedRegistrationIfMissing(tournament31, team4, userA, RegistrationStatus.APPROVED);
-
-		seedMatchesIfMissing(tournament31, team1, team2, team3, team4);
-
-		for (int i = 1; i <= 16; i++) {
-			String name = String.format("KO16 Team %02d", i);
-			Team t = getOrCreateTeam(name, i == 1 ? userA : null);
-			seedPlayersIfMissing(t, buildDefaultSquad(t, "Đội " + i));
-			seedRegistrationIfMissing(tournament34, t, userA, RegistrationStatus.APPROVED);
-		}
+		seedRegistrationIfMissing(tournamentKnockout4Pitch5, team1, userA, RegistrationStatus.APPROVED);
+		seedRegistrationIfMissing(tournamentKnockout4Pitch5, team2, userA, RegistrationStatus.APPROVED);
+		seedRegistrationIfMissing(tournamentKnockout4Pitch5, team3, userA, RegistrationStatus.APPROVED);
+		seedRegistrationIfMissing(tournamentKnockout4Pitch5, team4, userA, RegistrationStatus.APPROVED);
+		seedMatchesIfMissing(tournamentKnockout4Pitch5, team1, team2, team3, team4);
 
 		var eplTeams = List.of(
 				getOrCreateTeam("Arsenal", null),
@@ -161,8 +153,43 @@ public class DataSeeder implements CommandLineRunner {
 		for (Team t : eplTeams) {
 			if (t == null) continue;
 			seedPlayersIfMissing(t, buildEplSquad(t));
-			seedRegistrationIfMissing(tournamentEpl16, t, userA, RegistrationStatus.APPROVED);
+			String groupName = groupNameForIndex(eplTeams.indexOf(t));
+			seedRegistrationIfMissing(tournamentEpl16Pitch5, t, userA, RegistrationStatus.APPROVED, groupName);
 		}
+		seedGroupStageMatchesIfMissing(tournamentEpl16Pitch5, "A", eplTeams.subList(0, 4));
+		seedGroupStageMatchesIfMissing(tournamentEpl16Pitch5, "B", eplTeams.subList(4, 8));
+		seedGroupStageMatchesIfMissing(tournamentEpl16Pitch5, "C", eplTeams.subList(8, 12));
+		seedGroupStageMatchesIfMissing(tournamentEpl16Pitch5, "D", eplTeams.subList(12, 16));
+
+		var pitch7GroupTeams = List.of(
+				getOrCreateTeam("Bayern Munich", null),
+				getOrCreateTeam("Paris Saint-Germain", null),
+				getOrCreateTeam("Inter Milan", null),
+				getOrCreateTeam("AC Milan", null),
+				getOrCreateTeam("Juventus", null),
+				getOrCreateTeam("Borussia Dortmund", null),
+				getOrCreateTeam("RB Leipzig", null),
+				getOrCreateTeam("Napoli", null),
+				getOrCreateTeam("AS Roma", null),
+				getOrCreateTeam("Lazio", null),
+				getOrCreateTeam("Atalanta", null),
+				getOrCreateTeam("Benfica", null),
+				getOrCreateTeam("Porto", null),
+				getOrCreateTeam("Ajax", null),
+				getOrCreateTeam("Sporting CP", null),
+				getOrCreateTeam("Galatasaray", null)
+		);
+
+		for (int i = 0; i < pitch7GroupTeams.size(); i++) {
+			Team t = pitch7GroupTeams.get(i);
+			if (t == null) continue;
+			seedPlayersIfMissing(t, buildDefaultSquad(t, t.getName() == null ? ("Đội " + (i + 1)) : t.getName()));
+			seedRegistrationIfMissing(tournamentGroup16Pitch7, t, userA, RegistrationStatus.APPROVED, groupNameForIndex(i));
+		}
+		seedGroupStageMatchesIfMissing(tournamentGroup16Pitch7, "A", pitch7GroupTeams.subList(0, 4));
+		seedGroupStageMatchesIfMissing(tournamentGroup16Pitch7, "B", pitch7GroupTeams.subList(4, 8));
+		seedGroupStageMatchesIfMissing(tournamentGroup16Pitch7, "C", pitch7GroupTeams.subList(8, 12));
+		seedGroupStageMatchesIfMissing(tournamentGroup16Pitch7, "D", pitch7GroupTeams.subList(12, 16));
 
 		var laligaTeams = List.of(
 				getOrCreateTeam("Real Madrid", null),
@@ -178,8 +205,9 @@ public class DataSeeder implements CommandLineRunner {
 		for (Team t : laligaTeams) {
 			if (t == null) continue;
 			seedPlayersIfMissing(t, buildLaLigaSquad(t));
-			seedRegistrationIfMissing(tournamentLaLiga8, t, userA, RegistrationStatus.APPROVED);
+			seedRegistrationIfMissing(tournamentLaLiga8Pitch7, t, userA, RegistrationStatus.APPROVED);
 		}
+		seedKnockout8MatchesIfMissing(tournamentLaLiga8Pitch7, laligaTeams);
 
 		for (Team t : teamRepository.findAll()) {
 			seedPlayersIfMissing(t, buildDefaultSquad(t, t.getName() == null ? "Đội" : t.getName()));
@@ -227,83 +255,115 @@ public class DataSeeder implements CommandLineRunner {
 	}
 
 	private Tournament getOrCreateTournament31() {
-		return findTournamentByName("HUTECH mở rộng lần 31").orElseGet(() -> {
-			var tournament = new Tournament("HUTECH mở rộng lần 31");
-			tournament.setOrganizer("Đỗ Thành Nhân");
-			tournament.setMode(TournamentMode.KNOCKOUT);
-			tournament.setPitchType(PitchType.PITCH_7);
-			tournament.setTeamLimit(4);
-			tournament.setImageUrl("/assets/general-overview/tournament.jpg");
-			tournament.setDescription("Giải đấu demo để test màn Thông tin chung / Danh sách đội / Lịch thi đấu.");
-			tournament.setStatus(TournamentStatus.LIVE);
-			tournament.setStartDate(LocalDate.now().minusDays(1));
-			tournament.setEndDate(LocalDate.now().plusDays(7));
-			return tournamentRepository.save(tournament);
-		});
+		var existing = findTournamentByName("HUTECH mở rộng lần 31").orElse(null);
+		if (existing != null) {
+			existing.setOrganizer("Đỗ Thành Nhân");
+			existing.setMode(TournamentMode.KNOCKOUT);
+			existing.setPitchType(PitchType.PITCH_5);
+			existing.setTeamLimit(4);
+			existing.setImageUrl("/assets/general-overview/tournament.jpg");
+			existing.setDescription("Giải 5v5 knockout 4 đội (demo).");
+			existing.setStatus(TournamentStatus.LIVE);
+			existing.setStartDate(LocalDate.now().minusDays(1));
+			existing.setEndDate(LocalDate.now().plusDays(7));
+			return tournamentRepository.save(existing);
+		}
+
+		var tournament = new Tournament("HUTECH mở rộng lần 31");
+		tournament.setOrganizer("Đỗ Thành Nhân");
+		tournament.setMode(TournamentMode.KNOCKOUT);
+		tournament.setPitchType(PitchType.PITCH_5);
+		tournament.setTeamLimit(4);
+		tournament.setImageUrl("/assets/general-overview/tournament.jpg");
+		tournament.setDescription("Giải 5v5 knockout 4 đội (demo).");
+		tournament.setStatus(TournamentStatus.LIVE);
+		tournament.setStartDate(LocalDate.now().minusDays(1));
+		tournament.setEndDate(LocalDate.now().plusDays(7));
+		return tournamentRepository.save(tournament);
 	}
 
 	private Tournament getOrCreateTournament32() {
-		return findTournamentByName("HUTECH mở rộng lần 32").orElseGet(() -> {
-			var tournament = new Tournament("HUTECH mở rộng lần 32");
-			tournament.setOrganizer("Kiệt Chan");
-			tournament.setMode(TournamentMode.GROUP_STAGE);
-			tournament.setPitchType(PitchType.PITCH_7);
-			tournament.setTeamLimit(8);
-			tournament.setImageUrl("/assets/general-overview/tournament.jpg");
-			tournament.setDescription("Giải đấu demo để test trạng thái 'Chưa có đội đăng ký'.");
-			tournament.setStatus(TournamentStatus.UPCOMING);
-			tournament.setStartDate(LocalDate.now().plusDays(3));
-			tournament.setEndDate(LocalDate.now().plusDays(30));
-			return tournamentRepository.save(tournament);
-		});
-	}
+		var existing = findTournamentByName("HUTECH mở rộng lần 32").orElse(null);
+		if (existing != null) {
+			existing.setOrganizer("Demo Group Stage 7v7");
+			existing.setMode(TournamentMode.GROUP_STAGE);
+			existing.setPitchType(PitchType.PITCH_7);
+			existing.setTeamLimit(16);
+			existing.setImageUrl("/assets/general-overview/tournament.jpg");
+			existing.setDescription("Giải 7v7 chia bảng 16 đội (demo).");
+			existing.setStatus(TournamentStatus.UPCOMING);
+			existing.setStartDate(LocalDate.now().plusDays(3));
+			existing.setEndDate(LocalDate.now().plusDays(30));
+			return tournamentRepository.save(existing);
+		}
 
-	private Tournament getOrCreateTournament34Knockout16() {
-		return findTournamentByName("HUTECH mở rộng lần 34").orElseGet(() -> {
-			var tournament = new Tournament("HUTECH mở rộng lần 34");
-			tournament.setOrganizer("Demo Knockout 16");
-			tournament.setMode(TournamentMode.KNOCKOUT);
-			tournament.setPitchType(PitchType.PITCH_7);
-			tournament.setTeamLimit(16);
-			tournament.setImageUrl("/assets/general-overview/tournament.jpg");
-			tournament.setDescription("Giải đấu demo knockout 16 đội để test chức năng chia cặp ngẫu nhiên.");
-			tournament.setStatus(TournamentStatus.UPCOMING);
-			tournament.setStartDate(LocalDate.now().plusDays(5));
-			tournament.setEndDate(LocalDate.now().plusDays(35));
-			return tournamentRepository.save(tournament);
-		});
+		var tournament = new Tournament("HUTECH mở rộng lần 32");
+		tournament.setOrganizer("Demo Group Stage 7v7");
+		tournament.setMode(TournamentMode.GROUP_STAGE);
+		tournament.setPitchType(PitchType.PITCH_7);
+		tournament.setTeamLimit(16);
+		tournament.setImageUrl("/assets/general-overview/tournament.jpg");
+		tournament.setDescription("Giải 7v7 chia bảng 16 đội (demo).");
+		tournament.setStatus(TournamentStatus.UPCOMING);
+		tournament.setStartDate(LocalDate.now().plusDays(3));
+		tournament.setEndDate(LocalDate.now().plusDays(30));
+		return tournamentRepository.save(tournament);
 	}
 
 	private Tournament getOrCreateTournamentEplGroup16Pitch5() {
-		return findTournamentByName("Ngoại hạng Anh 5v5 - 16 đội").orElseGet(() -> {
-			var tournament = new Tournament("Ngoại hạng Anh 5v5 - 16 đội");
-			tournament.setOrganizer("Premier League Demo");
-			tournament.setMode(TournamentMode.GROUP_STAGE);
-			tournament.setPitchType(PitchType.PITCH_5);
-			tournament.setTeamLimit(16);
-			tournament.setImageUrl("/assets/general-overview/tournament.jpg");
-			tournament.setDescription("Giải đấu demo chia bảng 16 đội, sân 5. Seed đội và cầu thủ theo Premier League.");
-			tournament.setStatus(TournamentStatus.UPCOMING);
-			tournament.setStartDate(LocalDate.now().plusDays(2));
-			tournament.setEndDate(LocalDate.now().plusDays(45));
-			return tournamentRepository.save(tournament);
-		});
+		var existing = findTournamentByName("Ngoại hạng Anh 5v5 - 16 đội").orElse(null);
+		if (existing != null) {
+			existing.setOrganizer("Premier League Demo");
+			existing.setMode(TournamentMode.GROUP_STAGE);
+			existing.setPitchType(PitchType.PITCH_5);
+			existing.setTeamLimit(16);
+			existing.setImageUrl("/assets/general-overview/tournament.jpg");
+			existing.setDescription("Giải đấu demo chia bảng 16 đội, sân 5. Seed đội và cầu thủ theo Premier League.");
+			existing.setStatus(TournamentStatus.UPCOMING);
+			existing.setStartDate(LocalDate.now().plusDays(2));
+			existing.setEndDate(LocalDate.now().plusDays(45));
+			return tournamentRepository.save(existing);
+		}
+
+		var tournament = new Tournament("Ngoại hạng Anh 5v5 - 16 đội");
+		tournament.setOrganizer("Premier League Demo");
+		tournament.setMode(TournamentMode.GROUP_STAGE);
+		tournament.setPitchType(PitchType.PITCH_5);
+		tournament.setTeamLimit(16);
+		tournament.setImageUrl("/assets/general-overview/tournament.jpg");
+		tournament.setDescription("Giải đấu demo chia bảng 16 đội, sân 5. Seed đội và cầu thủ theo Premier League.");
+		tournament.setStatus(TournamentStatus.UPCOMING);
+		tournament.setStartDate(LocalDate.now().plusDays(2));
+		tournament.setEndDate(LocalDate.now().plusDays(45));
+		return tournamentRepository.save(tournament);
 	}
 
 	private Tournament getOrCreateTournamentLaLigaKnockout8() {
-		return findTournamentByName("LaLiga Knockout - 8 đội").orElseGet(() -> {
-			var tournament = new Tournament("LaLiga Knockout - 8 đội");
-			tournament.setOrganizer("LaLiga Demo");
-			tournament.setMode(TournamentMode.KNOCKOUT);
-			tournament.setPitchType(PitchType.PITCH_7);
-			tournament.setTeamLimit(8);
-			tournament.setImageUrl("/assets/general-overview/tournament.jpg");
-			tournament.setDescription("Giải đấu demo knockout 8 đội (LaLiga). Seed đội và cầu thủ theo các CLB LaLiga.");
-			tournament.setStatus(TournamentStatus.UPCOMING);
-			tournament.setStartDate(LocalDate.now().plusDays(4));
-			tournament.setEndDate(LocalDate.now().plusDays(25));
-			return tournamentRepository.save(tournament);
-		});
+		var existing = findTournamentByName("LaLiga Knockout - 8 đội").orElse(null);
+		if (existing != null) {
+			existing.setOrganizer("LaLiga Demo");
+			existing.setMode(TournamentMode.KNOCKOUT);
+			existing.setPitchType(PitchType.PITCH_7);
+			existing.setTeamLimit(8);
+			existing.setImageUrl("/assets/general-overview/tournament.jpg");
+			existing.setDescription("Giải đấu demo knockout 8 đội (LaLiga). Seed đội và cầu thủ theo các CLB LaLiga.");
+			existing.setStatus(TournamentStatus.UPCOMING);
+			existing.setStartDate(LocalDate.now().plusDays(4));
+			existing.setEndDate(LocalDate.now().plusDays(25));
+			return tournamentRepository.save(existing);
+		}
+
+		var tournament = new Tournament("LaLiga Knockout - 8 đội");
+		tournament.setOrganizer("LaLiga Demo");
+		tournament.setMode(TournamentMode.KNOCKOUT);
+		tournament.setPitchType(PitchType.PITCH_7);
+		tournament.setTeamLimit(8);
+		tournament.setImageUrl("/assets/general-overview/tournament.jpg");
+		tournament.setDescription("Giải đấu demo knockout 8 đội (LaLiga). Seed đội và cầu thủ theo các CLB LaLiga.");
+		tournament.setStatus(TournamentStatus.UPCOMING);
+		tournament.setStartDate(LocalDate.now().plusDays(4));
+		tournament.setEndDate(LocalDate.now().plusDays(25));
+		return tournamentRepository.save(tournament);
 	}
 
 	private Optional<Tournament> findTournamentByName(String name) {
@@ -315,8 +375,160 @@ public class DataSeeder implements CommandLineRunner {
 	private void seedRegistrationIfMissing(Tournament tournament, Team team, AppUser user, RegistrationStatus status) {
 		if (tournament == null || tournament.getId() == null) return;
 		if (team == null || team.getId() == null) return;
-		if (registrationRepository.findByTournamentIdAndTeamId(tournament.getId(), team.getId()).isPresent()) return;
+		var existing = registrationRepository.findByTournamentIdAndTeamId(tournament.getId(), team.getId()).orElse(null);
+		if (existing != null) {
+			existing.setStatus(status);
+			if (existing.getRegisteredBy() == null) {
+				existing.setRegisteredBy(user);
+			}
+			registrationRepository.save(existing);
+			return;
+		}
 		registrationRepository.save(buildRegistration(tournament, team, user, status));
+	}
+
+	private void seedRegistrationIfMissing(Tournament tournament, Team team, AppUser user, RegistrationStatus status, String groupName) {
+		if (tournament == null || tournament.getId() == null) return;
+		if (team == null || team.getId() == null) return;
+		var existing = registrationRepository.findByTournamentIdAndTeamId(tournament.getId(), team.getId()).orElse(null);
+		if (existing != null) {
+			existing.setStatus(status);
+			if (existing.getRegisteredBy() == null) {
+				existing.setRegisteredBy(user);
+			}
+			if (groupName != null && !groupName.isBlank()) {
+				existing.setGroupName(groupName);
+			}
+			registrationRepository.save(existing);
+			return;
+		}
+		var reg = buildRegistration(tournament, team, user, status);
+		reg.setGroupName(groupName);
+		registrationRepository.save(reg);
+	}
+
+	private static String groupNameForIndex(int index) {
+		if (index < 0) return null;
+		if (index < 4) return "A";
+		if (index < 8) return "B";
+		if (index < 12) return "C";
+		if (index < 16) return "D";
+		return null;
+	}
+
+	private void seedGroupStageMatchesIfMissing(Tournament tournament, String groupName, List<Team> teams) {
+		if (tournament == null || tournament.getId() == null) return;
+		if (teams == null || teams.size() != 4) return;
+		String roundName = "Bảng " + groupName;
+		boolean roundAlreadyExists = matchRepository.findByTournamentIdOrderByScheduledAtAsc(tournament.getId()).stream()
+				.anyMatch(m -> m != null && m.getRoundName() != null && roundName.equalsIgnoreCase(m.getRoundName().trim()));
+		if (roundAlreadyExists) return;
+
+		List<Match> matches = new ArrayList<>();
+		int groupOffsetDays = switch (groupName == null ? "" : groupName.trim().toUpperCase()) {
+			case "A" -> 1;
+			case "B" -> 2;
+			case "C" -> 3;
+			case "D" -> 4;
+			default -> 1;
+		};
+		LocalDateTime base = LocalDateTime.now().plusDays(groupOffsetDays).withHour(18).withMinute(0).withSecond(0).withNano(0);
+
+		int offsetHours = 0;
+		for (int i = 0; i < teams.size(); i++) {
+			for (int j = i + 1; j < teams.size(); j++) {
+				Team home = teams.get(i);
+				Team away = teams.get(j);
+
+				Match leg1 = new Match(tournament, home, away);
+				leg1.setRoundName(roundName);
+				leg1.setStatus(MatchStatus.SCHEDULED);
+				leg1.setScheduledAt(base.plusHours(offsetHours));
+				matches.add(leg1);
+				offsetHours += 2;
+
+				Match leg2 = new Match(tournament, away, home);
+				leg2.setRoundName(roundName);
+				leg2.setStatus(MatchStatus.SCHEDULED);
+				leg2.setScheduledAt(base.plusHours(offsetHours));
+				matches.add(leg2);
+				offsetHours += 2;
+			}
+		}
+
+		matchRepository.saveAll(matches);
+	}
+
+	private void seedKnockout8MatchesIfMissing(Tournament tournament, List<Team> teams) {
+		if (tournament == null || tournament.getId() == null) return;
+		if (teams == null || teams.size() != 8) return;
+		if (!matchRepository.findByTournamentIdOrderByScheduledAtAsc(tournament.getId()).isEmpty()) return;
+
+		Team t1 = teams.get(0);
+		Team t2 = teams.get(1);
+		Team t3 = teams.get(2);
+		Team t4 = teams.get(3);
+		Team t5 = teams.get(4);
+		Team t6 = teams.get(5);
+		Team t7 = teams.get(6);
+		Team t8 = teams.get(7);
+
+		LocalDateTime base = LocalDateTime.now().minusDays(1).withHour(18).withMinute(0).withSecond(0).withNano(0);
+
+		Match qf1 = new Match(tournament, t1, t8);
+		qf1.setRoundName("Tứ kết");
+		qf1.setScheduledAt(base.plusHours(0));
+		qf1.setHomeScore(1);
+		qf1.setAwayScore(1);
+		qf1.setHomePenalty(5);
+		qf1.setAwayPenalty(4);
+		qf1.setStatus(MatchStatus.FINISHED);
+
+		Match qf2 = new Match(tournament, t2, t7);
+		qf2.setRoundName("Tứ kết");
+		qf2.setScheduledAt(base.plusHours(3));
+		qf2.setHomeScore(2);
+		qf2.setAwayScore(0);
+		qf2.setStatus(MatchStatus.FINISHED);
+
+		Match qf3 = new Match(tournament, t3, t6);
+		qf3.setRoundName("Tứ kết");
+		qf3.setScheduledAt(base.plusHours(6));
+		qf3.setHomeScore(0);
+		qf3.setAwayScore(0);
+		qf3.setHomePenalty(4);
+		qf3.setAwayPenalty(2);
+		qf3.setStatus(MatchStatus.FINISHED);
+
+		Match qf4 = new Match(tournament, t4, t5);
+		qf4.setRoundName("Tứ kết");
+		qf4.setScheduledAt(base.plusHours(9));
+		qf4.setHomeScore(1);
+		qf4.setAwayScore(3);
+		qf4.setStatus(MatchStatus.FINISHED);
+
+		Match sf1 = new Match(tournament, t1, t2);
+		sf1.setRoundName("Bán kết");
+		sf1.setScheduledAt(base.plusDays(1).plusHours(2));
+		sf1.setHomeScore(2);
+		sf1.setAwayScore(1);
+		sf1.setStatus(MatchStatus.FINISHED);
+
+		Match sf2 = new Match(tournament, t3, t5);
+		sf2.setRoundName("Bán kết");
+		sf2.setScheduledAt(base.plusDays(1).plusHours(5));
+		sf2.setHomeScore(1);
+		sf2.setAwayScore(1);
+		sf2.setHomePenalty(3);
+		sf2.setAwayPenalty(5);
+		sf2.setStatus(MatchStatus.FINISHED);
+
+		Match finalMatch = new Match(tournament, t1, t5);
+		finalMatch.setRoundName("Chung kết");
+		finalMatch.setScheduledAt(base.plusDays(2).plusHours(4));
+		finalMatch.setStatus(MatchStatus.SCHEDULED);
+
+		matchRepository.saveAll(List.of(qf1, qf2, qf3, qf4, sf1, sf2, finalMatch));
 	}
 
 	private void seedMatchesIfMissing(Tournament tournament, Team team1, Team team2, Team team3, Team team4) {
