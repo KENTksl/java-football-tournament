@@ -45,7 +45,7 @@
             </div>
           </div>
           <div class="hero-image home-hero__media" aria-hidden="true">
-            <img th:src="@{/assets/figma/home-hero.png}" alt="" />
+            <img th:src="@{/img/home-hero.jpg}" alt="" />
           </div>
         </div>
       </section>
@@ -168,7 +168,7 @@
             <article class="home-tournamentCard" th:each="t : ${featuredTournaments}">
               <div class="home-tournamentCard__media" aria-hidden="true">
                 <img th:if="${t.imageUrl != null and !#strings.isEmpty(t.imageUrl)}" th:src="${t.imageUrl}" alt="" />
-                <img th:unless="${t.imageUrl != null and !#strings.isEmpty(t.imageUrl)}" th:src="@{/assets/figma/home-hero.png}" alt="" />
+                <img th:unless="${t.imageUrl != null and !#strings.isEmpty(t.imageUrl)}" th:src="@{/img/home-hero.jpg}" alt="" />
               </div>
               <div class="home-tournamentCard__body">
                 <div class="home-tournamentCard__title" th:text="${t.name}">Giải đấu</div>

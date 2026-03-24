@@ -482,7 +482,7 @@
                     <div class="profile-avatar-col">
                         <span>Ảnh đại diện</span>
                         <div class="profile-avatar-circle">
-                            <img id="avatar-preview" th:src="${admin != null && admin.avatar != null} ? @{${admin.avatar}} : @{/assets/figma/avatar.jpg}" alt="">
+                            <img id="avatar-preview" th:src="${admin != null && admin.avatar != null} ? @{${admin.avatar}} : @{/img/figma-avatar.png}" alt="">
                         </div>
                         <button type="button" class="btn-change-avatar" onclick="document.getElementById('avatar-file').click()">Đổi ảnh đại diện</button>
                         <input type="file" id="avatar-file" name="avatarFile" style="display: none;" accept="image/*" onchange="previewImage(this)">

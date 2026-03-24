@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sport Tournament - Danh sách giải đấu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/assets/css/user-home.css}">
+    <link rel="stylesheet" th:href="@{/assets/css/user-pages.css}">
+        <link rel="stylesheet" th:href="@{/assets/css/tournament-list.css}">
+
+</head>
+<body class="tournament-page">
+
+<th:block th:replace="~{user/fragments/header :: header('tournament')}"></th:block>
+
+<main>
+    <section class="banner">
+        <div class="container">
+            <h1>GIẢI ĐẤU BÓNG ĐÁ</h1>
+            <p class="crumb">Home / Tournament</p>
+        </div>
+    </section>
+
+    <section class="home-section">
+        <div class="container">
+            <div class="home-section__head">
+                <h2 class="home-section__title">Danh sách giải đấu</h2>
+                <p class="home-section__desc">Khám phá giải đấu đang mở đăng ký, đang diễn ra và đã kết thúc.</p>
+            </div>
+
+            <div class="tournament-list__grid" th:if="${tournaments != null and !#lists.isEmpty(tournaments)}">
+                <a class="tournament-list__card" th:each="t : ${tournaments}" th:href="@{/user/tournament/match-schedule(id=${t.id})}">
+                    <div class="tournament-list__media" aria-hidden="true">
+                        <img th:if="${t.imageUrl != null and !#strings.isEmpty(t.imageUrl)}" th:src="${t.imageUrl}" th:alt="${t.name}" loading="lazy" />
+                        <img th:unless="${t.imageUrl != null and !#strings.isEmpty(t.imageUrl)}" th:src="@{/img/home-hero.jpg}" th:alt="${t.name}" loading="lazy" />
+                    </div>
+                    <div class="tournament-list__body">
+                        <div class="tournament-list__top">
+                            <div class="tournament-list__title" th:text="${t.name}">Giải đấu</div>
+                            <span class="badge badge--upcoming" th:if="${t.status != null and t.status.name() == 'UPCOMING'}">Sắp diễn ra</span>
+                            <span class="badge badge--live" th:if="${t.status != null and t.status.name() == 'LIVE'}">Đang diễn ra</span>
+                            <span class="badge badge--finished" th:if="${t.status != null and t.status.name() == 'FINISHED'}">Đã kết thúc</span>
+                            <span class="badge badge--joined" th:if="${t.status == null}">Đang cập nhật</span>
+                        </div>
+
+                        <div class="tournament-list__meta">
+                            <div class="tournament-list__metaRow">
+                                <span class="tournament-list__label">BTC</span>
+                                <span th:text="${t.organizer != null and !#strings.isEmpty(t.organizer) ? t.organizer : '—'}">—</span>
+                            </div>
+                            <div class="tournament-list__metaRow">
+                                <span class="tournament-list__label">Hình thức</span>
+                                <span th:text="${(t.mode != null and t.mode.name() == 'GROUP_STAGE') ? 'Vòng bảng' : 'Knockout'}">—</span>
+                            </div>
+                            <div class="tournament-list__metaRow">
+                                <span class="tournament-list__label">Số đội</span>
+                                <span th:text="${(registeredTeamCounts[t.id] != null ? registeredTeamCounts[t.id] : 0) + ' / ' + (t.teamLimit != null ? t.teamLimit : 0)}">0 / 0</span>
+                            </div>
+                        </div>
+                        <div class="tournament-list__progressWrap">
+                            <div class="tournament-list__progressBar">
+                                <span class="tournament-list__progressFill"
+                                      th:style="${'width:' + (registeredTeamPercents[t.id] != null ? registeredTeamPercents[t.id] : 0) + '%'}">
+                                </span>
+                            </div>
+                            <span class="badge badge--finished"
+                                  th:if="${t.teamLimit != null and registeredTeamCounts[t.id] != null and registeredTeamCounts[t.id] >= t.teamLimit}">
+                                Đã đủ đội
+                            </span>
+                        </div>
+
+                        <div class="tournament-list__cta">Xem chi tiết</div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="home-empty" th:if="${tournaments == null or #lists.isEmpty(tournaments)}">Chưa có giải đấu nào.</div>
+        </div>
+    </section>
+</main>
+
+<th:block th:replace="~{user/fragments/footer :: footer('tournament')}"></th:block>
+
+</body>
+</html>
+
