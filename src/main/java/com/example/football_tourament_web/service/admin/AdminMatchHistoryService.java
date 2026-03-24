@@ -309,7 +309,7 @@ public class AdminMatchHistoryService {
 	}
 
 	@Transactional
-	public String saveScore(Long tournamentId, Long matchId, Integer homeScore, Integer awayScore, Integer homePen, Integer awayPen, boolean finalize, int page, int size) {
+	public String saveScore(Long tournamentId, Long matchId, Integer homeScore, Integer awayScore, Integer homePen, Integer awayPen, int page, int size) {
 		if (tournamentId == null) return "redirect:/admin/manage/tournament";
 		if (matchId == null) return "redirect:/admin/match-history?id=" + tournamentId;
 
@@ -339,17 +339,8 @@ public class AdminMatchHistoryService {
 		}
 		matchService.save(match);
 
-		boolean hasResult = homeScore != null && awayScore != null
-				&& (!homeScore.equals(awayScore) || (homePen != null && awayPen != null));
 		if (match.getScheduledAt() == null) {
 			return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=need_schedule";
-		}
-		if (finalize && isKnockout && !isGroupRound && hasResult) {
-			match.setStatus(MatchStatus.FINISHED);
-			matchService.save(match);
-			matchService.generateNextKnockoutRoundIfReady(tournamentId, match.getRoundName());
-			matchService.generateQuarterFinalsFromGroupsIfReady(tournamentId);
-			return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=score_finished";
 		}
 
 		return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=score";

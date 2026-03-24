@@ -94,11 +94,10 @@ public class AdminMatchController {
 			@RequestParam(value = "awayScore", required = false) Integer awayScore,
 			@RequestParam(value = "homePen", required = false) Integer homePen,
 			@RequestParam(value = "awayPen", required = false) Integer awayPen,
-			@RequestParam(value = "finalize", required = false, defaultValue = "false") boolean finalize,
 			@RequestParam(value = "page", required = false, defaultValue = "1") int page,
 			@RequestParam(value = "size", required = false, defaultValue = "10") int size
 	) {
-		return adminMatchHistoryService.saveScore(tournamentId, matchId, homeScore, awayScore, homePen, awayPen, finalize, page, size);
+		return adminMatchHistoryService.saveScore(tournamentId, matchId, homeScore, awayScore, homePen, awayPen, page, size);
 	}
 
 	@PostMapping("/admin/match-history/save-lineup-form")
