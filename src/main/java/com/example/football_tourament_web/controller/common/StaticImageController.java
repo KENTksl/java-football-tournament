@@ -10,6 +10,18 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class StaticImageController {
+	@GetMapping("/favicon.ico")
+	@ResponseBody
+	public ResponseEntity<Resource> favicon() {
+		Resource resource = new ClassPathResource("static/assets/logo/logo-signature.png");
+		return ResponseEntity.ok()
+				.contentType(MediaType.IMAGE_PNG)
+				.header("Cache-Control", "no-cache, no-store, must-revalidate")
+				.header("Pragma", "no-cache")
+				.header("Expires", "0")
+				.body(resource);
+	}
+
 	@GetMapping(value = "/img/figma-avatar.png", produces = MediaType.IMAGE_JPEG_VALUE)
 	@ResponseBody
 	public ResponseEntity<Resource> defaultAvatar() {
