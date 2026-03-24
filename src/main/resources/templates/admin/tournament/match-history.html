@@ -2056,6 +2056,7 @@
             if (saved) {
                 if (saved === 'schedule') window.showToast('Lưu lịch thành công');
                 if (saved === 'score') window.showToast('Lưu tỉ số thành công');
+                    if (saved === 'score_required') window.showToast('Vui lòng nhập và lưu tỉ số trước khi kết thúc', 'error');
                 if (saved === 'lineup') window.showToast('Lưu đội hình thành công');
                 if (saved === 'event') window.showToast('Cập nhật diễn biến thành công');
                 if (saved === 'finish') window.showToast('Kết thúc trận đấu thành công');
@@ -2313,6 +2314,16 @@
         }
 
         function confirmFinishMatch(buttonEl) {
+            const homeInput = document.querySelector('input[name="homeScore"]');
+            const awayInput = document.querySelector('input[name="awayScore"]');
+            if (!homeInput || !awayInput || homeInput.value.trim() === '' || awayInput.value.trim() === '') {
+                if (window.showToast) {
+                    window.showToast('Vui lòng nhập và bấm \"Lưu tỉ số\" trước khi kết thúc', 'error');
+                } else {
+                    alert('Vui lòng nhập và bấm \"Lưu tỉ số\" trước khi kết thúc.');
+                }
+                return;
+            }
             const ok = confirm('Bạn có chắc muốn kết thúc trận đấu? Trạng thái sẽ chuyển sang Hoàn thành.');
             if (!ok) return;
             buttonEl.disabled = true;

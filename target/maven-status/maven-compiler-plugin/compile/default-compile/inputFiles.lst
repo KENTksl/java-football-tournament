@@ -1,3 +1,5 @@
+<<<<<<< HEAD
+=======
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 E:\git-team-workflow-practice\java-football-tournament-front-end\src\main\java\com\example\football_tourament_web\config\DataSeeder.java
@@ -50,6 +52,7 @@ E:\git-team-workflow-practice\java-football-tournament-front-end\src\main\java\c
 E:\git-team-workflow-practice\java-football-tournament-front-end\src\main\java\com\example\football_tourament_web\service\UserService.java
 E:\git-team-workflow-practice\java-football-tournament-front-end\src\main\java\com\example\football_tourament_web\service\UserTournamentViewService.java
 =======
+>>>>>>> 4f8844faf834f2afb1780776e08fc85f33aeb8be
 C:\QLKS\java-football-tournament-front-end\src\main\java\com\example\football_tourament_web\config\DataSeeder.java
 C:\QLKS\java-football-tournament-front-end\src\main\java\com\example\football_tourament_web\config\SecurityConfig.java
 C:\QLKS\java-football-tournament-front-end\src\main\java\com\example\football_tourament_web\config\WebConfig.java
@@ -99,6 +102,8 @@ C:\QLKS\java-football-tournament-front-end\src\main\java\com\example\football_to
 C:\QLKS\java-football-tournament-front-end\src\main\java\com\example\football_tourament_web\service\TransactionService.java
 C:\QLKS\java-football-tournament-front-end\src\main\java\com\example\football_tourament_web\service\UserService.java
 C:\QLKS\java-football-tournament-front-end\src\main\java\com\example\football_tourament_web\service\UserTournamentViewService.java
+<<<<<<< HEAD
+=======
 >>>>>>> Stashed changes
 =======
 C:\Users\acer\Desktop\java-football-tournament-front-end\src\main\java\com\example\football_tourament_web\config\DataSeeder.java
@@ -154,3 +159,4 @@ C:\Users\acer\Desktop\java-football-tournament-front-end\src\main\java\com\examp
 C:\Users\acer\Desktop\java-football-tournament-front-end\src\main\java\com\example\football_tourament_web\service\UserService.java
 C:\Users\acer\Desktop\java-football-tournament-front-end\src\main\java\com\example\football_tourament_web\service\UserTournamentViewService.java
 >>>>>>> Stashed changes
+>>>>>>> 4f8844faf834f2afb1780776e08fc85f33aeb8be

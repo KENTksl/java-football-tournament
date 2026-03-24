@@ -19,6 +19,9 @@
             --brand: #009cff;
             --radius-xl: 25px;
             --radius-lg: 20px;
+            --match-height: 90px;      /* 2 rows x 45px */
+            --match-gap: 18px;         /* khoảng cách giữa các match */
+            --connector-width: 70px;   /* độ dài dây sang cột kế */
         }
 
         * { box-sizing: border-box; }
@@ -309,6 +312,7 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            gap: 18px;
         }
 
         .round--semis {
@@ -332,6 +336,35 @@
             align-items: center;
             height: 45px;
             border-bottom: 1px solid #000;
+        }
+        
+        /* CONNECTORS for GENERIC layout */
+        .round:not(.round--semis):not(.round--final) .match-pair {
+            position: relative;
+        }
+        /* Horizontal line to next column from the even item (pairs 1-2, 3-4,...) */
+        .round:not(.round--semis):not(.round--final) .match-pair:nth-child(2n)::after {
+            content: '';
+            position: absolute;
+            right: calc(-1 * var(--connector-width));
+            top: calc(50% - 1px);
+            width: var(--connector-width);
+            height: 2px;
+            background: #000;
+            pointer-events: none;
+            z-index: 1;
+        }
+        /* Vertical fork connecting two siblings (odd with the above even) */
+        .round:not(.round--semis):not(.round--final) .match-pair:nth-child(2n)::before {
+            content: '';
+            position: absolute;
+            right: calc(-1 * var(--connector-width));
+            top: calc(50% - ((var(--match-gap) + var(--match-height)) / 2));
+            width: 2px;
+            height: calc(var(--match-gap) + var(--match-height));
+            background: #000;
+            pointer-events: none;
+            z-index: 1;
         }
 
         /* Connector system */
@@ -484,84 +517,100 @@
               th:replace="~{admin/tournament/fragments/tournament-header-tabs :: headerTabs(${activeTab}, ${tournamentId}, ${tournamentName})}"
             ></th:block>
 
-            <div class="bracket-container">
-            <!-- Vòng Bán Kết -->
-            <div class="round round--semis">
-                <div class="match-pair">
-                    <div class="match-team winner">
-                        <span class="team-id">T1</span>
-                        <span class="team-name">FC Test 19</span>
-                        <span class="team-score">3</span>
-                    </div>
-                    <div class="match-team">
-                        <span class="team-id">T2</span>
-                        <span class="team-name">FC Test 18</span>
-                        <span class="team-score">1</span>
+            <div class="bracket-container" th:if="${bracketLayout == 'SEMIS_FINAL'}">
+                <div class="round round--semis">
+                    <div class="match-pair" th:each="m : ${bracketSemis}">
+                        <div class="match-team"
+                             th:classappend="${m.homeScore != null and m.awayScore != null and m.homeScore > m.awayScore} ? ' winner'">
+                            <span class="team-id" th:text="${seedLabels[m.homeTeamName] != null ? seedLabels[m.homeTeamName] : 'T'}">T1</span>
+                            <span class="team-name" th:text="${m.homeTeamName}">Đội 1</span>
+                            <span class="team-score" th:text="${m.homeScore != null ? m.homeScore : ''}"></span>
+                        </div>
+                        <div class="match-team"
+                             th:classappend="${m.homeScore != null and m.awayScore != null and m.awayScore > m.homeScore} ? ' winner'">
+                            <span class="team-id" th:text="${seedLabels[m.awayTeamName] != null ? seedLabels[m.awayTeamName] : 'T'}">T2</span>
+                            <span class="team-name" th:text="${m.awayTeamName}">Đội 2</span>
+                            <span class="team-score" th:text="${m.awayScore != null ? m.awayScore : ''}"></span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="match-pair">
-                    <div class="match-team">
-                        <span class="team-id">T3</span>
-                        <span class="team-name">FC Test 17</span>
-                        <span class="team-score">1</span>
-                    </div>
-                    <div class="match-team winner">
-                        <span class="team-id">T4</span>
-                        <span class="team-name">22DTHC3</span>
-                        <span class="team-score">4</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Connectors -->
-            <div class="connectors">
-                <div class="connector-fork"></div>
-            </div>
-
-            <!-- Vòng Chung Kết & Hạng 3 -->
-            <div class="round round--final">
-                <!-- Trận Chung Kết -->
-                <div class="ranking-item">
-                    <div class="match-pair">
-                        <div class="match-team">
-                            <span class="team-id">T1</span>
-                            <span class="team-name">FC Test 19</span>
-                            <span class="team-score">1</span>
-                        </div>
-                        <div class="match-team winner-final">
-                            <span class="team-id">T4</span>
-                            <span class="team-name">22DTHC3</span>
-                            <span class="team-score">2</span>
-                        </div>
-                    </div>
-                    <div class="final-ranking" style="margin-left: 15px;">
-                        <div class="ranking-item"><span class="rank-badge rank-2nd">2nd</span></div>
-                        <div class="ranking-item"><span class="rank-badge rank-1st">1st</span></div>
-                    </div>
+                <div class="connectors">
+                    <div class="connector-fork"></div>
                 </div>
 
-                <!-- Trận Tranh Hạng 3 -->
-                <div class="ranking-item">
-                    <div class="match-pair">
-                        <div class="match-team">
-                            <span class="team-id">T2</span>
-                            <span class="team-name">FC Test 18</span>
-                            <span class="team-score">1</span>
+                <div class="round round--final">
+                    <div class="ranking-item" th:if="${bracketFinal != null}">
+                        <div class="match-pair">
+                            <div class="match-team"
+                                 th:classappend="${bracketFinal.homeScore != null and bracketFinal.awayScore != null and bracketFinal.homeScore > bracketFinal.awayScore} ? ' winner-final'">
+                                <span class="team-id" th:text="${seedLabels[bracketFinal.homeTeamName] != null ? seedLabels[bracketFinal.homeTeamName] : 'T'}">T1</span>
+                                <span class="team-name" th:text="${bracketFinal.homeTeamName}">Đội 1</span>
+                                <span class="team-score" th:text="${bracketFinal.homeScore != null ? bracketFinal.homeScore : ''}"></span>
+                            </div>
+                            <div class="match-team"
+                                 th:classappend="${bracketFinal.homeScore != null and bracketFinal.awayScore != null and bracketFinal.awayScore > bracketFinal.homeScore} ? ' winner-final'">
+                                <span class="team-id" th:text="${seedLabels[bracketFinal.awayTeamName] != null ? seedLabels[bracketFinal.awayTeamName] : 'T'}">T2</span>
+                                <span class="team-name" th:text="${bracketFinal.awayTeamName}">Đội 2</span>
+                                <span class="team-score" th:text="${bracketFinal.awayScore != null ? bracketFinal.awayScore : ''}"></span>
+                            </div>
                         </div>
-                        <div class="match-team">
-                            <span class="team-id">T3</span>
-                            <span class="team-name">FC Test 17</span>
-                            <span class="team-score">1</span>
+                        <div class="final-ranking" style="margin-left: 15px;"
+                             th:if="${bracketFinal.homeScore != null and bracketFinal.awayScore != null}">
+                            <div class="ranking-item">
+                                <span class="rank-badge"
+                                      th:classappend="${bracketFinal.homeScore > bracketFinal.awayScore} ? ' rank-1st' : ' rank-2nd'"
+                                      th:text="${bracketFinal.homeScore > bracketFinal.awayScore} ? '1st' : '2nd'">1st</span>
+                            </div>
+                            <div class="ranking-item">
+                                <span class="rank-badge"
+                                      th:classappend="${bracketFinal.awayScore > bracketFinal.homeScore} ? ' rank-1st' : ' rank-2nd'"
+                                      th:text="${bracketFinal.awayScore > bracketFinal.homeScore} ? '1st' : '2nd'">2nd</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="final-ranking" style="margin-left: 15px;">
-                        <div class="ranking-item"><span class="rank-badge rank-3rd">3rd</span></div>
-                        <div class="ranking-item"><span class="rank-badge rank-4th">4th</span></div>
+
+                    <div class="ranking-item" th:if="${bracketThird != null}">
+                        <div class="match-pair">
+                            <div class="match-team"
+                                 th:classappend="${bracketThird.homeScore != null and bracketThird.awayScore != null and bracketThird.homeScore > bracketThird.awayScore} ? ' winner'">
+                                <span class="team-id" th:text="${seedLabels[bracketThird.homeTeamName] != null ? seedLabels[bracketThird.homeTeamName] : 'T'}">T3</span>
+                                <span class="team-name" th:text="${bracketThird.homeTeamName}">Đội 1</span>
+                                <span class="team-score" th:text="${bracketThird.homeScore != null ? bracketThird.homeScore : ''}"></span>
+                            </div>
+                            <div class="match-team"
+                                 th:classappend="${bracketThird.homeScore != null and bracketThird.awayScore != null and bracketThird.awayScore > bracketThird.homeScore} ? ' winner'">
+                                <span class="team-id" th:text="${seedLabels[bracketThird.awayTeamName] != null ? seedLabels[bracketThird.awayTeamName] : 'T'}">T4</span>
+                                <span class="team-name" th:text="${bracketThird.awayTeamName}">Đội 2</span>
+                                <span class="team-score" th:text="${bracketThird.awayScore != null ? bracketThird.awayScore : ''}"></span>
+                            </div>
+                        </div>
+                        <div class="final-ranking" style="margin-left: 15px;">
+                            <div class="ranking-item"><span class="rank-badge rank-3rd">3rd</span></div>
+                            <div class="ranking-item"><span class="rank-badge rank-4th">4th</span></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <div class="bracket-container" th:if="${bracketLayout != 'SEMIS_FINAL' and bracketRounds != null}">
+                <div th:each="round : ${bracketRounds}" class="round" style="margin-right: 90px;">
+                    <div class="match-pair" th:each="m : ${round.matches}">
+                        <div class="match-team"
+                             th:classappend="${m.homeScore != null and m.awayScore != null and m.homeScore > m.awayScore} ? ' winner'">
+                            <span class="team-id">H</span>
+                            <span class="team-name" th:text="${m.homeTeamName}">Đội 1</span>
+                            <span class="team-score" th:text="${m.homeScore != null ? m.homeScore : ''}"></span>
+                        </div>
+                        <div class="match-team"
+                             th:classappend="${m.homeScore != null and m.awayScore != null and m.awayScore > m.homeScore} ? ' winner'">
+                            <span class="team-id">A</span>
+                            <span class="team-name" th:text="${m.awayTeamName}">Đội 2</span>
+                            <span class="team-score" th:text="${m.awayScore != null ? m.awayScore : ''}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <footer th:replace="~{admin/fragments_admin/footer :: footer}"></footer>

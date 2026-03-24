@@ -666,6 +666,131 @@ public class AdminController {
 			return "redirect:/admin/manage/tournament";
 		}
 		applyTournamentContext(model, tournament);
+		List<Match> matches = matchService.listByTournamentIdWithDetails(id);
+		List<Match> knockoutMatches = new ArrayList<>();
+		for (Match m : matches) {
+			if (m == null || m.getRoundName() == null) continue;
+			String rn = m.getRoundName().trim();
+			if (rn.toLowerCase().startsWith("bảng")) continue; // skip group
+			knockoutMatches.add(m);
+		}
+
+		List<Match> semisRaw = new ArrayList<>();
+		Match finalRaw = null;
+		Match thirdRaw = null;
+		for (Match m : knockoutMatches) {
+			if (m == null || m.getRoundName() == null) continue;
+			String rn = m.getRoundName().trim();
+			if ("Bán kết".equalsIgnoreCase(rn)) semisRaw.add(m);
+			if ("Chung kết".equalsIgnoreCase(rn)) finalRaw = m;
+			if (rn.toLowerCase().contains("hạng 3")) thirdRaw = m;
+		}
+		semisRaw.sort(Comparator.comparing(Match::getId));
+
+		Map<String, String> seedLabels = new HashMap<>();
+		for (Match m : semisRaw) {
+			String homeName = m.getHomeTeam() != null ? m.getHomeTeam().getName() : null;
+			String awayName = m.getAwayTeam() != null ? m.getAwayTeam().getName() : null;
+			if (homeName != null && !homeName.isBlank() && !seedLabels.containsKey(homeName)) {
+				seedLabels.put(homeName, "T" + (seedLabels.size() + 1));
+			}
+			if (awayName != null && !awayName.isBlank() && !seedLabels.containsKey(awayName)) {
+				seedLabels.put(awayName, "T" + (seedLabels.size() + 1));
+			}
+		}
+
+		List<BracketMatch> bracketSemis = new ArrayList<>();
+		for (Match m : semisRaw) {
+			String homeName = m.getHomeTeam() != null ? m.getHomeTeam().getName() : "Đội 1";
+			String awayName = m.getAwayTeam() != null ? m.getAwayTeam().getName() : "Đội 2";
+			Integer hs = (m.getStatus() == MatchStatus.FINISHED) ? m.getHomeScore() : null;
+			Integer as = (m.getStatus() == MatchStatus.FINISHED) ? m.getAwayScore() : null;
+			bracketSemis.add(new BracketMatch(homeName, awayName, hs, as));
+		}
+
+		BracketMatch bracketFinal = null;
+		if (finalRaw != null) {
+			String homeName = finalRaw.getHomeTeam() != null ? finalRaw.getHomeTeam().getName() : "Đội 1";
+			String awayName = finalRaw.getAwayTeam() != null ? finalRaw.getAwayTeam().getName() : "Đội 2";
+			Integer hs = (finalRaw.getStatus() == MatchStatus.FINISHED) ? finalRaw.getHomeScore() : null;
+			Integer as = (finalRaw.getStatus() == MatchStatus.FINISHED) ? finalRaw.getAwayScore() : null;
+			bracketFinal = new BracketMatch(homeName, awayName, hs, as);
+		}
+
+		BracketMatch bracketThird = null;
+		if (thirdRaw != null) {
+			String homeName = thirdRaw.getHomeTeam() != null ? thirdRaw.getHomeTeam().getName() : "Đội 1";
+			String awayName = thirdRaw.getAwayTeam() != null ? thirdRaw.getAwayTeam().getName() : "Đội 2";
+			Integer hs = (thirdRaw.getStatus() == MatchStatus.FINISHED) ? thirdRaw.getHomeScore() : null;
+			Integer as = (thirdRaw.getStatus() == MatchStatus.FINISHED) ? thirdRaw.getAwayScore() : null;
+			bracketThird = new BracketMatch(homeName, awayName, hs, as);
+		}
+
+		Map<String, Integer> roundPriority = new HashMap<>();
+		roundPriority.put("Vòng 16", 0);
+		roundPriority.put("Tứ kết", 1);
+		roundPriority.put("Bán kết", 2);
+		roundPriority.put("Chung kết", 3);
+		roundPriority.put("Tranh hạng 3", 4);
+
+		Map<String, List<BracketMatch>> byRound = new HashMap<>();
+		for (Match m : knockoutMatches) {
+			String round = m.getRoundName() == null ? "" : m.getRoundName().trim();
+			if (round.isBlank()) continue;
+			Integer hs = (m.getStatus() == MatchStatus.FINISHED) ? m.getHomeScore() : null;
+			Integer as = (m.getStatus() == MatchStatus.FINISHED) ? m.getAwayScore() : null;
+			String homeName = m.getHomeTeam() != null ? m.getHomeTeam().getName() : "Đội 1";
+			String awayName = m.getAwayTeam() != null ? m.getAwayTeam().getName() : "Đội 2";
+			byRound.computeIfAbsent(round, k -> new ArrayList<>())
+					.add(new BracketMatch(homeName, awayName, hs, as));
+		}
+
+		// Ensure bracket stretches to the Final by adding placeholders for missing later rounds
+		// Determine earliest knockout stage present
+		boolean hasR16 = byRound.containsKey("Vòng 16");
+		boolean hasQF = byRound.containsKey("Tứ kết");
+		boolean hasSF = byRound.containsKey("Bán kết");
+		boolean hasFinal = byRound.containsKey("Chung kết");
+
+		if (hasR16) {
+			int r16Count = byRound.getOrDefault("Vòng 16", List.of()).size();
+			int qfExpected = Math.max(1, (int) Math.ceil(r16Count / 2.0));
+			List<BracketMatch> qfList = byRound.computeIfAbsent("Tứ kết", k -> new ArrayList<>());
+			if (qfList.isEmpty()) {
+				for (int i = 0; i < qfExpected; i++) qfList.add(new BracketMatch("—", "—", null, null));
+			}
+			hasQF = true;
+		}
+		if (hasQF) {
+			int qfCount = byRound.getOrDefault("Tứ kết", List.of()).size();
+			int sfExpected = Math.max(1, (int) Math.ceil(qfCount / 2.0));
+			List<BracketMatch> sfList = byRound.computeIfAbsent("Bán kết", k -> new ArrayList<>());
+			if (sfList.isEmpty()) {
+				for (int i = 0; i < sfExpected; i++) sfList.add(new BracketMatch("—", "—", null, null));
+			}
+			hasSF = true;
+		}
+		if (hasSF && !hasFinal) {
+			byRound.put("Chung kết", new ArrayList<>(List.of(new BracketMatch("—", "—", null, null))));
+		}
+
+		List<BracketRound> rounds = new ArrayList<>();
+		for (Map.Entry<String, List<BracketMatch>> e : byRound.entrySet()) {
+			List<BracketMatch> ms = e.getValue();
+			rounds.add(new BracketRound(e.getKey(), ms));
+		}
+		rounds.sort(Comparator.comparingInt(r -> roundPriority.getOrDefault(r.roundName(), 999)));
+
+		model.addAttribute("seedLabels", seedLabels);
+		model.addAttribute("bracketSemis", bracketSemis);
+		model.addAttribute("bracketFinal", bracketFinal);
+		model.addAttribute("bracketThird", bracketThird);
+		// Use specialized SEMIS_FINAL layout only for 4-team tournaments or when there is no Quarter-final round
+		boolean hasQuarterFinal = byRound.containsKey("Tứ kết");
+		boolean isFourTeamTournament = tournament.getTeamLimit() != null && tournament.getTeamLimit() <= 4;
+		String bracketLayout = (!hasQuarterFinal && bracketSemis.size() == 2) || isFourTeamTournament ? "SEMIS_FINAL" : "GENERIC";
+		model.addAttribute("bracketLayout", bracketLayout);
+		model.addAttribute("bracketRounds", rounds);
 		return "admin/tournament/tournament-bracket";
 	}
 
@@ -1384,6 +1509,9 @@ public class AdminController {
 
 		for (TournamentRegistration registration : registrations) {
 			if (registration == null) continue;
+
+			if (registration.getStatus() != RegistrationStatus.APPROVED) continue;
+
 			if (registration.getStatus() != RegistrationStatus.APPROVED) continue;
 			if (registration.getTeam() == null || registration.getTeam().getId() == null) continue;
 			Long teamId = registration.getTeam().getId();
@@ -1666,6 +1794,11 @@ public class AdminController {
 			return "redirect:/admin/match-history?id=" + tournamentId;
 		}
 
+		// Guard: require score saved before finishing the match
+		if (match.getHomeScore() == null || match.getAwayScore() == null) {
+			return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=score_required";
+		}
+
 		match.setStatus(MatchStatus.FINISHED);
 		matchService.save(match);
 		matchService.generateNextKnockoutRoundIfReady(tournamentId, match.getRoundName());
@@ -1785,6 +1918,9 @@ public class AdminController {
 		model.addAttribute("tournamentName", tournament.getName());
 	}
 
+	public record BracketMatch(String homeTeamName, String awayTeamName, Integer homeScore, Integer awayScore) {}
+	public record BracketRound(String roundName, List<BracketMatch> matches) {}
+
 	private String displayMode(TournamentMode mode) {
 		if (mode == null) return "";
 		return mode == TournamentMode.GROUP_STAGE ? "Chia bảng đấu (Group Stage)" : "Knockout";
@@ -1878,6 +2014,7 @@ public class AdminController {
 
 		for (TournamentRegistration registration : registrations) {
 			if (registration == null) continue;
+
 			if (registration.getStatus() != RegistrationStatus.APPROVED) continue;
 			if (registration.getTeam() == null || registration.getTeam().getId() == null) continue;
 
