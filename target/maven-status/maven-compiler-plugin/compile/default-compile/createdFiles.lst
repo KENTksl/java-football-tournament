@@ -23,6 +23,7 @@ com\example\football_tourament_web\model\enums\RegistrationStatus.class
 com\example\football_tourament_web\service\user\UserPaymentService$1.class
 com\example\football_tourament_web\model\entity\MatchLineupSlot.class
 com\example\football_tourament_web\model\entity\Match.class
+com\example\football_tourament_web\service\admin\AdminTournamentManagementService.class
 com\example\football_tourament_web\model\enums\TournamentMode.class
 com\example\football_tourament_web\service\admin\AdminUserManagementService$1.class
 com\example\football_tourament_web\model\enums\TransactionStatus.class
@@ -38,8 +39,10 @@ com\example\football_tourament_web\service\common\FileStorageService$FileTooLarg
 com\example\football_tourament_web\model\entity\Transaction.class
 com\example\football_tourament_web\model\enums\TeamSide.class
 com\example\football_tourament_web\model\enums\Gender.class
+com\example\football_tourament_web\controller\admin\AdminTournamentManagementController.class
 com\example\football_tourament_web\config\DataSeeder.class
 com\example\football_tourament_web\service\admin\AdminTournamentViewService$1.class
 com\example\football_tourament_web\model\entity\AppUser.class
+com\example\football_tourament_web\service\admin\AdminTournamentManagementService$AdminTournamentRow.class
 com\example\football_tourament_web\FootballTouramentWebApplication.class
 com\example\football_tourament_web\model\entity\TournamentRegistration.class

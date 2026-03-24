@@ -52,6 +52,7 @@ public class UserTournamentController {
 			return "redirect:/dang-nhap?redirect=" + redirect;
 		}
 		attachTournament(model, id);
+		model.addAttribute("paymentInfo", userTournamentViewService.buildPaymentInfo(authentication, id));
 		model.addAttribute("signUpTeams", userTournamentViewService.listSignUpTeamOptions(authentication));
 		model.addAttribute("signUpTeamPrefills", userTournamentViewService.listSignUpTeamPrefills(authentication));
 		model.addAttribute("embedded", embedded);

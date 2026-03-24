@@ -811,7 +811,7 @@
             }
         }
 
-        function openEditModal(id, name, organizer, mode, pitchType, teams, startDate, endDate, description) {
+        function openEditModal(id, name, organizer, mode, pitchType, teams, registrationFee, startDate, endDate, description) {
             console.log("Opening Edit Modal", id);
             const modal = document.getElementById('editTournamentModal');
             if (!modal) return;
@@ -840,6 +840,8 @@
 
             document.getElementById('editTeams').value = teams + '/' + teams;
             updateEditTeamOptions(teams + '/' + teams);
+            const feeInput = document.getElementById('editRegistrationFee');
+            if (feeInput) feeInput.value = registrationFee || '';
             document.getElementById('editStartDate').value = startDate;
             document.getElementById('editEndDate').value = endDate;
             document.getElementById('editDescription').value = description;
@@ -868,11 +870,12 @@
             const mode = button.getAttribute('data-mode');
             const pitchType = button.getAttribute('data-pitch');
             const teams = button.getAttribute('data-teams');
+            const registrationFee = button.getAttribute('data-fee');
             const startDate = button.getAttribute('data-start');
             const endDate = button.getAttribute('data-end');
             const description = button.getAttribute('data-desc');
             
-            openEditModal(id, name, organizer, mode, pitchType, teams, startDate, endDate, description);
+            openEditModal(id, name, organizer, mode, pitchType, teams, registrationFee, startDate, endDate, description);
         }
 
         window.onclick = function(event) {
@@ -947,6 +950,7 @@
                                                     th:data-mode="${t.mode}"
                                                     th:data-pitch="${t.pitchType}"
                                                     th:data-teams="${t.teamLimit}"
+                                                    th:data-fee="${t.registrationFee}"
                                                     th:data-start="${t.startDate}"
                                                     th:data-end="${t.endDate}"
                                                     th:data-desc="${t.description}"

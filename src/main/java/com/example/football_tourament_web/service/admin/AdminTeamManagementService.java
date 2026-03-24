@@ -4,16 +4,23 @@ import com.example.football_tourament_web.model.entity.Player;
 import com.example.football_tourament_web.model.entity.Team;
 import com.example.football_tourament_web.model.entity.Tournament;
 import com.example.football_tourament_web.model.entity.TournamentRegistration;
+import com.example.football_tourament_web.model.entity.Transaction;
 import com.example.football_tourament_web.model.enums.RegistrationStatus;
+import com.example.football_tourament_web.model.enums.TransactionStatus;
 import com.example.football_tourament_web.repository.PlayerRepository;
 import com.example.football_tourament_web.service.core.TournamentRegistrationService;
 import com.example.football_tourament_web.service.core.TournamentService;
 import com.example.football_tourament_web.service.common.ViewFormatService;
+import com.example.football_tourament_web.service.core.TransactionService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class AdminTeamManagementService {
@@ -21,17 +28,20 @@ public class AdminTeamManagementService {
 	private final TournamentRegistrationService tournamentRegistrationService;
 	private final PlayerRepository playerRepository;
 	private final ViewFormatService viewFormatService;
+	private final TransactionService transactionService;
 
 	public AdminTeamManagementService(
 			TournamentService tournamentService,
 			TournamentRegistrationService tournamentRegistrationService,
 			PlayerRepository playerRepository,
-			ViewFormatService viewFormatService
+			ViewFormatService viewFormatService,
+			TransactionService transactionService
 	) {
 		this.tournamentService = tournamentService;
 		this.tournamentRegistrationService = tournamentRegistrationService;
 		this.playerRepository = playerRepository;
 		this.viewFormatService = viewFormatService;
+		this.transactionService = transactionService;
 	}
 
 	public TeamManagementView buildTeamManagementView(Long tournamentId, String status, String search, int page, int size) {
@@ -58,6 +68,7 @@ public class AdminTeamManagementService {
 		);
 	}
 
+	@Transactional
 	public UpdateStatusResult updateRegistrationStatus(Long registrationId, Long tournamentId, String targetStatus) {
 		RegistrationStatus newStatus = parseRegistrationStatus(targetStatus);
 		if (newStatus == null) {
@@ -67,10 +78,40 @@ public class AdminTeamManagementService {
 			return new UpdateStatusResult(false, "Không tìm thấy hồ sơ đăng ký cần cập nhật");
 		}
 
-		var registration = tournamentRegistrationService.findById(registrationId).orElse(null);
+		var registration = tournamentRegistrationService.findByIdWithDetails(registrationId).orElse(null);
 		if (registration == null || registration.getTournament() == null || registration.getTournament().getId() == null
 				|| !registration.getTournament().getId().equals(tournamentId)) {
 			return new UpdateStatusResult(false, "Không tìm thấy hồ sơ đăng ký cần cập nhật");
+		}
+
+		if (newStatus == RegistrationStatus.REJECTED) {
+			var paid = registration.getPaidAmount() == null ? BigDecimal.ZERO : registration.getPaidAmount();
+			boolean shouldRefund = paid.signum() > 0 && registration.getRefundTransactionCode() == null;
+			if (shouldRefund) {
+				if (registration.getRegisteredBy() == null || registration.getRegisteredBy().getId() == null) {
+					return new UpdateStatusResult(false, "Không thể hoàn phí vì thiếu thông tin người đăng ký");
+				}
+
+				String txCode = "REFUND_REG_FEE_" + tournamentId + "_" + UUID.randomUUID();
+				Transaction refundTx = new Transaction(
+						txCode,
+						"Hoàn phí đăng ký giải đấu: " + (registration.getTournament().getName() == null ? ("#" + tournamentId) : registration.getTournament().getName()),
+						paid,
+						registration.getRegisteredBy()
+				);
+				refundTx.setStatus(TransactionStatus.SUCCESS);
+				transactionService.save(refundTx);
+
+				var tournament = registration.getTournament();
+				var pool = tournament.getPrizePool() == null ? BigDecimal.ZERO : tournament.getPrizePool();
+				BigDecimal updatedPool = pool.subtract(paid);
+				tournament.setPrizePool(updatedPool.signum() < 0 ? BigDecimal.ZERO : updatedPool);
+				tournamentService.save(tournament);
+
+				registration.setRefundedAmount(paid);
+				registration.setRefundTransactionCode(txCode);
+				registration.setRefundedAt(Instant.now());
+			}
 		}
 
 		registration.setStatus(newStatus);
@@ -78,6 +119,12 @@ public class AdminTeamManagementService {
 			registration.setGroupName(null);
 		}
 		tournamentRegistrationService.save(registration);
+		if (newStatus == RegistrationStatus.REJECTED) {
+			var paid = registration.getPaidAmount() == null ? BigDecimal.ZERO : registration.getPaidAmount();
+			if (paid.signum() > 0) {
+				return new UpdateStatusResult(true, "Đã từ chối hồ sơ và hoàn phí: " + viewFormatService.formatMoney(paid));
+			}
+		}
 		return new UpdateStatusResult(true, "Đã cập nhật trạng thái hồ sơ");
 	}
 

@@ -18,8 +18,17 @@
                 <p class="slot-info">
                     Số đội: <strong th:text="${(registeredTeamCount ?: 0) + '/' + (tournament?.teamLimit ?: 0)}">2/8</strong>
                 </p>
+                <p class="slot-info" th:if="${paymentInfo != null}">
+                    Phí đăng ký: <strong th:text="${paymentInfo.registrationFeeText}">0 đ</strong>
+                    • Số dư: <strong th:text="${paymentInfo.walletBalanceText}">0 đ</strong>
+                </p>
+                <p class="slot-info" th:if="${paymentInfo != null and paymentInfo.registrationFee.signum() > 0}">
+                    Thanh toán bằng số dư ví nội bộ. Nếu hồ sơ bị từ chối, hệ thống hoàn 100% phí đăng ký.
+                </p>
             </div>
             <div th:if="${tournamentIsFull}" class="alert alert-danger">Giải đấu đã đủ đội, không thể đăng ký thêm.</div>
+            <div th:if="${paymentInfo != null and !paymentInfo.hasEnoughBalance and paymentInfo.registrationFee.signum() > 0}"
+                 class="alert alert-danger">Số dư không đủ để đăng ký giải đấu này.</div>
             <div th:if="${registrationMessage}" th:text="${registrationMessage}"
                  th:classappend="${registrationSuccess ? 'alert-success' : 'alert-danger'}" class="alert"></div>
         </header>
@@ -79,7 +88,7 @@
             </div>
 
             <footer class="modal-footer">
-                <button type="submit" class="btn-submit" th:disabled="${tournamentIsFull}">GỬI HỒ SƠ ĐĂNG KÝ</button>
+                <button type="submit" class="btn-submit" th:disabled="${tournamentIsFull or (paymentInfo != null and !paymentInfo.hasEnoughBalance and paymentInfo.registrationFee.signum() > 0)}">GỬI HỒ SƠ ĐĂNG KÝ</button>
             </footer>
         </form>
     </div>

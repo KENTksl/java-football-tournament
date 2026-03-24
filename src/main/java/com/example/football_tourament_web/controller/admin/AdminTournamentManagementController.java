@@ -39,12 +39,13 @@ public class AdminTournamentManagementController {
 			@RequestParam("mode") String mode,
 			@RequestParam("pitchType") String pitchType,
 			@RequestParam("teams") String teams,
+			@RequestParam(value = "registrationFee", required = false) String registrationFee,
 			@RequestParam("startDate") String startDate,
 			@RequestParam("endDate") String endDate,
 			@RequestParam(value = "description", required = false) String description,
 			@RequestParam(value = "image", required = false) MultipartFile image
 	) {
-		adminTournamentManagementService.addTournament(name, organizer, mode, pitchType, teams, startDate, endDate, description, image);
+		adminTournamentManagementService.addTournament(name, organizer, mode, pitchType, teams, registrationFee, startDate, endDate, description, image);
 		return "redirect:/admin/manage/tournament";
 	}
 
@@ -68,12 +69,13 @@ public class AdminTournamentManagementController {
 			@RequestParam("mode") String mode,
 			@RequestParam("pitchType") String pitchType,
 			@RequestParam("teams") String teams,
+			@RequestParam(value = "registrationFee", required = false) String registrationFee,
 			@RequestParam("startDate") String startDate,
 			@RequestParam("endDate") String endDate,
 			@RequestParam(value = "description", required = false) String description,
 			@RequestParam(value = "image", required = false) MultipartFile image
 	) {
-		adminTournamentManagementService.editTournament(id, name, organizer, mode, pitchType, teams, startDate, endDate, description, image);
+		adminTournamentManagementService.editTournament(id, name, organizer, mode, pitchType, teams, registrationFee, startDate, endDate, description, image);
 		return "redirect:/admin/manage/tournament";
 	}
 
@@ -85,12 +87,13 @@ public class AdminTournamentManagementController {
 			@RequestParam("mode") String mode,
 			@RequestParam("pitchType") String pitchType,
 			@RequestParam("teams") String teams,
+			@RequestParam(value = "registrationFee", required = false) String registrationFee,
 			@RequestParam("startDate") String startDate,
 			@RequestParam("endDate") String endDate,
 			@RequestParam(value = "description", required = false) String description,
 			@RequestParam(value = "image", required = false) MultipartFile image
 	) {
-		adminTournamentManagementService.editTournament(id, name, organizer, mode, pitchType, teams, startDate, endDate, description, image);
+		adminTournamentManagementService.editTournament(id, name, organizer, mode, pitchType, teams, registrationFee, startDate, endDate, description, image);
 		return "redirect:/admin/manage/tournament";
 	}
 

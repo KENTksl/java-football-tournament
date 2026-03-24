@@ -1,5 +1,6 @@
 package com.example.football_tourament_web.model.entity;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -58,6 +59,14 @@ public class Tournament {
 	private LocalDate startDate;
 
 	private LocalDate endDate;
+
+	@Column(nullable = false, precision = 19, scale = 2)
+	private BigDecimal registrationFee = BigDecimal.ZERO;
+
+	@Column(nullable = false, precision = 19, scale = 2)
+	private BigDecimal prizePool = BigDecimal.ZERO;
+
+	private Instant prizeDistributedAt;
 
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
@@ -176,6 +185,30 @@ public class Tournament {
 
 	public void setEndDate(LocalDate endDate) {
 		this.endDate = endDate;
+	}
+
+	public BigDecimal getRegistrationFee() {
+		return registrationFee;
+	}
+
+	public void setRegistrationFee(BigDecimal registrationFee) {
+		this.registrationFee = registrationFee == null ? BigDecimal.ZERO : registrationFee;
+	}
+
+	public BigDecimal getPrizePool() {
+		return prizePool;
+	}
+
+	public void setPrizePool(BigDecimal prizePool) {
+		this.prizePool = prizePool == null ? BigDecimal.ZERO : prizePool;
+	}
+
+	public Instant getPrizeDistributedAt() {
+		return prizeDistributedAt;
+	}
+
+	public void setPrizeDistributedAt(Instant prizeDistributedAt) {
+		this.prizeDistributedAt = prizeDistributedAt;
 	}
 
 	public Instant getCreatedAt() {

@@ -5,25 +5,30 @@ import com.example.football_tourament_web.model.entity.MatchEvent;
 import com.example.football_tourament_web.model.entity.Team;
 import com.example.football_tourament_web.model.entity.Tournament;
 import com.example.football_tourament_web.model.entity.TournamentRegistration;
+import com.example.football_tourament_web.model.entity.Transaction;
 import com.example.football_tourament_web.model.enums.MatchStatus;
 import com.example.football_tourament_web.model.enums.PitchType;
 import com.example.football_tourament_web.model.enums.RegistrationStatus;
 import com.example.football_tourament_web.model.enums.TeamSide;
 import com.example.football_tourament_web.model.enums.TournamentMode;
+import com.example.football_tourament_web.model.enums.TransactionStatus;
 import com.example.football_tourament_web.repository.MatchEventRepository;
 import com.example.football_tourament_web.repository.PlayerRepository;
 import com.example.football_tourament_web.service.common.FileStorageService;
+import com.example.football_tourament_web.service.common.ViewFormatService;
 import com.example.football_tourament_web.service.core.MatchLineupService;
 import com.example.football_tourament_web.service.core.MatchService;
 import com.example.football_tourament_web.service.core.TeamService;
 import com.example.football_tourament_web.service.core.TournamentRegistrationService;
 import com.example.football_tourament_web.service.core.TournamentService;
+import com.example.football_tourament_web.service.core.TransactionService;
 import com.example.football_tourament_web.service.core.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -32,6 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class UserTournamentViewService {
@@ -41,6 +47,8 @@ public class UserTournamentViewService {
 	private final MatchLineupService matchLineupService;
 	private final TeamService teamService;
 	private final UserService userService;
+	private final TransactionService transactionService;
+	private final ViewFormatService viewFormatService;
 	private final PlayerRepository playerRepository;
 	private final FileStorageService fileStorageService;
 
@@ -53,6 +61,8 @@ public class UserTournamentViewService {
 			MatchLineupService matchLineupService,
 			TeamService teamService,
 			UserService userService,
+			TransactionService transactionService,
+			ViewFormatService viewFormatService,
 			PlayerRepository playerRepository,
 			MatchEventRepository matchEventRepository,
 			FileStorageService fileStorageService
@@ -63,6 +73,8 @@ public class UserTournamentViewService {
 		this.matchLineupService = matchLineupService;
 		this.teamService = teamService;
 		this.userService = userService;
+		this.transactionService = transactionService;
+		this.viewFormatService = viewFormatService;
 		this.playerRepository = playerRepository;
 		this.matchEventRepository = matchEventRepository;
 		this.fileStorageService = fileStorageService;
@@ -74,6 +86,22 @@ public class UserTournamentViewService {
 			return null;
 		}
 		return tournamentService.findById(id).orElse(null);
+	}
+
+	@Transactional(readOnly = true)
+	public PaymentInfo buildPaymentInfo(Authentication authentication, Long tournamentId) {
+		if (tournamentId == null) {
+			return new PaymentInfo(BigDecimal.ZERO, BigDecimal.ZERO, viewFormatService.formatMoney(BigDecimal.ZERO), viewFormatService.formatMoney(BigDecimal.ZERO), true);
+		}
+		Tournament tournament = tournamentService.findById(tournamentId).orElse(null);
+		BigDecimal fee = tournament == null || tournament.getRegistrationFee() == null ? BigDecimal.ZERO : tournament.getRegistrationFee();
+		if (fee.signum() < 0) fee = BigDecimal.ZERO;
+
+		var user = requireCurrentUser(authentication);
+		BigDecimal balance = user == null ? BigDecimal.ZERO : transactionService.calculateBalance(user.getId());
+		if (balance == null) balance = BigDecimal.ZERO;
+		boolean enough = balance.compareTo(fee) >= 0;
+		return new PaymentInfo(fee, balance, viewFormatService.formatMoney(fee), viewFormatService.formatMoney(balance), enough);
 	}
 
 	@Transactional(readOnly = true)
@@ -300,11 +328,50 @@ public class UserTournamentViewService {
 			existing = new TournamentRegistration();
 			existing.setTournament(tournament);
 			existing.setTeam(team);
+		} else if (existing.getStatus() == RegistrationStatus.REJECTED) {
+			if (existing.getPaidAmount() != null && existing.getPaidAmount().signum() > 0 && existing.getRefundTransactionCode() == null) {
+				return RegistrationSubmitResult.failed("Hồ sơ trước đó đã bị từ chối nhưng chưa hoàn phí. Vui lòng liên hệ admin để được hỗ trợ.");
+			}
+		}
+
+		BigDecimal fee = tournament.getRegistrationFee() == null ? BigDecimal.ZERO : tournament.getRegistrationFee();
+		if (fee.signum() < 0) {
+			fee = BigDecimal.ZERO;
+		}
+		if (fee.signum() > 0) {
+			BigDecimal balance = transactionService.calculateBalance(user.getId());
+			if (balance == null) balance = BigDecimal.ZERO;
+			if (balance.compareTo(fee) < 0) {
+				return RegistrationSubmitResult.failed("Số dư không đủ để đăng ký. Phí đăng ký: " + viewFormatService.formatMoney(fee) + ".");
+			}
+
+			String txCode = "REG_FEE_" + tournamentId + "_" + UUID.randomUUID();
+			Transaction tx = new Transaction(
+					txCode,
+					"Phí đăng ký giải đấu: " + (tournament.getName() == null ? ("#" + tournament.getId()) : tournament.getName()),
+					fee.negate(),
+					user
+			);
+			tx.setStatus(TransactionStatus.SUCCESS);
+			transactionService.save(tx);
+
+			BigDecimal pool = tournament.getPrizePool() == null ? BigDecimal.ZERO : tournament.getPrizePool();
+			tournament.setPrizePool(pool.add(fee));
+			tournamentService.save(tournament);
+
+			existing.setPaidAmount(fee);
+			existing.setPaidTransactionCode(txCode);
+			existing.setRefundedAmount(BigDecimal.ZERO);
+			existing.setRefundTransactionCode(null);
+			existing.setRefundedAt(null);
 		}
 		existing.setRegisteredBy(user);
 		existing.setStatus(RegistrationStatus.PENDING);
 		existing.setGroupName(null);
 		tournamentRegistrationService.save(existing);
+		if (fee.signum() > 0) {
+			return RegistrationSubmitResult.success("Đã gửi hồ sơ và trừ phí đăng ký (" + viewFormatService.formatMoney(fee) + "). Admin sẽ duyệt trong thời gian sớm nhất");
+		}
 		return RegistrationSubmitResult.success("Đã gửi hồ sơ đăng ký. Admin sẽ duyệt trong thời gian sớm nhất");
 	}
 
@@ -1013,6 +1080,9 @@ public class UserTournamentViewService {
 		public static RegistrationSubmitResult failed(String message) {
 			return new RegistrationSubmitResult(false, message);
 		}
+	}
+
+	public record PaymentInfo(BigDecimal registrationFee, BigDecimal walletBalance, String registrationFeeText, String walletBalanceText, boolean hasEnoughBalance) {
 	}
 
 	public record GroupTeamRow(Long teamId, String name, String logoUrl, long memberCount, int played, int won, int drawn, int lost, int points, int goalsFor, int goalsAgainst, List<String> form) {

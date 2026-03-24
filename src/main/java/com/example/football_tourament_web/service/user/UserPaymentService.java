@@ -72,9 +72,9 @@ public class UserPaymentService {
 		}
 
 		Integer option = paymentForm.amountOption;
-		List<Integer> allowed = List.of(10, 20, 50, 100);
+		List<Integer> allowed = List.of(10, 20, 50, 100, 200, 500);
 		if (option == null || !allowed.contains(option)) {
-			bindingResult.rejectValue("amountOption", "amountOption.invalid", "Vui lòng chọn số tiền 10k/20k/50k/100k");
+			bindingResult.rejectValue("amountOption", "amountOption.invalid", "Vui lòng chọn số tiền 10k/20k/50k/100k/200k/500k");
 		}
 
 		if (bindingResult.hasErrors()) {

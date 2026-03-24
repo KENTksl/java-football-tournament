@@ -4,9 +4,11 @@ import com.example.football_tourament_web.model.entity.Match;
 import com.example.football_tourament_web.model.entity.MatchEvent;
 import com.example.football_tourament_web.model.entity.MatchLineupSlot;
 import com.example.football_tourament_web.model.entity.Player;
+import com.example.football_tourament_web.model.entity.AppUser;
 import com.example.football_tourament_web.model.entity.Team;
 import com.example.football_tourament_web.model.entity.Tournament;
 import com.example.football_tourament_web.model.entity.TournamentRegistration;
+import com.example.football_tourament_web.model.entity.Transaction;
 import com.example.football_tourament_web.model.enums.MatchEventType;
 import com.example.football_tourament_web.model.enums.MatchStatus;
 import com.example.football_tourament_web.model.enums.PitchType;
@@ -14,15 +16,21 @@ import com.example.football_tourament_web.model.enums.RegistrationStatus;
 import com.example.football_tourament_web.model.enums.TeamSide;
 import com.example.football_tourament_web.model.enums.TournamentMode;
 import com.example.football_tourament_web.model.enums.TournamentStatus;
+import com.example.football_tourament_web.model.enums.TransactionStatus;
+import com.example.football_tourament_web.model.enums.UserRole;
 import com.example.football_tourament_web.repository.PlayerRepository;
 import com.example.football_tourament_web.service.core.MatchEventService;
 import com.example.football_tourament_web.service.core.MatchLineupService;
 import com.example.football_tourament_web.service.core.MatchService;
 import com.example.football_tourament_web.service.core.TournamentRegistrationService;
 import com.example.football_tourament_web.service.core.TournamentService;
+import com.example.football_tourament_web.service.core.TransactionService;
+import com.example.football_tourament_web.service.core.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -34,6 +42,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class AdminMatchHistoryService {
@@ -43,6 +52,8 @@ public class AdminMatchHistoryService {
 	private final MatchEventService matchEventService;
 	private final TournamentRegistrationService tournamentRegistrationService;
 	private final PlayerRepository playerRepository;
+	private final TransactionService transactionService;
+	private final UserService userService;
 
 	public AdminMatchHistoryService(
 			TournamentService tournamentService,
@@ -50,7 +61,9 @@ public class AdminMatchHistoryService {
 			MatchLineupService matchLineupService,
 			MatchEventService matchEventService,
 			TournamentRegistrationService tournamentRegistrationService,
-			PlayerRepository playerRepository
+			PlayerRepository playerRepository,
+			TransactionService transactionService,
+			UserService userService
 	) {
 		this.tournamentService = tournamentService;
 		this.matchService = matchService;
@@ -58,6 +71,8 @@ public class AdminMatchHistoryService {
 		this.matchEventService = matchEventService;
 		this.tournamentRegistrationService = tournamentRegistrationService;
 		this.playerRepository = playerRepository;
+		this.transactionService = transactionService;
+		this.userService = userService;
 	}
 
 	public PageResult buildMatchHistoryPage(Long tournamentId, Long matchId, String tab, int page, int size) {
@@ -489,6 +504,7 @@ public class AdminMatchHistoryService {
 				Tournament tournament = match.getTournament();
 				tournament.setWinner(winner);
 				tournament.setStatus(TournamentStatus.FINISHED);
+				distributePrizesIfNeeded(tournament, match);
 				tournamentService.save(tournament);
 			}
 		}
@@ -496,6 +512,49 @@ public class AdminMatchHistoryService {
 		matchService.generateNextKnockoutRoundIfReady(tournamentId, match.getRoundName());
 		matchService.generateQuarterFinalsFromGroupsIfReady(tournamentId);
 		return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=finish";
+	}
+
+	private void distributePrizesIfNeeded(Tournament tournament, Match finalMatch) {
+		if (tournament == null || tournament.getId() == null) return;
+		if (tournament.getPrizeDistributedAt() != null) return;
+		BigDecimal pool = tournament.getPrizePool() == null ? BigDecimal.ZERO : tournament.getPrizePool();
+		if (pool.signum() <= 0) return;
+		if (finalMatch == null || finalMatch.getHomeTeam() == null || finalMatch.getAwayTeam() == null) return;
+
+		Team winnerTeam = matchService.winnerOf(finalMatch);
+		if (winnerTeam == null || winnerTeam.getId() == null) return;
+		Team runnerUpTeam = winnerTeam.getId().equals(finalMatch.getHomeTeam().getId()) ? finalMatch.getAwayTeam() : finalMatch.getHomeTeam();
+
+		if (winnerTeam.getCaptain() == null || winnerTeam.getCaptain().getId() == null) return;
+		if (runnerUpTeam == null || runnerUpTeam.getCaptain() == null || runnerUpTeam.getCaptain().getId() == null) return;
+		var admins = userService.listUsersByRole(UserRole.ADMIN);
+		if (admins == null || admins.isEmpty() || admins.get(0) == null || admins.get(0).getId() == null) return;
+		var admin = admins.get(0);
+
+		BigDecimal winnerAmount = pool.multiply(new BigDecimal("0.35")).setScale(2, java.math.RoundingMode.DOWN);
+		BigDecimal runnerUpAmount = pool.multiply(new BigDecimal("0.15")).setScale(2, java.math.RoundingMode.DOWN);
+		BigDecimal adminAmount = pool.subtract(winnerAmount).subtract(runnerUpAmount);
+		if (adminAmount.signum() < 0) return;
+
+		String baseCode = "PRIZE_" + tournament.getId() + "_" + UUID.randomUUID();
+		transactionService.save(buildPrizeTx(baseCode + "_WIN", winnerTeam.getCaptain(), winnerAmount, "Thưởng vô địch giải đấu: " + safeTournamentName(tournament)));
+		transactionService.save(buildPrizeTx(baseCode + "_RUN", runnerUpTeam.getCaptain(), runnerUpAmount, "Thưởng á quân giải đấu: " + safeTournamentName(tournament)));
+		transactionService.save(buildPrizeTx(baseCode + "_ADM", admin, adminAmount, "Chia thưởng admin giải đấu: " + safeTournamentName(tournament)));
+
+		tournament.setPrizeDistributedAt(Instant.now());
+	}
+
+	private Transaction buildPrizeTx(String code, AppUser user, BigDecimal amount, String description) {
+		Transaction tx = new Transaction(code, description, amount, user);
+		tx.setStatus(TransactionStatus.SUCCESS);
+		return tx;
+	}
+
+	private String safeTournamentName(Tournament tournament) {
+		if (tournament == null) return "";
+		String name = tournament.getName();
+		if (name != null && !name.isBlank()) return name;
+		return "#" + tournament.getId();
 	}
 
 	private void applyGroupStageModel(

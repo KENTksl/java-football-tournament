@@ -1,5 +1,6 @@
 package com.example.football_tourament_web.model.entity;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 import com.example.football_tourament_web.model.enums.RegistrationStatus;
@@ -47,6 +48,18 @@ public class TournamentRegistration {
 
 	@Column(name = "group_name")
 	private String groupName;
+
+	@Column(nullable = false, precision = 19, scale = 2)
+	private BigDecimal paidAmount = BigDecimal.ZERO;
+
+	private String paidTransactionCode;
+
+	@Column(nullable = false, precision = 19, scale = 2)
+	private BigDecimal refundedAmount = BigDecimal.ZERO;
+
+	private String refundTransactionCode;
+
+	private Instant refundedAt;
 
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
@@ -116,6 +129,46 @@ public class TournamentRegistration {
 
 	public void setGroupName(String groupName) {
 		this.groupName = groupName;
+	}
+
+	public BigDecimal getPaidAmount() {
+		return paidAmount;
+	}
+
+	public void setPaidAmount(BigDecimal paidAmount) {
+		this.paidAmount = paidAmount == null ? BigDecimal.ZERO : paidAmount;
+	}
+
+	public String getPaidTransactionCode() {
+		return paidTransactionCode;
+	}
+
+	public void setPaidTransactionCode(String paidTransactionCode) {
+		this.paidTransactionCode = paidTransactionCode;
+	}
+
+	public BigDecimal getRefundedAmount() {
+		return refundedAmount;
+	}
+
+	public void setRefundedAmount(BigDecimal refundedAmount) {
+		this.refundedAmount = refundedAmount == null ? BigDecimal.ZERO : refundedAmount;
+	}
+
+	public String getRefundTransactionCode() {
+		return refundTransactionCode;
+	}
+
+	public void setRefundTransactionCode(String refundTransactionCode) {
+		this.refundTransactionCode = refundTransactionCode;
+	}
+
+	public Instant getRefundedAt() {
+		return refundedAt;
+	}
+
+	public void setRefundedAt(Instant refundedAt) {
+		this.refundedAt = refundedAt;
 	}
 
 	public Instant getCreatedAt() {

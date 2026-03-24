@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +68,7 @@ public class AdminTournamentManagementService {
 					TournamentStatus s = t.getStatus();
 					String statusLabel = s == TournamentStatus.UPCOMING ? "Sắp diễn ra" : (s == TournamentStatus.LIVE ? "Đang đá" : "Đã kết thúc");
 					String statusClass = s == TournamentStatus.UPCOMING ? "status-badge--upcoming" : (s == TournamentStatus.LIVE ? "status-badge--live" : "status-badge--finished");
+					String feeText = t.getRegistrationFee() == null ? "0" : t.getRegistrationFee().stripTrailingZeros().toPlainString();
 					return new AdminTournamentRow(
 							t.getId(),
 							t.getName(),
@@ -78,6 +80,7 @@ public class AdminTournamentManagementService {
 							t.getMode() == null ? null : t.getMode().name(),
 							t.getPitchType() == null ? null : t.getPitchType().name(),
 							t.getTeamLimit(),
+							feeText,
 							t.getStartDate() == null ? null : t.getStartDate().toString(),
 							t.getEndDate() == null ? null : t.getEndDate().toString(),
 							t.getDescription()
@@ -93,13 +96,14 @@ public class AdminTournamentManagementService {
 			String mode,
 			String pitchType,
 			String teams,
+			String registrationFee,
 			String startDate,
 			String endDate,
 			String description,
 			MultipartFile image
 	) {
 		Tournament tournament = new Tournament();
-		applyTournamentFromInputs(tournament, name, organizer, mode, pitchType, teams, startDate, endDate, description, image);
+		applyTournamentFromInputs(tournament, name, organizer, mode, pitchType, teams, registrationFee, startDate, endDate, description, image);
 		tournamentService.save(tournament);
 	}
 
@@ -111,6 +115,7 @@ public class AdminTournamentManagementService {
 			String mode,
 			String pitchType,
 			String teams,
+			String registrationFee,
 			String startDate,
 			String endDate,
 			String description,
@@ -119,7 +124,7 @@ public class AdminTournamentManagementService {
 		if (id == null) return;
 		Tournament tournament = tournamentService.findById(id).orElse(null);
 		if (tournament == null) return;
-		applyTournamentFromInputs(tournament, name, organizer, mode, pitchType, teams, startDate, endDate, description, image);
+		applyTournamentFromInputs(tournament, name, organizer, mode, pitchType, teams, registrationFee, startDate, endDate, description, image);
 		tournamentService.save(tournament);
 	}
 
@@ -136,6 +141,7 @@ public class AdminTournamentManagementService {
 			String mode,
 			String pitchType,
 			String teams,
+			String registrationFee,
 			String startDate,
 			String endDate,
 			String description,
@@ -165,6 +171,8 @@ public class AdminTournamentManagementService {
 			if (tournament.getTeamLimit() == null) tournament.setTeamLimit(4);
 		}
 
+		tournament.setRegistrationFee(parseMoneyOrZero(registrationFee));
+
 		try {
 			if (startDate != null && !startDate.isBlank()) {
 				tournament.setStartDate(LocalDate.parse(startDate));
@@ -183,6 +191,19 @@ public class AdminTournamentManagementService {
 		if (image != null && !image.isEmpty()) {
 			String url = fileStorageService.storeUnderUploads(image, "tournaments");
 			if (url != null) tournament.setImageUrl(url);
+		}
+	}
+
+	private static BigDecimal parseMoneyOrZero(String raw) {
+		if (raw == null) return BigDecimal.ZERO;
+		String s = raw.trim();
+		if (s.isBlank()) return BigDecimal.ZERO;
+		s = s.replaceAll("[^0-9]", "");
+		if (s.isBlank()) return BigDecimal.ZERO;
+		try {
+			return new BigDecimal(s);
+		} catch (Exception ex) {
+			return BigDecimal.ZERO;
 		}
 	}
 
@@ -205,11 +226,12 @@ public class AdminTournamentManagementService {
 		private final String mode;
 		private final String pitchType;
 		private final Integer teamLimit;
+		private final String registrationFee;
 		private final String startDate;
 		private final String endDate;
 		private final String description;
 
-		public AdminTournamentRow(Long id, String name, String organizer, String modeLabel, String teamCountText, String statusLabel, String statusClass, String mode, String pitchType, Integer teamLimit, String startDate, String endDate, String description) {
+		public AdminTournamentRow(Long id, String name, String organizer, String modeLabel, String teamCountText, String statusLabel, String statusClass, String mode, String pitchType, Integer teamLimit, String registrationFee, String startDate, String endDate, String description) {
 			this.id = id;
 			this.name = name;
 			this.organizer = organizer;
@@ -220,6 +242,7 @@ public class AdminTournamentManagementService {
 			this.mode = mode;
 			this.pitchType = pitchType;
 			this.teamLimit = teamLimit;
+			this.registrationFee = registrationFee;
 			this.startDate = startDate;
 			this.endDate = endDate;
 			this.description = description;
@@ -235,6 +258,7 @@ public class AdminTournamentManagementService {
 		public String getMode() { return mode; }
 		public String getPitchType() { return pitchType; }
 		public Integer getTeamLimit() { return teamLimit; }
+		public String getRegistrationFee() { return registrationFee; }
 		public String getStartDate() { return startDate; }
 		public String getEndDate() { return endDate; }
 		public String getDescription() { return description; }
