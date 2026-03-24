@@ -450,11 +450,11 @@
 
         /* Status Colors */
         .winner {
-            background: #ff8a65; /* Cam cho đội thắng vòng 1 */
+            background: #ff8a65; 
         }
         
         .winner-final {
-            background: #d4e157; /* Vàng chanh cho đội thắng chung cuộc */
+            background: #d4e157; 
         }
 
         /* Connectors */
@@ -521,16 +521,16 @@
                 <div class="round round--semis">
                     <div class="match-pair" th:each="m : ${bracketSemis}">
                         <div class="match-team"
-                             th:classappend="${m.homeScore != null and m.awayScore != null and m.homeScore > m.awayScore} ? ' winner'">
+                             th:classappend="${m.homeWinner()} ? ' winner'">
                             <span class="team-id" th:text="${seedLabels[m.homeTeamName] != null ? seedLabels[m.homeTeamName] : 'T'}">T1</span>
                             <span class="team-name" th:text="${m.homeTeamName}">Đội 1</span>
-                            <span class="team-score" th:text="${m.homeScore != null ? m.homeScore : ''}"></span>
+                            <span class="team-score" th:text="${m.homeDisplayScore()}"></span>
                         </div>
                         <div class="match-team"
-                             th:classappend="${m.homeScore != null and m.awayScore != null and m.awayScore > m.homeScore} ? ' winner'">
+                             th:classappend="${m.awayWinner()} ? ' winner'">
                             <span class="team-id" th:text="${seedLabels[m.awayTeamName] != null ? seedLabels[m.awayTeamName] : 'T'}">T2</span>
                             <span class="team-name" th:text="${m.awayTeamName}">Đội 2</span>
-                            <span class="team-score" th:text="${m.awayScore != null ? m.awayScore : ''}"></span>
+                            <span class="team-score" th:text="${m.awayDisplayScore()}"></span>
                         </div>
                     </div>
                 </div>
@@ -543,16 +543,16 @@
                     <div class="ranking-item" th:if="${bracketFinal != null}">
                         <div class="match-pair">
                             <div class="match-team"
-                                 th:classappend="${bracketFinal.homeScore != null and bracketFinal.awayScore != null and bracketFinal.homeScore > bracketFinal.awayScore} ? ' winner-final'">
+                                 th:classappend="${bracketFinal.homeWinner()} ? ' winner-final'">
                                 <span class="team-id" th:text="${seedLabels[bracketFinal.homeTeamName] != null ? seedLabels[bracketFinal.homeTeamName] : 'T'}">T1</span>
                                 <span class="team-name" th:text="${bracketFinal.homeTeamName}">Đội 1</span>
-                                <span class="team-score" th:text="${bracketFinal.homeScore != null ? bracketFinal.homeScore : ''}"></span>
+                                <span class="team-score" th:text="${bracketFinal.homeDisplayScore()}"></span>
                             </div>
                             <div class="match-team"
-                                 th:classappend="${bracketFinal.homeScore != null and bracketFinal.awayScore != null and bracketFinal.awayScore > bracketFinal.homeScore} ? ' winner-final'">
+                                 th:classappend="${bracketFinal.awayWinner()} ? ' winner-final'">
                                 <span class="team-id" th:text="${seedLabels[bracketFinal.awayTeamName] != null ? seedLabels[bracketFinal.awayTeamName] : 'T'}">T2</span>
                                 <span class="team-name" th:text="${bracketFinal.awayTeamName}">Đội 2</span>
-                                <span class="team-score" th:text="${bracketFinal.awayScore != null ? bracketFinal.awayScore : ''}"></span>
+                                <span class="team-score" th:text="${bracketFinal.awayDisplayScore()}"></span>
                             </div>
                         </div>
                         <div class="final-ranking" style="margin-left: 15px;"
@@ -573,16 +573,16 @@
                     <div class="ranking-item" th:if="${bracketThird != null}">
                         <div class="match-pair">
                             <div class="match-team"
-                                 th:classappend="${bracketThird.homeScore != null and bracketThird.awayScore != null and bracketThird.homeScore > bracketThird.awayScore} ? ' winner'">
+                                 th:classappend="${bracketThird.homeWinner()} ? ' winner'">
                                 <span class="team-id" th:text="${seedLabels[bracketThird.homeTeamName] != null ? seedLabels[bracketThird.homeTeamName] : 'T'}">T3</span>
                                 <span class="team-name" th:text="${bracketThird.homeTeamName}">Đội 1</span>
-                                <span class="team-score" th:text="${bracketThird.homeScore != null ? bracketThird.homeScore : ''}"></span>
+                                <span class="team-score" th:text="${bracketThird.homeDisplayScore()}"></span>
                             </div>
                             <div class="match-team"
-                                 th:classappend="${bracketThird.homeScore != null and bracketThird.awayScore != null and bracketThird.awayScore > bracketThird.homeScore} ? ' winner'">
+                                 th:classappend="${bracketThird.awayWinner()} ? ' winner'">
                                 <span class="team-id" th:text="${seedLabels[bracketThird.awayTeamName] != null ? seedLabels[bracketThird.awayTeamName] : 'T'}">T4</span>
                                 <span class="team-name" th:text="${bracketThird.awayTeamName}">Đội 2</span>
-                                <span class="team-score" th:text="${bracketThird.awayScore != null ? bracketThird.awayScore : ''}"></span>
+                                <span class="team-score" th:text="${bracketThird.awayDisplayScore()}"></span>
                             </div>
                         </div>
                         <div class="final-ranking" style="margin-left: 15px;">
@@ -597,16 +597,16 @@
                 <div th:each="round : ${bracketRounds}" class="round" style="margin-right: 90px;">
                     <div class="match-pair" th:each="m : ${round.matches}">
                         <div class="match-team"
-                             th:classappend="${m.homeScore != null and m.awayScore != null and m.homeScore > m.awayScore} ? ' winner'">
+                             th:classappend="${m.homeWinner()} ? ' winner'">
                             <span class="team-id">H</span>
                             <span class="team-name" th:text="${m.homeTeamName}">Đội 1</span>
-                            <span class="team-score" th:text="${m.homeScore != null ? m.homeScore : ''}"></span>
+                            <span class="team-score" th:text="${m.homeDisplayScore()}"></span>
                         </div>
                         <div class="match-team"
-                             th:classappend="${m.homeScore != null and m.awayScore != null and m.awayScore > m.homeScore} ? ' winner'">
+                             th:classappend="${m.awayWinner()} ? ' winner'">
                             <span class="team-id">A</span>
                             <span class="team-name" th:text="${m.awayTeamName}">Đội 2</span>
-                            <span class="team-score" th:text="${m.awayScore != null ? m.awayScore : ''}"></span>
+                            <span class="team-score" th:text="${m.awayDisplayScore()}"></span>
                         </div>
                     </div>
                 </div>

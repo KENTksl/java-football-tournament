@@ -1277,6 +1277,7 @@
         <input type="hidden" id="tournamentIdHidden" th:value="${tournamentId}">
         <input type="hidden" id="csrfHeaderName" th:value="${_csrf.headerName}">
         <input type="hidden" id="csrfTokenValue" th:value="${_csrf.token}">
+        <input type="hidden" id="tournamentModeName" th:value="${tournamentMode}">
         <aside th:replace="~{admin/fragments_admin/sidebar :: sidebar}"></aside>
 
         <main class="content">
@@ -1684,7 +1685,13 @@
                                 </td>
                                 <td th:text="${match.homeTeam.name}">FC Test 196267</td>
                                 <td style="text-align: center; font-weight: 700;"
-                                    th:text="${(match.homeScore != null and match.awayScore != null) ? (match.homeScore + ' : ' + match.awayScore) : ''}">3 : 1</td>
+                                    th:text="${(match.homeScore != null and match.awayScore != null) 
+                                        ? (match.homeScore + ' : ' + match.awayScore 
+                                            + ((match.homeScore == match.awayScore 
+                                                and match.homePenalty != null and match.awayPenalty != null)
+                                               ? (' (P: ' + match.homePenalty + ' - ' + match.awayPenalty + ')') 
+                                               : ''))
+                                        : ''}">3 : 1 (P: 4 - 5)</td>
                                 <td th:text="${match.awayTeam.name}">FC Test 196093</td>
                                 <td>
                                     <span class="badge badge--success"
@@ -1766,7 +1773,7 @@
                 <div class="match-score-section">
                     <div class="team-name" style="color: var(--brand); font-size: 22px;"
                          th:text="${selectedMatch != null && selectedMatch.homeTeam != null ? selectedMatch.homeTeam.name : ''}"></div>
-                    <form th:action="@{/admin/match-history/save-score}" method="post" style="display: flex; align-items: center; gap: 10px; margin: 0;">
+                    <form id="scoreSaveForm" th:action="@{/admin/match-history/save-score}" method="post" style="display: flex; align-items: center; gap: 10px; margin: 0;" onsubmit="return validateScoreSave(this)">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                         <input type="hidden" name="tournamentId" th:value="${tournamentId}">
                         <input type="hidden" name="matchId" th:value="${selectedMatch != null ? selectedMatch.id : ''}">
@@ -1778,6 +1785,17 @@
                         <span style="font-size: 24px; color: #999;">-</span>
                         <input name="awayScore" class="score-box" type="number" min="0" max="99" style="line-height: normal;"
                                th:value="${selectedMatch != null && selectedMatch.awayScore != null ? selectedMatch.awayScore : ''}">
+                        
+                        <div style="display:flex; align-items:center; gap:6px; margin-left: 6px;"
+                             th:if="${tournamentMode != T(com.example.football_tourament_web.model.enums.TournamentMode).GROUP_STAGE and selectedMatch != null and selectedMatch.homeScore != null and selectedMatch.awayScore != null and selectedMatch.homeScore == selectedMatch.awayScore} 
+                                    or ${selectedMatch != null and (selectedMatch.homePenalty != null or selectedMatch.awayPenalty != null)}">
+                            <span class="muted" style="font-weight:700;">Pen</span>
+                            <input name="homePen" class="score-box" type="number" min="0" max="30" style="width: 55px; height: 36px; font-size:18px;"
+                                   th:value="${selectedMatch != null && selectedMatch.homePenalty != null ? selectedMatch.homePenalty : ''}">
+                            <span style="font-size: 18px; color: #999;">-</span>
+                            <input name="awayPen" class="score-box" type="number" min="0" max="30" style="width: 55px; height: 36px; font-size:18px;"
+                                   th:value="${selectedMatch != null && selectedMatch.awayPenalty != null ? selectedMatch.awayPenalty : ''}">
+                        </div>
                         <button type="submit" class="btn btn--brand btn--sm" style="margin-left: 10px;">Lưu tỉ số</button>
                     </form>
                     <div class="team-name" style="color: var(--brand); font-size: 22px;"
@@ -2057,11 +2075,13 @@
                 if (saved === 'schedule') window.showToast('Lưu lịch thành công');
                 if (saved === 'score') window.showToast('Lưu tỉ số thành công');
                     if (saved === 'score_required') window.showToast('Vui lòng nhập và lưu tỉ số trước khi kết thúc', 'error');
-                if (saved === 'lineup') window.showToast('Lưu đội hình thành công');
+                    if (saved === 'lineup') window.showToast('Lưu đội hình thành công');
                 if (saved === 'event') window.showToast('Cập nhật diễn biến thành công');
                 if (saved === 'finish') window.showToast('Kết thúc trận đấu thành công');
                 if (saved === 'groups') window.showToast('Xếp bảng ngẫu nhiên thành công');
                 if (saved === 'invalid_schedule') window.showToast('Ngày thi đấu phải nằm trong thời gian của giải', 'error');
+                    if (saved === 'pen_required') window.showToast('Hòa thì phải nhập tỉ số Penalty (knockout)', 'error');
+                    if (saved === 'pen_invalid') window.showToast('Tỉ số Penalty không được hòa', 'error');
                 params.delete('saved');
                 const nextQuery = params.toString();
                 window.history.replaceState({}, '', nextQuery ? (window.location.pathname + '?' + nextQuery) : window.location.pathname);
@@ -2324,11 +2344,48 @@
                 }
                 return;
             }
+            const isKnockout = document.getElementById('tournamentModeName') 
+                ? (document.getElementById('tournamentModeName').value !== 'GROUP_STAGE')
+                : true;
+            if (isKnockout && Number(homeInput.value) === Number(awayInput.value)) {
+                const homePen = document.querySelector('input[name=\"homePen\"]');
+                const awayPen = document.querySelector('input[name=\"awayPen\"]');
+                if (!homePen || !awayPen || homePen.value.trim() === '' || awayPen.value.trim() === '') {
+                    return window.showToast ? window.showToast('Nhập tỉ số Penalty trước khi kết thúc', 'error') : alert('Nhập tỉ số Penalty trước khi kết thúc');
+                }
+                if (Number(homePen.value) === Number(awayPen.value)) {
+                    return window.showToast ? window.showToast('Tỉ số Penalty không được hòa', 'error') : alert('Tỉ số Penalty không được hòa');
+                }
+            }
             const ok = confirm('Bạn có chắc muốn kết thúc trận đấu? Trạng thái sẽ chuyển sang Hoàn thành.');
             if (!ok) return;
             buttonEl.disabled = true;
             const form = buttonEl.closest('form');
             if (form) form.submit();
+        }
+
+        function validateScoreSave(formEl) {
+            const modeValue = document.getElementById('tournamentModeName') ? document.getElementById('tournamentModeName').value : '';
+            const isKnockout = modeValue !== 'GROUP_STAGE';
+            if (!isKnockout || !formEl) return true;
+
+            const homeScore = formEl.querySelector('input[name="homeScore"]');
+            const awayScore = formEl.querySelector('input[name="awayScore"]');
+            if (!homeScore || !awayScore) return true;
+
+            if (homeScore.value.trim() === '' || awayScore.value.trim() === '') return true;
+            if (Number(homeScore.value) !== Number(awayScore.value)) return true;
+
+            const homePen = formEl.querySelector('input[name="homePen"]');
+            const awayPen = formEl.querySelector('input[name="awayPen"]');
+            if (!homePen || !awayPen) return true;
+            if (homePen.value.trim() === '' || awayPen.value.trim() === '') return true;
+
+            if (Number(homePen.value) === Number(awayPen.value)) {
+                if (window.showToast) window.showToast('Tỉ số Penalty không được hòa', 'error');
+                return false;
+            }
+            return true;
         }
     </script>
 </body>

@@ -59,6 +59,10 @@ public class Match {
 	@Column(nullable = false)
 	private MatchStatus status = MatchStatus.SCHEDULED;
 
+	// Penalty shootout scores for knockout ties
+	private Integer homePenalty;
+	private Integer awayPenalty;
+
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
 
@@ -176,6 +180,22 @@ public class Match {
 
 	public void setStatus(MatchStatus status) {
 		this.status = status;
+	}
+
+	public Integer getHomePenalty() {
+		return homePenalty;
+	}
+
+	public void setHomePenalty(Integer homePenalty) {
+		this.homePenalty = homePenalty;
+	}
+
+	public Integer getAwayPenalty() {
+		return awayPenalty;
+	}
+
+	public void setAwayPenalty(Integer awayPenalty) {
+		this.awayPenalty = awayPenalty;
 	}
 }
 

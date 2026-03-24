@@ -87,7 +87,9 @@ public class AdminTournamentViewService {
 			String awayName = m.getAwayTeam() != null ? m.getAwayTeam().getName() : "Đội 2";
 			Integer hs = (m.getStatus() == MatchStatus.FINISHED) ? m.getHomeScore() : null;
 			Integer as = (m.getStatus() == MatchStatus.FINISHED) ? m.getAwayScore() : null;
-			bracketSemis.add(new BracketMatch(homeName, awayName, hs, as));
+			Integer hp = (m.getStatus() == MatchStatus.FINISHED) ? m.getHomePenalty() : null;
+			Integer ap = (m.getStatus() == MatchStatus.FINISHED) ? m.getAwayPenalty() : null;
+			bracketSemis.add(new BracketMatch(homeName, awayName, hs, as, hp, ap));
 		}
 
 		BracketMatch bracketFinal = null;
@@ -96,7 +98,9 @@ public class AdminTournamentViewService {
 			String awayName = finalRaw.getAwayTeam() != null ? finalRaw.getAwayTeam().getName() : "Đội 2";
 			Integer hs = (finalRaw.getStatus() == MatchStatus.FINISHED) ? finalRaw.getHomeScore() : null;
 			Integer as = (finalRaw.getStatus() == MatchStatus.FINISHED) ? finalRaw.getAwayScore() : null;
-			bracketFinal = new BracketMatch(homeName, awayName, hs, as);
+			Integer hp = (finalRaw.getStatus() == MatchStatus.FINISHED) ? finalRaw.getHomePenalty() : null;
+			Integer ap = (finalRaw.getStatus() == MatchStatus.FINISHED) ? finalRaw.getAwayPenalty() : null;
+			bracketFinal = new BracketMatch(homeName, awayName, hs, as, hp, ap);
 		}
 
 		BracketMatch bracketThird = null;
@@ -105,7 +109,9 @@ public class AdminTournamentViewService {
 			String awayName = thirdRaw.getAwayTeam() != null ? thirdRaw.getAwayTeam().getName() : "Đội 2";
 			Integer hs = (thirdRaw.getStatus() == MatchStatus.FINISHED) ? thirdRaw.getHomeScore() : null;
 			Integer as = (thirdRaw.getStatus() == MatchStatus.FINISHED) ? thirdRaw.getAwayScore() : null;
-			bracketThird = new BracketMatch(homeName, awayName, hs, as);
+			Integer hp = (thirdRaw.getStatus() == MatchStatus.FINISHED) ? thirdRaw.getHomePenalty() : null;
+			Integer ap = (thirdRaw.getStatus() == MatchStatus.FINISHED) ? thirdRaw.getAwayPenalty() : null;
+			bracketThird = new BracketMatch(homeName, awayName, hs, as, hp, ap);
 		}
 
 		Map<String, Integer> roundPriority = new HashMap<>();
@@ -121,10 +127,12 @@ public class AdminTournamentViewService {
 			if (round.isBlank()) continue;
 			Integer hs = (m.getStatus() == MatchStatus.FINISHED) ? m.getHomeScore() : null;
 			Integer as = (m.getStatus() == MatchStatus.FINISHED) ? m.getAwayScore() : null;
+			Integer hp = (m.getStatus() == MatchStatus.FINISHED) ? m.getHomePenalty() : null;
+			Integer ap = (m.getStatus() == MatchStatus.FINISHED) ? m.getAwayPenalty() : null;
 			String homeName = m.getHomeTeam() != null ? m.getHomeTeam().getName() : "Đội 1";
 			String awayName = m.getAwayTeam() != null ? m.getAwayTeam().getName() : "Đội 2";
 			byRound.computeIfAbsent(round, k -> new ArrayList<>())
-					.add(new BracketMatch(homeName, awayName, hs, as));
+					.add(new BracketMatch(homeName, awayName, hs, as, hp, ap));
 		}
 
 		boolean hasR16 = byRound.containsKey("Vòng 16");
@@ -137,7 +145,7 @@ public class AdminTournamentViewService {
 			int qfExpected = Math.max(1, (int) Math.ceil(r16Count / 2.0));
 			List<BracketMatch> qfList = byRound.computeIfAbsent("Tứ kết", k -> new ArrayList<>());
 			if (qfList.isEmpty()) {
-				for (int i = 0; i < qfExpected; i++) qfList.add(new BracketMatch("—", "—", null, null));
+				for (int i = 0; i < qfExpected; i++) qfList.add(new BracketMatch("—", "—", null, null, null, null));
 			}
 			hasQF = true;
 		}
@@ -146,12 +154,12 @@ public class AdminTournamentViewService {
 			int sfExpected = Math.max(1, (int) Math.ceil(qfCount / 2.0));
 			List<BracketMatch> sfList = byRound.computeIfAbsent("Bán kết", k -> new ArrayList<>());
 			if (sfList.isEmpty()) {
-				for (int i = 0; i < sfExpected; i++) sfList.add(new BracketMatch("—", "—", null, null));
+				for (int i = 0; i < sfExpected; i++) sfList.add(new BracketMatch("—", "—", null, null, null, null));
 			}
 			hasSF = true;
 		}
 		if (hasSF && !hasFinal) {
-			byRound.put("Chung kết", new ArrayList<>(List.of(new BracketMatch("—", "—", null, null))));
+			byRound.put("Chung kết", new ArrayList<>(List.of(new BracketMatch("—", "—", null, null, null, null))));
 		}
 
 		List<BracketRound> rounds = new ArrayList<>();
@@ -279,7 +287,42 @@ public class AdminTournamentViewService {
 		}
 	}
 
-	public record BracketMatch(String homeTeamName, String awayTeamName, Integer homeScore, Integer awayScore) {
+	public record BracketMatch(String homeTeamName, String awayTeamName, Integer homeScore, Integer awayScore, Integer homePenalty, Integer awayPenalty) {
+		public String homeDisplayScore() {
+			if (homeScore == null) return "";
+			if (awayScore != null && homeScore.equals(awayScore) && homePenalty != null && awayPenalty != null) {
+				return homeScore + " (" + homePenalty + ")";
+			}
+			return String.valueOf(homeScore);
+		}
+
+		public String awayDisplayScore() {
+			if (awayScore == null) return "";
+			if (homeScore != null && homeScore.equals(awayScore) && homePenalty != null && awayPenalty != null) {
+				return awayScore + " (" + awayPenalty + ")";
+			}
+			return String.valueOf(awayScore);
+		}
+
+		public boolean homeWinner() {
+			if (homeScore == null || awayScore == null) return false;
+			if (homeScore > awayScore) return true;
+			if (awayScore > homeScore) return false;
+			if (homePenalty != null && awayPenalty != null) {
+				return homePenalty > awayPenalty;
+			}
+			return false;
+		}
+
+		public boolean awayWinner() {
+			if (homeScore == null || awayScore == null) return false;
+			if (awayScore > homeScore) return true;
+			if (homeScore > awayScore) return false;
+			if (homePenalty != null && awayPenalty != null) {
+				return awayPenalty > homePenalty;
+			}
+			return false;
+		}
 	}
 
 	public record BracketRound(String roundName, List<BracketMatch> matches) {
