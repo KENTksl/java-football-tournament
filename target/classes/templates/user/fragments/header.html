@@ -4,7 +4,12 @@
     <th:block th:fragment="header(active)">
       <header class="header">
         <div class="container header-inner">
-          <div class="brand">SPORT TOURNAMENT</div>
+          <a class="brand" th:href="@{/}" aria-label="Sport Tournament">
+            <span class="brand__logoWrap" aria-hidden="true">
+              <img class="brand__logo" th:src="@{/assets/logo/logo-signature.png}" alt="" />
+            </span>
+            <span class="brand__text">SPORT TOURNAMENT</span>
+          </a>
           <nav class="nav" aria-label="Điều hướng chính">
             <a th:href="@{/}" th:attr="aria-current=${active == 'home'} ? 'page' : null">TRANG CHỦ</a>
             <a th:href="@{/user/tournament}" th:attr="aria-current=${active == 'tournament'} ? 'page' : null">GIẢI ĐẤU</a>
@@ -72,6 +77,24 @@
         (() => {
           if (window.__userMenuInit) return;
           window.__userMenuInit = true;
+
+          const ensureFavicon = () => {
+            const href = "/assets/logo/logo-signature.png?v=2";
+            const head = document.head || document.getElementsByTagName("head")[0];
+            if (!head) return;
+
+            const existing = head.querySelector("link[rel~='icon']");
+            if (existing) {
+              existing.setAttribute("href", href);
+              return;
+            }
+            const link = document.createElement("link");
+            link.setAttribute("rel", "icon");
+            link.setAttribute("type", "image/png");
+            link.setAttribute("href", href);
+            head.appendChild(link);
+          };
+          ensureFavicon();
 
           const closeAll = () => {
             document.querySelectorAll("[data-user-menu].is-open").forEach((m) => {
