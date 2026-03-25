@@ -33,6 +33,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -124,6 +125,7 @@ public class DataSeeder implements CommandLineRunner {
 		var tournamentGroup16Pitch7 = getOrCreateTournament32();
 		var tournamentEpl16Pitch5 = getOrCreateTournamentEplGroup16Pitch5();
 		var tournamentLaLiga8Pitch7 = getOrCreateTournamentLaLigaKnockout8();
+		var tournamentWorldCupGroup16 = getOrCreateTournamentWorldCupGroup16();
 
 		seedRegistrationIfMissing(tournamentKnockout4Pitch5, team1, userA, RegistrationStatus.APPROVED);
 		seedRegistrationIfMissing(tournamentKnockout4Pitch5, team2, userA, RegistrationStatus.APPROVED);
@@ -190,6 +192,39 @@ public class DataSeeder implements CommandLineRunner {
 		seedGroupStageMatchesIfMissing(tournamentGroup16Pitch7, "B", pitch7GroupTeams.subList(4, 8));
 		seedGroupStageMatchesIfMissing(tournamentGroup16Pitch7, "C", pitch7GroupTeams.subList(8, 12));
 		seedGroupStageMatchesIfMissing(tournamentGroup16Pitch7, "D", pitch7GroupTeams.subList(12, 16));
+
+		var worldCupTeams = List.of(
+				getOrCreateTeam("Argentina", null),
+				getOrCreateTeam("Brazil", null),
+				getOrCreateTeam("France", null),
+				getOrCreateTeam("Germany", null),
+				getOrCreateTeam("Spain", null),
+				getOrCreateTeam("England", null),
+				getOrCreateTeam("Portugal", null),
+				getOrCreateTeam("Netherlands", null),
+				getOrCreateTeam("Italy", null),
+				getOrCreateTeam("Belgium", null),
+				getOrCreateTeam("Croatia", null),
+				getOrCreateTeam("Uruguay", null),
+				getOrCreateTeam("Japan", null),
+				getOrCreateTeam("South Korea", null),
+				getOrCreateTeam("United States", null),
+				getOrCreateTeam("Mexico", null)
+		);
+
+		List<Team> shuffledWorldCupTeams = new ArrayList<>(worldCupTeams);
+		Collections.shuffle(shuffledWorldCupTeams);
+
+		for (int i = 0; i < shuffledWorldCupTeams.size(); i++) {
+			Team t = shuffledWorldCupTeams.get(i);
+			if (t == null) continue;
+			seedPlayersIfMissing(t, buildDefaultSquad(t, t.getName() == null ? ("World Cup Team " + (i + 1)) : t.getName()));
+			seedRegistrationIfMissing(tournamentWorldCupGroup16, t, userA, RegistrationStatus.APPROVED, groupNameForIndex(i));
+		}
+		seedGroupStageMatchesIfMissing(tournamentWorldCupGroup16, "A", shuffledWorldCupTeams.subList(0, 4));
+		seedGroupStageMatchesIfMissing(tournamentWorldCupGroup16, "B", shuffledWorldCupTeams.subList(4, 8));
+		seedGroupStageMatchesIfMissing(tournamentWorldCupGroup16, "C", shuffledWorldCupTeams.subList(8, 12));
+		seedGroupStageMatchesIfMissing(tournamentWorldCupGroup16, "D", shuffledWorldCupTeams.subList(12, 16));
 
 		var laligaTeams = List.of(
 				getOrCreateTeam("Real Madrid", null),
@@ -366,6 +401,34 @@ public class DataSeeder implements CommandLineRunner {
 		return tournamentRepository.save(tournament);
 	}
 
+	private Tournament getOrCreateTournamentWorldCupGroup16() {
+		var existing = findTournamentByName("World Cup Group Stage - 16 đội").orElse(null);
+		if (existing != null) {
+			existing.setOrganizer("World Cup Demo");
+			existing.setMode(TournamentMode.GROUP_STAGE);
+			existing.setPitchType(PitchType.PITCH_7);
+			existing.setTeamLimit(16);
+			existing.setImageUrl("/assets/general-overview/tournament.jpg");
+			existing.setDescription("Giải đấu demo World Cup chia bảng 16 đội (có lịch bảng A-D).");
+			existing.setStatus(TournamentStatus.UPCOMING);
+			existing.setStartDate(LocalDate.now().plusDays(6));
+			existing.setEndDate(LocalDate.now().plusDays(40));
+			return tournamentRepository.save(existing);
+		}
+
+		var tournament = new Tournament("World Cup Group Stage - 16 đội");
+		tournament.setOrganizer("World Cup Demo");
+		tournament.setMode(TournamentMode.GROUP_STAGE);
+		tournament.setPitchType(PitchType.PITCH_7);
+		tournament.setTeamLimit(16);
+		tournament.setImageUrl("/assets/general-overview/tournament.jpg");
+		tournament.setDescription("Giải đấu demo World Cup chia bảng 16 đội (có lịch bảng A-D).");
+		tournament.setStatus(TournamentStatus.UPCOMING);
+		tournament.setStartDate(LocalDate.now().plusDays(6));
+		tournament.setEndDate(LocalDate.now().plusDays(40));
+		return tournamentRepository.save(tournament);
+	}
+
 	private Optional<Tournament> findTournamentByName(String name) {
 		return tournamentRepository.findAll().stream()
 			.filter(t -> t != null && t.getName() != null && t.getName().equalsIgnoreCase(name))
@@ -396,7 +459,8 @@ public class DataSeeder implements CommandLineRunner {
 			if (existing.getRegisteredBy() == null) {
 				existing.setRegisteredBy(user);
 			}
-			if (groupName != null && !groupName.isBlank()) {
+			String currentGroup = existing.getGroupName() == null ? "" : existing.getGroupName().trim();
+			if (currentGroup.isBlank() && groupName != null && !groupName.isBlank()) {
 				existing.setGroupName(groupName);
 			}
 			registrationRepository.save(existing);
