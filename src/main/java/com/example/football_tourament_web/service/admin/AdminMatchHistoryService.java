@@ -334,18 +334,24 @@ public class AdminMatchHistoryService {
 			return "redirect:/admin/match-history?id=" + tournamentId;
 		}
 
-		boolean isKnockout = match.getTournament() != null && match.getTournament().getMode() != TournamentMode.GROUP_STAGE;
 		boolean isGroupRound = match.getRoundName() != null && match.getRoundName().trim().toLowerCase().startsWith("bảng");
+		boolean isKnockoutMatch = (match.getTournament() != null && match.getTournament().getMode() == TournamentMode.KNOCKOUT) || !isGroupRound;
 
-		if (isKnockout && !isGroupRound && homeScore != null && awayScore != null && homeScore.equals(awayScore)) {
-			if (homePen != null && awayPen != null && homePen.equals(awayPen)) {
+		if (isKnockoutMatch && homeScore != null && awayScore != null && homeScore.equals(awayScore)) {
+			if (homePen == null || awayPen == null) {
+				return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=pen_required";
+			}
+			if (homePen.equals(awayPen)) {
 				return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=pen_invalid";
 			}
 		}
 
 		match.setHomeScore(homeScore);
 		match.setAwayScore(awayScore);
-		if (homeScore != null && awayScore != null && !homeScore.equals(awayScore)) {
+		if (isGroupRound) {
+			match.setHomePenalty(null);
+			match.setAwayPenalty(null);
+		} else if (homeScore != null && awayScore != null && !homeScore.equals(awayScore)) {
 			match.setHomePenalty(null);
 			match.setAwayPenalty(null);
 		} else {

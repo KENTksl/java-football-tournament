@@ -2,25 +2,21 @@ package com.example.football_tourament_web.config;
 
 import com.example.football_tourament_web.model.entity.AppUser;
 import com.example.football_tourament_web.model.entity.Match;
-import com.example.football_tourament_web.model.entity.MatchEvent;
 import com.example.football_tourament_web.model.entity.Player;
 import com.example.football_tourament_web.model.entity.Team;
 import com.example.football_tourament_web.model.entity.Tournament;
 import com.example.football_tourament_web.model.entity.TournamentRegistration;
 import com.example.football_tourament_web.model.entity.Transaction;
 import com.example.football_tourament_web.model.enums.Gender;
-import com.example.football_tourament_web.model.enums.MatchEventType;
 import com.example.football_tourament_web.model.enums.MatchStatus;
 import com.example.football_tourament_web.model.enums.PitchType;
 import com.example.football_tourament_web.model.enums.RegistrationStatus;
-import com.example.football_tourament_web.model.enums.TeamSide;
 import com.example.football_tourament_web.model.enums.TournamentMode;
 import com.example.football_tourament_web.model.enums.TournamentStatus;
 import com.example.football_tourament_web.model.enums.TransactionStatus;
 import com.example.football_tourament_web.model.enums.UserRole;
 import com.example.football_tourament_web.model.enums.UserStatus;
 import com.example.football_tourament_web.repository.AppUserRepository;
-import com.example.football_tourament_web.repository.MatchEventRepository;
 import com.example.football_tourament_web.repository.MatchRepository;
 import com.example.football_tourament_web.repository.PlayerRepository;
 import com.example.football_tourament_web.repository.TeamRepository;
@@ -31,20 +27,14 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestClient;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
-import java.nio.charset.StandardCharsets;
 
 @Component
 public class DataSeeder implements CommandLineRunner {
@@ -56,11 +46,8 @@ public class DataSeeder implements CommandLineRunner {
 	private final TournamentRepository tournamentRepository;
 	private final TournamentRegistrationRepository registrationRepository;
 	private final MatchRepository matchRepository;
-	private final MatchEventRepository matchEventRepository;
 	private final TransactionRepository transactionRepository;
 	private final PasswordEncoder passwordEncoder;
-	private final RestClient restClient = RestClient.create();
-	private final Random random = new Random();
 
 	public DataSeeder(
 		AppUserRepository userRepository,
@@ -69,7 +56,6 @@ public class DataSeeder implements CommandLineRunner {
 		TournamentRepository tournamentRepository,
 		TournamentRegistrationRepository registrationRepository,
 		MatchRepository matchRepository,
-		MatchEventRepository matchEventRepository,
 		TransactionRepository transactionRepository,
 		PasswordEncoder passwordEncoder
 	) {
@@ -79,7 +65,6 @@ public class DataSeeder implements CommandLineRunner {
 		this.tournamentRepository = tournamentRepository;
 		this.registrationRepository = registrationRepository;
 		this.matchRepository = matchRepository;
-		this.matchEventRepository = matchEventRepository;
 		this.transactionRepository = transactionRepository;
 		this.passwordEncoder = passwordEncoder;
 	}
@@ -138,7 +123,6 @@ public class DataSeeder implements CommandLineRunner {
 		var tournamentKnockout4Pitch5 = getOrCreateTournament31();
 		var tournamentGroup16Pitch7 = getOrCreateTournament32();
 		var tournamentEpl16Pitch5 = getOrCreateTournamentEplGroup16Pitch5();
-		var tournamentNgoaiHangEm = getOrCreateTournamentNgoaiHangEm();
 		var tournamentLaLiga8Pitch7 = getOrCreateTournamentLaLigaKnockout8();
 
 		seedRegistrationIfMissing(tournamentKnockout4Pitch5, team1, userA, RegistrationStatus.APPROVED);
@@ -168,22 +152,14 @@ public class DataSeeder implements CommandLineRunner {
 
 		for (Team t : eplTeams) {
 			if (t == null) continue;
-			ensureTeamLogoFromSportsDbIfMissing(t);
 			seedPlayersIfMissing(t, buildEplSquad(t));
 			String groupName = groupNameForIndex(eplTeams.indexOf(t));
 			seedRegistrationIfMissing(tournamentEpl16Pitch5, t, userA, RegistrationStatus.APPROVED, groupName);
-			seedRegistrationIfMissing(tournamentNgoaiHangEm, t, userA, RegistrationStatus.APPROVED, groupName);
 		}
 		seedGroupStageMatchesIfMissing(tournamentEpl16Pitch5, "A", eplTeams.subList(0, 4));
 		seedGroupStageMatchesIfMissing(tournamentEpl16Pitch5, "B", eplTeams.subList(4, 8));
 		seedGroupStageMatchesIfMissing(tournamentEpl16Pitch5, "C", eplTeams.subList(8, 12));
 		seedGroupStageMatchesIfMissing(tournamentEpl16Pitch5, "D", eplTeams.subList(12, 16));
-
-		seedGroupStageMatchesIfMissing(tournamentNgoaiHangEm, "A", eplTeams.subList(0, 4));
-		seedGroupStageMatchesIfMissing(tournamentNgoaiHangEm, "B", eplTeams.subList(4, 8));
-		seedGroupStageMatchesIfMissing(tournamentNgoaiHangEm, "C", eplTeams.subList(8, 12));
-		seedGroupStageMatchesIfMissing(tournamentNgoaiHangEm, "D", eplTeams.subList(12, 16));
-		seedNgoaiHangEmResultsAndEventsIfMissing(tournamentNgoaiHangEm, eplTeams);
 
 		var pitch7GroupTeams = List.of(
 				getOrCreateTeam("Bayern Munich", null),
@@ -362,34 +338,6 @@ public class DataSeeder implements CommandLineRunner {
 		return tournamentRepository.save(tournament);
 	}
 
-	private Tournament getOrCreateTournamentNgoaiHangEm() {
-		var existing = findTournamentByName("Ngoại Hạng Em").orElse(null);
-		if (existing != null) {
-			existing.setOrganizer("Ngoại Hạng Em");
-			existing.setMode(TournamentMode.GROUP_STAGE);
-			existing.setPitchType(PitchType.PITCH_5);
-			existing.setTeamLimit(16);
-			existing.setImageUrl("/assets/general-overview/tournament.jpg");
-			existing.setDescription("Giải đấu mẫu đầy đủ dữ liệu (BXH, thống kê, biểu đồ, bracket) để phục vụ thuyết trình.");
-			existing.setStatus(TournamentStatus.FINISHED);
-			existing.setStartDate(LocalDate.now().minusDays(25));
-			existing.setEndDate(LocalDate.now().minusDays(1));
-			return tournamentRepository.save(existing);
-		}
-
-		var tournament = new Tournament("Ngoại Hạng Em");
-		tournament.setOrganizer("Ngoại Hạng Em");
-		tournament.setMode(TournamentMode.GROUP_STAGE);
-		tournament.setPitchType(PitchType.PITCH_5);
-		tournament.setTeamLimit(16);
-		tournament.setImageUrl("/assets/general-overview/tournament.jpg");
-		tournament.setDescription("Giải đấu mẫu đầy đủ dữ liệu (BXH, thống kê, biểu đồ, bracket) để phục vụ thuyết trình.");
-		tournament.setStatus(TournamentStatus.FINISHED);
-		tournament.setStartDate(LocalDate.now().minusDays(25));
-		tournament.setEndDate(LocalDate.now().minusDays(1));
-		return tournamentRepository.save(tournament);
-	}
-
 	private Tournament getOrCreateTournamentLaLigaKnockout8() {
 		var existing = findTournamentByName("LaLiga Knockout - 8 đội").orElse(null);
 		if (existing != null) {
@@ -509,321 +457,6 @@ public class DataSeeder implements CommandLineRunner {
 		}
 
 		matchRepository.saveAll(matches);
-	}
-
-	private void seedNgoaiHangEmResultsAndEventsIfMissing(Tournament tournament, List<Team> eplTeams) {
-		if (tournament == null || tournament.getId() == null) return;
-
-		var matches = new ArrayList<>(matchRepository.findByTournamentIdOrderByScheduledAtAsc(tournament.getId()));
-		boolean hasAnyScore = matches.stream().anyMatch(m -> m != null && (m.getHomeScore() != null || m.getAwayScore() != null));
-		if (!hasAnyScore) {
-			Map<String, int[][]> groupScorePlans = new HashMap<>();
-			groupScorePlans.put("Bảng A", new int[][]{{2, 1}, {1, 1}, {0, 2}, {3, 0}, {2, 2}, {1, 0}});
-			groupScorePlans.put("Bảng B", new int[][]{{1, 0}, {2, 2}, {0, 1}, {3, 1}, {2, 0}, {1, 1}});
-			groupScorePlans.put("Bảng C", new int[][]{{2, 0}, {1, 2}, {0, 0}, {3, 2}, {1, 0}, {2, 1}});
-			groupScorePlans.put("Bảng D", new int[][]{{1, 1}, {2, 0}, {0, 2}, {2, 2}, {3, 1}, {1, 0}});
-
-			for (String groupRound : List.of("Bảng A", "Bảng B", "Bảng C", "Bảng D")) {
-				var groupMatches = matches.stream()
-						.filter(m -> m != null && m.getRoundName() != null && groupRound.equalsIgnoreCase(m.getRoundName().trim()))
-						.sorted((a, b) -> {
-							if (a.getScheduledAt() == null && b.getScheduledAt() == null) return 0;
-							if (a.getScheduledAt() == null) return 1;
-							if (b.getScheduledAt() == null) return -1;
-							return a.getScheduledAt().compareTo(b.getScheduledAt());
-						})
-						.toList();
-				int[][] plan = groupScorePlans.getOrDefault(groupRound, new int[][]{{1, 0}, {1, 1}, {2, 1}, {0, 0}, {2, 2}, {3, 2}});
-				for (int i = 0; i < Math.min(6, groupMatches.size()); i++) {
-					Match m = groupMatches.get(i);
-					int hs = plan[i][0];
-					int as = plan[i][1];
-					m.setHomeScore(hs);
-					m.setAwayScore(as);
-					m.setStatus(MatchStatus.FINISHED);
-					if (m.getScheduledAt() == null) {
-						m.setScheduledAt(LocalDateTime.now().minusDays(10).withHour(18).withMinute(0).withSecond(0).withNano(0).plusHours(i * 2));
-					}
-				}
-			}
-			matchRepository.saveAll(matches);
-		}
-
-		boolean hasKnockout = matches.stream().anyMatch(m -> m != null && m.getRoundName() != null && m.getRoundName().trim().equalsIgnoreCase("Tứ kết"));
-		if (!hasKnockout && eplTeams != null && eplTeams.size() >= 16) {
-			Team a1 = eplTeams.get(0);
-			Team a2 = eplTeams.get(1);
-			Team b1 = eplTeams.get(4);
-			Team b2 = eplTeams.get(5);
-			Team c1 = eplTeams.get(8);
-			Team c2 = eplTeams.get(9);
-			Team d1 = eplTeams.get(12);
-			Team d2 = eplTeams.get(14);
-
-			LocalDateTime base = LocalDateTime.now().minusDays(6).withHour(18).withMinute(0).withSecond(0).withNano(0);
-
-			Match qf1 = buildFinishedMatch(tournament, a1, b2, "Tứ kết", base.plusHours(0), 2, 1, null, null);
-			Match qf2 = buildFinishedMatch(tournament, b1, a2, "Tứ kết", base.plusHours(3), 2, 0, null, null);
-			Match qf3 = buildFinishedMatch(tournament, c1, d2, "Tứ kết", base.plusHours(6), 0, 0, 4, 3);
-			Match qf4 = buildFinishedMatch(tournament, d1, c2, "Tứ kết", base.plusHours(9), 3, 2, null, null);
-
-			Match sf1 = buildFinishedMatch(tournament, a1, b1, "Bán kết", base.plusDays(1).plusHours(2), 1, 2, null, null);
-			Match sf2 = buildFinishedMatch(tournament, c1, d1, "Bán kết", base.plusDays(1).plusHours(5), 1, 1, 5, 4);
-
-			Match finalMatch = buildFinishedMatch(tournament, b1, c1, "Chung kết", base.plusDays(2).plusHours(3), 2, 0, null, null);
-
-			matchRepository.saveAll(List.of(qf1, qf2, qf3, qf4, sf1, sf2, finalMatch));
-			matches = new ArrayList<>(matchRepository.findByTournamentIdOrderByScheduledAtAsc(tournament.getId()));
-		}
-
-		var existingEvents = matchEventRepository.findByTournamentId(tournament.getId());
-		if (existingEvents != null && !existingEvents.isEmpty()) return;
-
-		for (Match m : matches) {
-			if (m == null || m.getId() == null) continue;
-			if (m.getHomeTeam() == null || m.getAwayTeam() == null) continue;
-			if (m.getHomeScore() == null || m.getAwayScore() == null) continue;
-			seedEventsForMatch(m);
-		}
-	}
-
-	private Match buildFinishedMatch(Tournament tournament, Team home, Team away, String round, LocalDateTime at, Integer hs, Integer as, Integer hp, Integer ap) {
-		Match m = new Match(tournament, home, away);
-		m.setRoundName(round);
-		m.setScheduledAt(at);
-		m.setHomeScore(hs);
-		m.setAwayScore(as);
-		if (hp != null && ap != null) {
-			m.setHomePenalty(hp);
-			m.setAwayPenalty(ap);
-		}
-		m.setStatus(MatchStatus.FINISHED);
-		return m;
-	}
-
-	private void seedEventsForMatch(Match match) {
-		if (match == null || match.getId() == null) return;
-		if (!matchEventRepository.findByMatchIdOrderByMinuteAscIdAsc(match.getId()).isEmpty()) return;
-
-		Team home = match.getHomeTeam();
-		Team away = match.getAwayTeam();
-		if (home == null || home.getId() == null || away == null || away.getId() == null) return;
-
-		List<Player> homePlayers = playerRepository.findByTeamIdOrderByJerseyNumberAsc(home.getId());
-		List<Player> awayPlayers = playerRepository.findByTeamIdOrderByJerseyNumberAsc(away.getId());
-		if (homePlayers == null) homePlayers = List.of();
-		if (awayPlayers == null) awayPlayers = List.of();
-
-		List<MatchEvent> events = new ArrayList<>();
-		int homeGoals = Math.max(0, match.getHomeScore() == null ? 0 : match.getHomeScore());
-		int awayGoals = Math.max(0, match.getAwayScore() == null ? 0 : match.getAwayScore());
-
-		int minute = 8;
-		for (int i = 0; i < homeGoals; i++) {
-			Player scorer = pickPlayerForGoal(homePlayers);
-			ensurePlayerAvatarFromSportsDbIfMissing(scorer, home.getName());
-			events.add(new MatchEvent(match, TeamSide.HOME, scorer, minute, MatchEventType.GOAL));
-			if (random.nextBoolean()) {
-				Player assist = pickDifferentPlayer(homePlayers, scorer);
-				ensurePlayerAvatarFromSportsDbIfMissing(assist, home.getName());
-				events.add(new MatchEvent(match, TeamSide.HOME, assist, Math.min(90, minute + 1), MatchEventType.ASSIST));
-			}
-			minute += 12 + random.nextInt(10);
-		}
-
-		minute = 11;
-		for (int i = 0; i < awayGoals; i++) {
-			Player scorer = pickPlayerForGoal(awayPlayers);
-			ensurePlayerAvatarFromSportsDbIfMissing(scorer, away.getName());
-			events.add(new MatchEvent(match, TeamSide.AWAY, scorer, minute, MatchEventType.GOAL));
-			if (random.nextBoolean()) {
-				Player assist = pickDifferentPlayer(awayPlayers, scorer);
-				ensurePlayerAvatarFromSportsDbIfMissing(assist, away.getName());
-				events.add(new MatchEvent(match, TeamSide.AWAY, assist, Math.min(90, minute + 1), MatchEventType.ASSIST));
-			}
-			minute += 13 + random.nextInt(9);
-		}
-
-		if (!homePlayers.isEmpty()) {
-			Player yc = homePlayers.get(Math.min(homePlayers.size() - 1, random.nextInt(homePlayers.size())));
-			ensurePlayerAvatarFromSportsDbIfMissing(yc, home.getName());
-			events.add(new MatchEvent(match, TeamSide.HOME, yc, 54, MatchEventType.YELLOW));
-		}
-		if (!awayPlayers.isEmpty()) {
-			Player yc = awayPlayers.get(Math.min(awayPlayers.size() - 1, random.nextInt(awayPlayers.size())));
-			ensurePlayerAvatarFromSportsDbIfMissing(yc, away.getName());
-			events.add(new MatchEvent(match, TeamSide.AWAY, yc, 61, MatchEventType.YELLOW));
-		}
-		if (random.nextInt(10) < 2) {
-			if (!awayPlayers.isEmpty()) {
-				Player rc = awayPlayers.get(Math.min(awayPlayers.size() - 1, random.nextInt(awayPlayers.size())));
-				ensurePlayerAvatarFromSportsDbIfMissing(rc, away.getName());
-				events.add(new MatchEvent(match, TeamSide.AWAY, rc, 78, MatchEventType.RED));
-			}
-		}
-
-		matchEventRepository.saveAll(events);
-	}
-
-	private Player pickPlayerForGoal(List<Player> players) {
-		if (players == null || players.isEmpty()) return null;
-		for (Player p : players) {
-			if (p != null && p.getPosition() != null && (p.getPosition().equalsIgnoreCase("FW") || p.getPosition().equalsIgnoreCase("MF"))) {
-				return p;
-			}
-		}
-		return players.get(0);
-	}
-
-	private Player pickDifferentPlayer(List<Player> players, Player notThis) {
-		if (players == null || players.isEmpty()) return notThis;
-		for (Player p : players) {
-			if (p != null && notThis != null && p.getId() != null && notThis.getId() != null && !p.getId().equals(notThis.getId())) {
-				return p;
-			}
-		}
-		return players.get(0);
-	}
-
-	private void ensureTeamLogoFromSportsDbIfMissing(Team team) {
-		if (team == null) return;
-		if (team.getLogoUrl() != null && !team.getLogoUrl().isBlank()) return;
-		String teamName = team.getName();
-		if (teamName == null || teamName.isBlank()) return;
-		try {
-			String url = "https://www.thesportsdb.com/api/v1/json/3/searchteams.php?t=" + URLEncoder.encode(teamName, StandardCharsets.UTF_8);
-			String json = restClient.get().uri(url).retrieve().body(String.class);
-			if (json == null || json.isBlank()) return;
-			List<String> teams = extractJsonArrayObjects(json, "teams");
-			if (teams.isEmpty()) return;
-			String badge = extractJsonStringField(teams.get(0), "strBadge");
-			if (badge != null && !badge.isBlank()) {
-				team.setLogoUrl(badge);
-				teamRepository.save(team);
-			}
-		} catch (Exception ignored) {
-		}
-	}
-
-	private void ensurePlayerAvatarFromSportsDbIfMissing(Player player, String expectedTeamName) {
-		if (player == null) return;
-		if (player.getAvatarUrl() != null && !player.getAvatarUrl().isBlank()) return;
-		String playerName = player.getFullName();
-		if (playerName == null || playerName.isBlank()) return;
-		try {
-			String url = "https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=" + URLEncoder.encode(playerName, StandardCharsets.UTF_8);
-			String json = restClient.get().uri(url).retrieve().body(String.class);
-			if (json == null || json.isBlank()) return;
-			List<String> players = extractJsonArrayObjects(json, "player");
-			if (players.isEmpty()) return;
-
-			String best = players.get(0);
-			if (expectedTeamName != null && !expectedTeamName.isBlank()) {
-				for (String obj : players) {
-					String team = extractJsonStringField(obj, "strTeam");
-					if (team != null && team.equalsIgnoreCase(expectedTeamName)) {
-						best = obj;
-						break;
-					}
-				}
-			}
-
-			String thumb = extractJsonStringField(best, "strThumb");
-			if (thumb == null || thumb.isBlank()) {
-				thumb = extractJsonStringField(best, "strCutout");
-			}
-			if (thumb != null && !thumb.isBlank()) {
-				player.setAvatarUrl(thumb);
-				playerRepository.save(player);
-			}
-		} catch (Exception ignored) {
-		}
-	}
-
-	private static List<String> extractJsonArrayObjects(String json, String arrayKey) {
-		if (json == null || json.isBlank() || arrayKey == null || arrayKey.isBlank()) return List.of();
-		String needle = "\"" + arrayKey + "\":[";
-		int i = json.indexOf(needle);
-		if (i < 0) return List.of();
-		int start = json.indexOf('[', i);
-		if (start < 0) return List.of();
-		int pos = start + 1;
-
-		List<String> out = new ArrayList<>();
-		while (pos < json.length()) {
-			while (pos < json.length() && (json.charAt(pos) == ' ' || json.charAt(pos) == '\n' || json.charAt(pos) == '\r' || json.charAt(pos) == '\t' || json.charAt(pos) == ',')) {
-				pos++;
-			}
-			if (pos >= json.length()) break;
-			char c = json.charAt(pos);
-			if (c == ']') break;
-			if (c != '{') {
-				pos++;
-				continue;
-			}
-			int depth = 0;
-			boolean inString = false;
-			boolean escape = false;
-			int objStart = pos;
-			while (pos < json.length()) {
-				char ch = json.charAt(pos);
-				if (escape) {
-					escape = false;
-				} else if (ch == '\\') {
-					escape = inString;
-				} else if (ch == '"') {
-					inString = !inString;
-				} else if (!inString) {
-					if (ch == '{') depth++;
-					else if (ch == '}') {
-						depth--;
-						if (depth == 0) {
-							out.add(json.substring(objStart, pos + 1));
-							pos++;
-							break;
-						}
-					}
-				}
-				pos++;
-			}
-		}
-		return out;
-	}
-
-	private static String extractJsonStringField(String jsonObject, String fieldName) {
-		if (jsonObject == null || jsonObject.isBlank() || fieldName == null || fieldName.isBlank()) return null;
-		String needle = "\"" + fieldName + "\":";
-		int i = jsonObject.indexOf(needle);
-		if (i < 0) return null;
-		int pos = i + needle.length();
-		while (pos < jsonObject.length() && (jsonObject.charAt(pos) == ' ' || jsonObject.charAt(pos) == '\n' || jsonObject.charAt(pos) == '\r' || jsonObject.charAt(pos) == '\t')) {
-			pos++;
-		}
-		if (pos >= jsonObject.length() || jsonObject.charAt(pos) != '"') return null;
-		pos++;
-		StringBuilder sb = new StringBuilder();
-		boolean escape = false;
-		while (pos < jsonObject.length()) {
-			char ch = jsonObject.charAt(pos);
-			if (escape) {
-				if (ch == '/' || ch == '\\' || ch == '"') sb.append(ch);
-				else if (ch == 'b') sb.append('\b');
-				else if (ch == 'f') sb.append('\f');
-				else if (ch == 'n') sb.append('\n');
-				else if (ch == 'r') sb.append('\r');
-				else if (ch == 't') sb.append('\t');
-				else sb.append(ch);
-				escape = false;
-			} else if (ch == '\\') {
-				escape = true;
-			} else if (ch == '"') {
-				break;
-			} else {
-				sb.append(ch);
-			}
-			pos++;
-		}
-		return sb.toString();
 	}
 
 	private void seedKnockout8MatchesIfMissing(Tournament tournament, List<Team> teams) {
