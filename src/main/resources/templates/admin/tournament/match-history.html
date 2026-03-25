@@ -1790,6 +1790,7 @@
                         <input type="hidden" name="page" th:value="${currentPage}">
                         <input type="hidden" name="size" th:value="${pageSize}">
                         <input type="hidden" id="matchScheduledFlag" th:value="${selectedMatch != null && selectedMatch.scheduledAt != null ? '1' : '0'}">
+                        <input type="hidden" id="matchRoundName" th:value="${selectedMatch != null && selectedMatch.roundName != null ? selectedMatch.roundName : ''}">
 
                         <input name="homeScore" class="score-box" type="number" min="0" max="99" style="line-height: normal;"
                                th:attr="disabled=${selectedMatch != null && selectedMatch.scheduledAt == null} ? 'disabled' : null"
@@ -1801,9 +1802,9 @@
                         <div class="team-name" style="color: var(--brand); font-size: 22px; margin-left: 10px;"
                              th:text="${selectedMatch != null && selectedMatch.awayTeam != null ? selectedMatch.awayTeam.name : ''}"></div>
                         
-                        <div style="display:flex; align-items:center; gap:6px; margin-left: 6px;"
-                             th:if="${tournamentMode != T(com.example.football_tourament_web.model.enums.TournamentMode).GROUP_STAGE and selectedMatch != null and selectedMatch.homeScore != null and selectedMatch.awayScore != null and selectedMatch.homeScore == selectedMatch.awayScore} 
-                                    or ${selectedMatch != null and (selectedMatch.homePenalty != null or selectedMatch.awayPenalty != null)}">
+                        <div id="penInputs" style="display:flex; align-items:center; gap:6px; margin-left: 6px;"
+                             th:style="${(selectedMatch != null and selectedMatch.roundName != null and !#strings.toLowerCase(selectedMatch.roundName).startsWith('bảng') and selectedMatch.homeScore != null and selectedMatch.awayScore != null and selectedMatch.homeScore == selectedMatch.awayScore) 
+                                    or (selectedMatch != null and (selectedMatch.homePenalty != null or selectedMatch.awayPenalty != null))} ? '' : 'display:none;'">
                             <span class="muted" style="font-weight:700;">Pen</span>
                             <input name="homePen" class="score-box" type="number" min="0" max="30" style="width: 55px; height: 36px; font-size:18px;"
                                    th:attr="disabled=${selectedMatch != null && selectedMatch.scheduledAt == null} ? 'disabled' : null"
@@ -2094,12 +2095,61 @@
                 if (saved === 'finish') window.showToast('Kết thúc trận đấu thành công');
                 if (saved === 'groups') window.showToast('Xếp bảng ngẫu nhiên thành công');
                 if (saved === 'invalid_schedule') window.showToast('Ngày thi đấu phải nằm trong thời gian của giải', 'error');
-                    if (saved === 'pen_required') window.showToast('Hòa thì phải nhập tỉ số Penalty (knockout)', 'error');
+                    if (saved === 'pen_required') window.showToast('Hòa thì phải nhập tỉ số Penalty', 'error');
                     if (saved === 'pen_invalid') window.showToast('Tỉ số Penalty không được hòa', 'error');
                 params.delete('saved');
                 const nextQuery = params.toString();
                 window.history.replaceState({}, '', nextQuery ? (window.location.pathname + '?' + nextQuery) : window.location.pathname);
             }
+        })();
+
+        (function () {
+            const penBox = document.getElementById('penInputs');
+            const homeScoreEl = document.querySelector('input[name="homeScore"]');
+            const awayScoreEl = document.querySelector('input[name="awayScore"]');
+            const homePenEl = document.querySelector('input[name="homePen"]');
+            const awayPenEl = document.querySelector('input[name="awayPen"]');
+            if (!penBox || !homeScoreEl || !awayScoreEl) return;
+
+            function isGroupRound() {
+                const roundValue = document.getElementById('matchRoundName') ? document.getElementById('matchRoundName').value : '';
+                return roundValue.trim().toLowerCase().startsWith('bảng');
+            }
+
+            function isKnockoutMatch() {
+                const modeValue = document.getElementById('tournamentModeName') ? document.getElementById('tournamentModeName').value : '';
+                return modeValue !== 'GROUP_STAGE' || !isGroupRound();
+            }
+
+            function scoreValue(el) {
+                if (!el) return null;
+                const v = el.value == null ? '' : el.value.trim();
+                if (v === '') return null;
+                const n = Number(v);
+                return Number.isFinite(n) ? n : null;
+            }
+
+            function updatePenVisibility() {
+                if (!isKnockoutMatch()) {
+                    penBox.style.display = 'none';
+                    if (homePenEl) homePenEl.value = '';
+                    if (awayPenEl) awayPenEl.value = '';
+                    return;
+                }
+
+                const hs = scoreValue(homeScoreEl);
+                const as = scoreValue(awayScoreEl);
+                const show = hs != null && as != null && hs === as;
+                penBox.style.display = show ? 'flex' : 'none';
+                if (!show) {
+                    if (homePenEl) homePenEl.value = '';
+                    if (awayPenEl) awayPenEl.value = '';
+                }
+            }
+
+            homeScoreEl.addEventListener('input', updatePenVisibility);
+            awayScoreEl.addEventListener('input', updatePenVisibility);
+            updatePenVisibility();
         })();
 
         (function () {
@@ -2358,13 +2408,16 @@
                 }
                 return;
             }
-            const isKnockout = document.getElementById('tournamentModeName') 
-                ? (document.getElementById('tournamentModeName').value !== 'GROUP_STAGE')
-                : true;
-            if (isKnockout && Number(homeInput.value) === Number(awayInput.value)) {
+            const modeValue = document.getElementById('tournamentModeName') ? document.getElementById('tournamentModeName').value : '';
+            const roundValue = document.getElementById('matchRoundName') ? document.getElementById('matchRoundName').value : '';
+            const isGroupRound = roundValue.trim().toLowerCase().startsWith('bảng');
+            const isKnockoutMatch = modeValue !== 'GROUP_STAGE' || !isGroupRound;
+            if (isKnockoutMatch && Number(homeInput.value) === Number(awayInput.value)) {
                 const homePen = document.querySelector('input[name=\"homePen\"]');
                 const awayPen = document.querySelector('input[name=\"awayPen\"]');
                 if (!homePen || !awayPen || homePen.value.trim() === '' || awayPen.value.trim() === '') {
+                    const penBox = document.getElementById('penInputs');
+                    if (penBox) penBox.style.display = 'flex';
                     return window.showToast ? window.showToast('Nhập tỉ số Penalty trước khi kết thúc', 'error') : alert('Nhập tỉ số Penalty trước khi kết thúc');
                 }
                 if (Number(homePen.value) === Number(awayPen.value)) {
@@ -2380,8 +2433,10 @@
 
         function validateScoreSave(formEl) {
             const modeValue = document.getElementById('tournamentModeName') ? document.getElementById('tournamentModeName').value : '';
-            const isKnockout = modeValue !== 'GROUP_STAGE';
-            if (!isKnockout || !formEl) return true;
+            const roundValue = document.getElementById('matchRoundName') ? document.getElementById('matchRoundName').value : '';
+            const isGroupRound = roundValue.trim().toLowerCase().startsWith('bảng');
+            const isKnockoutMatch = modeValue !== 'GROUP_STAGE' || !isGroupRound;
+            if (!isKnockoutMatch || !formEl) return true;
 
             const sched = document.getElementById('matchScheduledFlag');
             if (sched && sched.value !== '1') {
@@ -2399,7 +2454,12 @@
             const homePen = formEl.querySelector('input[name="homePen"]');
             const awayPen = formEl.querySelector('input[name="awayPen"]');
             if (!homePen || !awayPen) return true;
-            if (homePen.value.trim() === '' || awayPen.value.trim() === '') return true;
+            if (homePen.value.trim() === '' || awayPen.value.trim() === '') {
+                const penBox = document.getElementById('penInputs');
+                if (penBox) penBox.style.display = 'flex';
+                if (window.showToast) window.showToast('Nhập tỉ số Penalty khi hòa', 'error');
+                return false;
+            }
 
             if (Number(homePen.value) === Number(awayPen.value)) {
                 if (window.showToast) window.showToast('Tỉ số Penalty không được hòa', 'error');

@@ -75,21 +75,27 @@ public class MatchService {
 	public boolean generateNextKnockoutRoundIfReady(Long tournamentId, String currentRoundName) {
 		if (tournamentId == null) return false;
 		if (currentRoundName == null || currentRoundName.isBlank()) return false;
+		String currentRound = currentRoundName.trim();
+		if (currentRound.toLowerCase().startsWith("bảng")) return false;
 
 		List<Match> allMatches = matchRepository.findByTournamentIdWithDetails(tournamentId);
 		if (allMatches == null || allMatches.isEmpty()) return false;
 
 		Tournament tournament = allMatches.get(0).getTournament();
-		if (tournament == null || tournament.getMode() != TournamentMode.KNOCKOUT) return false;
+		if (tournament == null) return false;
+		if (tournament.getMode() != TournamentMode.KNOCKOUT && tournament.getMode() != TournamentMode.GROUP_STAGE) return false;
 
-		String nextRoundName = nextRoundName(currentRoundName, tournament.getTeamLimit());
+		String nextRoundName = nextRoundName(currentRound, tournament.getTeamLimit());
 		if (nextRoundName == null) return false;
 
-		boolean nextRoundExists = allMatches.stream().anyMatch(m -> nextRoundName.equals(m.getRoundName()));
+		boolean nextRoundExists = allMatches.stream().anyMatch(m -> {
+			if (m == null || m.getRoundName() == null) return false;
+			return nextRoundName.equalsIgnoreCase(m.getRoundName().trim());
+		});
 		if (nextRoundExists) return false;
 
 		List<Match> currentRoundMatches = allMatches.stream()
-				.filter(m -> currentRoundName.equals(m.getRoundName()))
+				.filter(m -> m != null && m.getRoundName() != null && currentRound.equalsIgnoreCase(m.getRoundName().trim()))
 				.sorted(Comparator.comparing(Match::getId))
 				.collect(Collectors.toList());
 		if (currentRoundMatches.isEmpty()) return false;
