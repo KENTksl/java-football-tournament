@@ -265,6 +265,7 @@
 </main>
 
 <th:block th:replace="~{user/fragments/footer :: footer('tournament')}"></th:block>
+<div id="tournamentMeta" th:attr="data-tournament-id=${tournament != null ? tournament.id : ''}" hidden></div>
 
 <div class="modal" id="matchDetailModal" aria-hidden="true">
     <div class="modal__backdrop" data-close-match-modal></div>
@@ -294,6 +295,7 @@
                 </section>
             </div>
             <div class="modal__foot">
+                <a id="watchLiveBtn" class="modal__action" href="#" hidden>Xem trực tiếp</a>
                 <button type="button" class="modal__action" data-close-match-modal>Đóng</button>
             </div>
         </div>
@@ -425,6 +427,9 @@
     const lineupAwayPitch = document.getElementById('lineupAwayPitch');
     const lineupHomeBench = document.getElementById('lineupHomeBench');
     const lineupAwayBench = document.getElementById('lineupAwayBench');
+    const watchLiveBtn = document.getElementById('watchLiveBtn');
+    const tournamentMeta = document.getElementById('tournamentMeta');
+    const tournamentIdForLive = tournamentMeta ? tournamentMeta.dataset.tournamentId : '';
     const signupOverlay = document.getElementById('signupOverlay');
     const signupOverlayFrame = document.getElementById('signupOverlayFrame');
 
@@ -493,6 +498,21 @@
         renderPitch(lineupAwayPitch, lineup?.pitchSlots, lineup?.awayTeam?.starters);
         renderBench(lineup?.homeTeam?.bench, lineupHomeBench);
         renderBench(lineup?.awayTeam?.bench, lineupAwayBench);
+        if (watchLiveBtn) {
+            if (lineup?.liveStreamUrl) {
+                const matchId = lineup?.matchId;
+                if (tournamentIdForLive && matchId) {
+                    watchLiveBtn.href = '/user/tournament/live-match?id=' + tournamentIdForLive + '&matchId=' + matchId;
+                    watchLiveBtn.hidden = false;
+                } else {
+                    watchLiveBtn.href = lineup.liveStreamUrl;
+                    watchLiveBtn.hidden = false;
+                }
+            } else {
+                watchLiveBtn.href = '#';
+                watchLiveBtn.hidden = true;
+            }
+        }
         openMatchModal();
     };
 

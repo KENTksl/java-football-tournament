@@ -9,6 +9,7 @@ com\example\football_tourament_web\service\admin\AdminMatchHistoryService$Player
 com\example\football_tourament_web\service\user\UserProfileService$1.class
 com\example\football_tourament_web\repository\PlayerRepository.class
 com\example\football_tourament_web\service\common\FileStorageService.class
+com\example\football_tourament_web\service\user\UserTournamentViewService$LiveMatchView.class
 com\example\football_tourament_web\controller\common\CurrentUserAdvice.class
 com\example\football_tourament_web\service\admin\AdminMatchHistoryService$MatchEventRow.class
 com\example\football_tourament_web\service\common\FileStorageService$InvalidFileTypeException.class

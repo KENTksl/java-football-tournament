@@ -111,6 +111,17 @@ public class UserTournamentController {
 		return userTournamentViewService.buildMatchLineupView(tournamentId, matchId);
 	}
 
+	@GetMapping("/live-match")
+	public String liveMatch(
+			@RequestParam(value = "id", required = false) Long tournamentId,
+			@RequestParam(value = "matchId", required = false) Long matchId,
+			Model model
+	) {
+		model.addAttribute("liveMatch", userTournamentViewService.buildLiveMatchView(tournamentId, matchId));
+		model.addAttribute("tournamentId", tournamentId);
+		return "user/tournament/live-match";
+	}
+
 	@GetMapping("/team-lineup")
 	@ResponseBody
 	public UserTournamentViewService.TeamSingleLineupView teamLineup(
