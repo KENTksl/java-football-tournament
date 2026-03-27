@@ -102,6 +102,16 @@ public class UserTournamentController {
 		return userTournamentViewService.buildTeamPrefillForTeam(authentication, teamId);
 	}
 
+	@PostMapping("/match/vote")
+	@ResponseBody
+	public UserTournamentViewService.VoteResult votePlayer(
+			@RequestParam("matchId") Long matchId,
+			@RequestParam("playerId") Long playerId,
+			Authentication authentication
+	) {
+		return userTournamentViewService.votePlayer(authentication, matchId, playerId);
+	}
+
 	@GetMapping("/match-lineup")
 	@ResponseBody
 	public UserTournamentViewService.MatchLineupView matchLineup(
@@ -175,6 +185,13 @@ public class UserTournamentController {
 		attachTournament(model, id);
 		model.addAttribute("bracket", userTournamentViewService.buildBracketData(id));
 		return "user/tournament/fragments/bracket :: bracket";
+	}
+
+	@GetMapping("/best-players-fragment")
+	public String bestPlayersFragment(@RequestParam(value = "id", required = false) Long id, Model model) {
+		attachTournament(model, id);
+		model.addAttribute("bestPlayers", userTournamentViewService.buildBestPlayers(id));
+		return "user/tournament/fragments/best-players :: best-players";
 	}
 
 	@GetMapping("/teams-fragment")

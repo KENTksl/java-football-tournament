@@ -25,6 +25,9 @@
         <a th:href="@{/admin/tournament-bracket(id=${tournamentId})}" class="tab-link" th:classappend="${activeTab == 'bracket'} ? ' active' : ''">
           Sơ đồ thi đấu
         </a>
+        <a th:href="@{/admin/best-players(id=${tournamentId})}" class="tab-link" th:classappend="${activeTab == 'best-players'} ? ' active' : ''">
+          Cầu thủ xuất sắc
+        </a>
       </div>
     </th:block>
   </body>
