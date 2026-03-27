@@ -8,35 +8,48 @@ import com.example.football_tourament_web.model.enums.MatchStatus;
 import com.example.football_tourament_web.model.enums.RegistrationStatus;
 import com.example.football_tourament_web.model.enums.TournamentMode;
 import com.example.football_tourament_web.model.enums.TournamentStatus;
+import com.example.football_tourament_web.model.entity.MatchEvent;
+import com.example.football_tourament_web.model.enums.MatchEventType;
+import com.example.football_tourament_web.repository.MatchEventRepository;
+import com.example.football_tourament_web.repository.MatchRatingRepository;
 import com.example.football_tourament_web.repository.PlayerRepository;
 import com.example.football_tourament_web.service.core.MatchService;
 import com.example.football_tourament_web.service.core.TournamentRegistrationService;
 import com.example.football_tourament_web.service.core.TournamentService;
-import org.springframework.stereotype.Service;
 
+import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import com.example.football_tourament_web.model.entity.MatchRating;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.util.stream.Collectors;
 @Service
 public class AdminTournamentViewService {
 	private final TournamentService tournamentService;
 	private final MatchService matchService;
 	private final TournamentRegistrationService tournamentRegistrationService;
 	private final PlayerRepository playerRepository;
+	private final MatchRatingRepository matchRatingRepository;
+	private final MatchEventRepository matchEventRepository;
 
 	public AdminTournamentViewService(
 			TournamentService tournamentService,
 			MatchService matchService,
 			TournamentRegistrationService tournamentRegistrationService,
-			PlayerRepository playerRepository
+			PlayerRepository playerRepository,
+			MatchRatingRepository matchRatingRepository,
+			MatchEventRepository matchEventRepository
 	) {
 		this.tournamentService = tournamentService;
 		this.matchService = matchService;
 		this.tournamentRegistrationService = tournamentRegistrationService;
 		this.playerRepository = playerRepository;
+		this.matchRatingRepository = matchRatingRepository;
+		this.matchEventRepository = matchEventRepository;
 	}
 
 	public PageResult buildTournamentBracketPage(Long tournamentId) {
@@ -221,6 +234,79 @@ public class AdminTournamentViewService {
 		}
 		return players;
 	}
+
+	public PageResult buildBestPlayersPage(Long tournamentId) {
+		if (tournamentId == null) return PageResult.redirect("/admin/manage/tournament");
+
+		Tournament tournament = tournamentService.findById(tournamentId).orElse(null);
+		if (tournament == null) return PageResult.redirect("/admin/manage/tournament");
+
+		Map<String, Object> model = new LinkedHashMap<>();
+		applyTournamentContext(model, tournament);
+
+		List<MatchRating> ratings = matchRatingRepository.findRatingsByTournamentId(tournamentId);
+		Map<Long, MatchBestPlayersDto> matchesMap = new LinkedHashMap<>();
+
+		for (MatchRating mr : ratings) {
+			Match m = mr.getMatch();
+			Long mId = m.getId();
+			
+			matchesMap.putIfAbsent(mId, new MatchBestPlayersDto(
+					mId,
+					m.getRoundName(),
+					m.getHomeTeam() != null ? m.getHomeTeam().getName() : "N/A",
+					m.getAwayTeam() != null ? m.getAwayTeam().getName() : "N/A",
+					m.getHomeScore(),
+					m.getAwayScore(),
+					new ArrayList<>()
+			));
+			
+			MatchBestPlayersDto matchDto = matchesMap.get(mId);
+			if (matchDto.players().size() < 5) {
+				Player p = mr.getPlayer();
+				
+				// Calculate goals for this player in this match
+				long goals = matchEventRepository.findByMatchIdOrderByMinuteAscIdAsc(mId).stream()
+						.filter(e -> e.getType() == MatchEventType.GOAL && e.getPlayer() != null && e.getPlayer().getId().equals(p.getId()))
+						.count();
+						
+				matchDto.players().add(new BestPlayerDto(
+						p.getId(),
+						p.getFullName(),
+						p.getTeam() != null ? p.getTeam().getName() : "N/A",
+						p.getPosition(),
+						p.getJerseyNumber(),
+						mr.getRating(),
+						p.getAvatarUrl(),
+						(int) goals
+				));
+			}
+		}
+
+		model.put("matchesWithBestPlayers", new ArrayList<>(matchesMap.values()));
+		return new PageResult("admin/tournament/best-players", model);
+	}
+
+	public record MatchBestPlayersDto(
+			Long matchId,
+			String roundName,
+			String homeTeamName,
+			String awayTeamName,
+			Integer homeScore,
+			Integer awayScore,
+			List<BestPlayerDto> players
+	) {}
+
+	public record BestPlayerDto(
+			Long id,
+			String fullName,
+			String teamName,
+			String position,
+			Integer jerseyNumber,
+			Double totalRating,
+			String avatarUrl,
+			Integer goals
+	) {}
 
 	private void applyTournamentContext(Map<String, Object> model, Tournament tournament) {
 		model.put("tournamentId", tournament.getId());

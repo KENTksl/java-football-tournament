@@ -18,6 +18,8 @@ import com.example.football_tourament_web.model.enums.TournamentMode;
 import com.example.football_tourament_web.model.enums.TournamentStatus;
 import com.example.football_tourament_web.model.enums.TransactionStatus;
 import com.example.football_tourament_web.model.enums.UserRole;
+import com.example.football_tourament_web.model.entity.MatchRating;
+import com.example.football_tourament_web.repository.MatchRatingRepository;
 import com.example.football_tourament_web.repository.PlayerRepository;
 import com.example.football_tourament_web.service.core.MatchEventService;
 import com.example.football_tourament_web.service.core.MatchLineupService;
@@ -43,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminMatchHistoryService {
@@ -54,6 +57,7 @@ public class AdminMatchHistoryService {
 	private final PlayerRepository playerRepository;
 	private final TransactionService transactionService;
 	private final UserService userService;
+	private final MatchRatingRepository matchRatingRepository;
 
 	public AdminMatchHistoryService(
 			TournamentService tournamentService,
@@ -63,7 +67,8 @@ public class AdminMatchHistoryService {
 			TournamentRegistrationService tournamentRegistrationService,
 			PlayerRepository playerRepository,
 			TransactionService transactionService,
-			UserService userService
+			UserService userService,
+			MatchRatingRepository matchRatingRepository
 	) {
 		this.tournamentService = tournamentService;
 		this.matchService = matchService;
@@ -73,6 +78,7 @@ public class AdminMatchHistoryService {
 		this.playerRepository = playerRepository;
 		this.transactionService = transactionService;
 		this.userService = userService;
+		this.matchRatingRepository = matchRatingRepository;
 	}
 
 	public PageResult buildMatchHistoryPage(Long tournamentId, Long matchId, String tab, int page, int size) {
@@ -504,6 +510,9 @@ public class AdminMatchHistoryService {
 		match.setStatus(MatchStatus.FINISHED);
 		matchService.save(match);
 
+		// Calculate player ratings
+		calculateMatchRatings(match);
+
 		if ("Chung kết".equalsIgnoreCase(match.getRoundName() != null ? match.getRoundName().trim() : "")) {
 			Team winner = matchService.winnerOf(match);
 			if (winner != null) {
@@ -518,6 +527,67 @@ public class AdminMatchHistoryService {
 		matchService.generateNextKnockoutRoundIfReady(tournamentId, match.getRoundName());
 		matchService.generateQuarterFinalsFromGroupsIfReady(tournamentId);
 		return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=finish";
+	}
+
+	private void calculateMatchRatings(Match match) {
+		List<MatchLineupSlot> lineup = matchLineupService.listByMatchId(match.getId());
+		List<MatchEvent> events = matchEventService.listByMatchId(match.getId());
+
+		Map<Long, Double> ratings = new HashMap<>();
+		Map<Long, Player> players = new HashMap<>();
+
+		// Initialize base score 6.0 for everyone in lineup
+		for (MatchLineupSlot slot : lineup) {
+			Player p = slot.getPlayer();
+			ratings.put(p.getId(), 6.0);
+			players.put(p.getId(), p);
+		}
+
+		// Adjust scores based on events
+		for (MatchEvent event : events) {
+			if (event.getPlayer() == null) continue;
+			Long playerId = event.getPlayer().getId();
+			if (!ratings.containsKey(playerId)) continue;
+
+			double currentRating = ratings.get(playerId);
+			switch (event.getType()) {
+				case GOAL -> ratings.put(playerId, currentRating + 2.0);
+				case YELLOW -> ratings.put(playerId, currentRating - 1.0);
+				case RED -> ratings.put(playerId, currentRating - 3.0);
+				default -> {}
+			}
+		}
+
+		// Clean sheet logic (+1.5 for GK/DF if team concedes 0)
+		int homeScore = match.getHomeScore() != null ? match.getHomeScore() : 0;
+		int awayScore = match.getAwayScore() != null ? match.getAwayScore() : 0;
+
+		if (awayScore == 0) {
+			// Home team clean sheet
+			applyCleanSheetBonus(lineup, ratings, TeamSide.HOME);
+		}
+		if (homeScore == 0) {
+			// Away team clean sheet
+			applyCleanSheetBonus(lineup, ratings, TeamSide.AWAY);
+		}
+
+		// Save ratings
+		List<MatchRating> ratingEntities = ratings.entrySet().stream()
+				.map(entry -> new MatchRating(match, players.get(entry.getKey()), entry.getValue()))
+				.collect(Collectors.toList());
+		matchRatingRepository.saveAll(ratingEntities);
+	}
+
+	private void applyCleanSheetBonus(List<MatchLineupSlot> lineup, Map<Long, Double> ratings, TeamSide side) {
+		for (MatchLineupSlot slot : lineup) {
+			if (slot.getTeamSide() == side) {
+				String pos = slot.getPosition() != null ? slot.getPosition().toUpperCase() : "";
+				if (pos.contains("GK") || pos.contains("DF")) {
+					Long pId = slot.getPlayer().getId();
+					ratings.put(pId, ratings.getOrDefault(pId, 6.0) + 1.5);
+				}
+			}
+		}
 	}
 
 	private void distributePrizesIfNeeded(Tournament tournament, Match finalMatch) {

@@ -24,6 +24,13 @@ public class AdminTournamentController {
 		return page.viewName();
 	}
 
+	@GetMapping("/admin/best-players")
+	public String bestPlayers(@RequestParam(value = "id", required = false) Long id, Model model) {
+		var page = adminTournamentViewService.buildBestPlayersPage(id);
+		model.addAllAttributes(page.model());
+		return page.viewName();
+	}
+
 	@GetMapping("/admin/general-information")
 	public String adminInformation(@RequestParam(value = "id", required = false) Long id, Model model) {
 		var page = adminTournamentViewService.buildGeneralInformationPage(id);

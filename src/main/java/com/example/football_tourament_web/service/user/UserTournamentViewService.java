@@ -1,7 +1,11 @@
 package com.example.football_tourament_web.service.user;
 
+import com.example.football_tourament_web.model.entity.AppUser;
 import com.example.football_tourament_web.model.entity.Match;
 import com.example.football_tourament_web.model.entity.MatchEvent;
+import com.example.football_tourament_web.model.entity.MatchRating;
+import com.example.football_tourament_web.model.entity.MatchVote;
+import com.example.football_tourament_web.model.entity.Player;
 import com.example.football_tourament_web.model.entity.Team;
 import com.example.football_tourament_web.model.entity.Tournament;
 import com.example.football_tourament_web.model.entity.TournamentRegistration;
@@ -13,6 +17,8 @@ import com.example.football_tourament_web.model.enums.TeamSide;
 import com.example.football_tourament_web.model.enums.TournamentMode;
 import com.example.football_tourament_web.model.enums.TransactionStatus;
 import com.example.football_tourament_web.repository.MatchEventRepository;
+import com.example.football_tourament_web.repository.MatchRatingRepository;
+import com.example.football_tourament_web.repository.MatchVoteRepository;
 import com.example.football_tourament_web.repository.PlayerRepository;
 import com.example.football_tourament_web.service.common.FileStorageService;
 import com.example.football_tourament_web.service.common.ViewFormatService;
@@ -33,11 +39,14 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class UserTournamentViewService {
@@ -51,8 +60,9 @@ public class UserTournamentViewService {
 	private final ViewFormatService viewFormatService;
 	private final PlayerRepository playerRepository;
 	private final FileStorageService fileStorageService;
-
 	private final MatchEventRepository matchEventRepository;
+	private final MatchRatingRepository matchRatingRepository;
+	private final MatchVoteRepository matchVoteRepository;
 
 	public UserTournamentViewService(
 			TournamentService tournamentService,
@@ -65,6 +75,8 @@ public class UserTournamentViewService {
 			ViewFormatService viewFormatService,
 			PlayerRepository playerRepository,
 			MatchEventRepository matchEventRepository,
+			MatchRatingRepository matchRatingRepository,
+			MatchVoteRepository matchVoteRepository,
 			FileStorageService fileStorageService
 	) {
 		this.tournamentService = tournamentService;
@@ -77,6 +89,8 @@ public class UserTournamentViewService {
 		this.viewFormatService = viewFormatService;
 		this.playerRepository = playerRepository;
 		this.matchEventRepository = matchEventRepository;
+		this.matchRatingRepository = matchRatingRepository;
+		this.matchVoteRepository = matchVoteRepository;
 		this.fileStorageService = fileStorageService;
 	}
 
@@ -1386,5 +1400,95 @@ public class UserTournamentViewService {
 			return new TeamSingleLineupView(false, message, null, List.of(), List.of(), List.of());
 		}
 	}
+
+	@Transactional(readOnly = true)
+	public List<MatchBestPlayersDto> buildBestPlayers(Long tournamentId) {
+		if (tournamentId == null) return List.of();
+		
+		List<MatchRating> ratings = matchRatingRepository.findRatingsByTournamentId(tournamentId);
+		Map<Long, MatchBestPlayersDto> matchesMap = new LinkedHashMap<>();
+
+		for (MatchRating mr : ratings) {
+			Match m = mr.getMatch();
+			Long mId = m.getId();
+			
+			matchesMap.putIfAbsent(mId, new MatchBestPlayersDto(
+					mId,
+					m.getRoundName(),
+					m.getHomeTeam() != null ? m.getHomeTeam().getName() : "N/A",
+					m.getAwayTeam() != null ? m.getAwayTeam().getName() : "N/A",
+					m.getHomeScore(),
+					m.getAwayScore(),
+					new ArrayList<>()
+			));
+			
+			MatchBestPlayersDto matchDto = matchesMap.get(mId);
+			if (matchDto.players().size() < 5) {
+				Player p = mr.getPlayer();
+				
+				// Calculate goals for this player in this match
+				long goals = matchEventRepository.findByMatchIdOrderByMinuteAscIdAsc(mId).stream()
+						.filter(e -> e.getType() == com.example.football_tourament_web.model.enums.MatchEventType.GOAL && e.getPlayer() != null && e.getPlayer().getId().equals(p.getId()))
+						.count();
+						
+				matchDto.players().add(new BestPlayerDto(
+						p.getId(),
+						p.getFullName(),
+						p.getTeam() != null ? p.getTeam().getName() : "N/A",
+						p.getPosition(),
+						p.getJerseyNumber(),
+						mr.getRating(),
+						p.getAvatarUrl(),
+						(int) goals
+				));
+			}
+		}
+
+		return new ArrayList<>(matchesMap.values());
+	}
+
+	public record MatchBestPlayersDto(
+			Long matchId,
+			String roundName,
+			String homeTeamName,
+			String awayTeamName,
+			Integer homeScore,
+			Integer awayScore,
+			List<BestPlayerDto> players
+	) {}
+
+	public record BestPlayerDto(
+			Long id,
+			String fullName,
+			String teamName,
+			String position,
+			Integer jerseyNumber,
+			Double totalRating,
+			String avatarUrl,
+			Integer goals
+	) {}
+
+	@Transactional
+	public VoteResult votePlayer(Authentication authentication, Long matchId, Long playerId) {
+		var user = requireCurrentUser(authentication);
+		if (user == null) return new VoteResult(false, "Vui lòng đăng nhập để bình chọn");
+		if (matchId == null || playerId == null) return new VoteResult(false, "Thông tin không hợp lệ");
+
+		Match match = matchService.findById(matchId).orElse(null);
+		if (match == null) return new VoteResult(false, "Không tìm thấy trận đấu");
+		if (match.getStatus() != MatchStatus.FINISHED) return new VoteResult(false, "Chỉ có thể bình chọn sau khi trận đấu kết thúc");
+
+		var playerOpt = playerRepository.findById(playerId);
+		if (playerOpt.isEmpty()) return new VoteResult(false, "Không tìm thấy cầu thủ");
+
+		var existingVote = matchVoteRepository.findByMatchIdAndUserId(matchId, user.getId());
+		if (existingVote.isPresent()) return new VoteResult(false, "Bạn đã bình chọn cho trận đấu này rồi");
+
+		MatchVote vote = new MatchVote(match, user, playerOpt.get());
+		matchVoteRepository.save(vote);
+		return new VoteResult(true, "Bình chọn thành công!");
+	}
+
+	public record VoteResult(boolean success, String message) {}
 }
 
