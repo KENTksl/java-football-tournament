@@ -1,6 +1,7 @@
 com\example\football_tourament_web\repository\MatchEventRepository.class
 com\example\football_tourament_web\service\admin\AdminTeamManagementService$1.class
 com\example\football_tourament_web\service\admin\AdminMatchHistoryService$PageResult.class
+com\example\football_tourament_web\service\user\UserTournamentViewService$H2H.class
 com\example\football_tourament_web\service\admin\AdminMatchHistoryService$PagedResult.class
 com\example\football_tourament_web\model\entity\Tournament.class
 com\example\football_tourament_web\model\entity\MatchEvent.class
@@ -8,6 +9,7 @@ com\example\football_tourament_web\service\user\UserTournamentViewService$LiveAr
 com\example\football_tourament_web\model\enums\PitchType.class
 com\example\football_tourament_web\service\admin\AdminMatchHistoryService$PlayerDto.class
 com\example\football_tourament_web\service\user\UserProfileService$1.class
+com\example\football_tourament_web\service\core\MatchService.class
 com\example\football_tourament_web\repository\PlayerRepository.class
 com\example\football_tourament_web\service\common\FileStorageService.class
 com\example\football_tourament_web\service\user\UserTournamentViewService$LiveMatchView.class
@@ -25,7 +27,11 @@ com\example\football_tourament_web\repository\MatchRepository.class
 com\example\football_tourament_web\model\enums\UserRole.class
 com\example\football_tourament_web\model\dto\NewsItem.class
 com\example\football_tourament_web\repository\AppUserRepository.class
+<<<<<<< Updated upstream
 com\example\football_tourament_web\service\user\UserTournamentViewService$LiveArchiveRow.class
+=======
+com\example\football_tourament_web\service\core\MatchService$GroupStats.class
+>>>>>>> Stashed changes
 com\example\football_tourament_web\config\WebConfig.class
 com\example\football_tourament_web\model\enums\RegistrationStatus.class
 com\example\football_tourament_web\service\user\UserPaymentService$1.class
@@ -40,6 +46,7 @@ com\example\football_tourament_web\model\enums\TransactionStatus.class
 com\example\football_tourament_web\model\enums\MatchEventType.class
 com\example\football_tourament_web\repository\MatchLineupSlotRepository.class
 com\example\football_tourament_web\model\enums\MatchStatus.class
+com\example\football_tourament_web\service\user\UserTournamentViewService$ResultStamp.class
 com\example\football_tourament_web\repository\TransactionRepository.class
 com\example\football_tourament_web\service\admin\AdminMatchHistoryService$GroupTeamRow.class
 com\example\football_tourament_web\repository\TeamRepository.class
@@ -51,6 +58,7 @@ com\example\football_tourament_web\model\entity\Transaction.class
 com\example\football_tourament_web\model\enums\TeamSide.class
 com\example\football_tourament_web\model\enums\Gender.class
 com\example\football_tourament_web\controller\admin\AdminTournamentManagementController.class
+com\example\football_tourament_web\service\admin\AdminMatchHistoryService$H2H.class
 com\example\football_tourament_web\config\DataSeeder.class
 com\example\football_tourament_web\service\admin\AdminTournamentViewService$1.class
 com\example\football_tourament_web\model\entity\AppUser.class

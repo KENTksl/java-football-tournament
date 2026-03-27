@@ -488,7 +488,8 @@ public class DataSeeder implements CommandLineRunner {
 				.anyMatch(m -> m != null && m.getRoundName() != null && roundName.equalsIgnoreCase(m.getRoundName().trim()));
 		if (roundAlreadyExists) return;
 
-		List<Match> matches = new ArrayList<>();
+		List<Match> firstLegs = new ArrayList<>();
+		List<Match> secondLegs = new ArrayList<>();
 		int groupOffsetDays = switch (groupName == null ? "" : groupName.trim().toUpperCase()) {
 			case "A" -> 1;
 			case "B" -> 2;
@@ -498,29 +499,43 @@ public class DataSeeder implements CommandLineRunner {
 		};
 		LocalDateTime base = LocalDateTime.now().plusDays(groupOffsetDays).withHour(18).withMinute(0).withSecond(0).withNano(0);
 
-		int offsetHours = 0;
-		for (int i = 0; i < teams.size(); i++) {
-			for (int j = i + 1; j < teams.size(); j++) {
-				Team home = teams.get(i);
-				Team away = teams.get(j);
+		Team t0 = teams.get(0);
+		Team t1 = teams.get(1);
+		Team t2 = teams.get(2);
+		Team t3 = teams.get(3);
 
-				Match leg1 = new Match(tournament, home, away);
-				leg1.setRoundName(roundName);
-				leg1.setStatus(MatchStatus.SCHEDULED);
-				leg1.setScheduledAt(base.plusHours(offsetHours));
-				matches.add(leg1);
-				offsetHours += 2;
+		int roundGapDays = 2;
+		// R1: t0-t1, t2-t3
+		firstLegs.add(buildScheduledGroupMatch(tournament, roundName, t0, t1, base.plusHours(0)));
+		firstLegs.add(buildScheduledGroupMatch(tournament, roundName, t2, t3, base.plusHours(2)));
+		// R2: +2d, t0-t2, t1-t3
+		firstLegs.add(buildScheduledGroupMatch(tournament, roundName, t0, t2, base.plusDays(roundGapDays).plusHours(0)));
+		firstLegs.add(buildScheduledGroupMatch(tournament, roundName, t1, t3, base.plusDays(roundGapDays).plusHours(2)));
+		// R3: +4d, t0-t3, t1-t2
+		firstLegs.add(buildScheduledGroupMatch(tournament, roundName, t0, t3, base.plusDays(roundGapDays * 2L).plusHours(0)));
+		firstLegs.add(buildScheduledGroupMatch(tournament, roundName, t1, t2, base.plusDays(roundGapDays * 2L).plusHours(2)));
 
-				Match leg2 = new Match(tournament, away, home);
-				leg2.setRoundName(roundName);
-				leg2.setStatus(MatchStatus.SCHEDULED);
-				leg2.setScheduledAt(base.plusHours(offsetHours));
-				matches.add(leg2);
-				offsetHours += 2;
-			}
-		}
+		// Lượt 2 bắt đầu sau khi kết thúc lượt 1 (+6d), giữ khoảng cách 2 ngày giữa vòng
+		LocalDateTime baseLeg2 = base.plusDays(roundGapDays * 3L);
+		secondLegs.add(buildScheduledGroupMatch(tournament, roundName, t1, t0, baseLeg2.plusHours(0)));
+		secondLegs.add(buildScheduledGroupMatch(tournament, roundName, t3, t2, baseLeg2.plusHours(2)));
+		secondLegs.add(buildScheduledGroupMatch(tournament, roundName, t2, t0, baseLeg2.plusDays(roundGapDays).plusHours(0)));
+		secondLegs.add(buildScheduledGroupMatch(tournament, roundName, t3, t1, baseLeg2.plusDays(roundGapDays).plusHours(2)));
+		secondLegs.add(buildScheduledGroupMatch(tournament, roundName, t3, t0, baseLeg2.plusDays(roundGapDays * 2L).plusHours(0)));
+		secondLegs.add(buildScheduledGroupMatch(tournament, roundName, t2, t1, baseLeg2.plusDays(roundGapDays * 2L).plusHours(2)));
 
+		List<Match> matches = new ArrayList<>();
+		matches.addAll(firstLegs);
+		matches.addAll(secondLegs);
 		matchRepository.saveAll(matches);
+	}
+
+	private Match buildScheduledGroupMatch(Tournament t, String roundName, Team home, Team away, LocalDateTime when) {
+		Match m = new Match(t, home, away);
+		m.setRoundName(roundName);
+		m.setStatus(MatchStatus.SCHEDULED);
+		m.setScheduledAt(when);
+		return m;
 	}
 
 	private void seedKnockout8MatchesIfMissing(Tournament tournament, List<Team> teams) {
