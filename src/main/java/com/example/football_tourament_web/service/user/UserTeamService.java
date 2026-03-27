@@ -511,6 +511,8 @@ public class UserTeamService {
 		model.addAttribute("analysisLabels", analysis.labels());
 		model.addAttribute("analysisGoalsFor", analysis.goalsFor());
 		model.addAttribute("analysisGoalsAgainst", analysis.goalsAgainst());
+		List<PlayerStatRow> playerStats = buildPlayerStats(team.getId(), tournamentIds, selectedTournamentId);
+		model.addAttribute("playerStats", playerStats);
 	}
 
 	private GoalsAnalysis buildGoalsAnalysis(Long teamId, List<Match> matches) {
@@ -714,6 +716,61 @@ public class UserTeamService {
 	}
 
 	private record GoalsAnalysis(int win, int draw, int loss, List<String> labels, List<Integer> goalsFor, List<Integer> goalsAgainst) {
+	}
+
+	private List<PlayerStatRow> buildPlayerStats(Long teamId, List<Long> tournamentIds, Long selectedTournamentId) {
+		if (teamId == null || tournamentIds == null || tournamentIds.isEmpty()) {
+			return List.of();
+		}
+		List<Long> target = selectedTournamentId != null && tournamentIds.contains(selectedTournamentId)
+				? List.of(selectedTournamentId)
+				: tournamentIds;
+		java.util.Map<Long, PlayerAgg> map = new java.util.HashMap<>();
+		for (Long tid : target) {
+			for (var e : matchEventRepository.findByTournamentId(tid)) {
+				if (e == null || e.getPlayer() == null || e.getPlayer().getTeam() == null) continue;
+				if (e.getPlayer().getTeam().getId() == null || !e.getPlayer().getTeam().getId().equals(teamId)) continue;
+				Long pid = e.getPlayer().getId();
+				if (pid == null) continue;
+				PlayerAgg agg = map.computeIfAbsent(pid, k -> {
+					PlayerAgg a = new PlayerAgg();
+					a.id = pid;
+					a.name = e.getPlayer().getFullName();
+					a.jersey = e.getPlayer().getJerseyNumber();
+					a.avatar = e.getPlayer().getAvatarUrl();
+					return a;
+				});
+				if (e.getType() == com.example.football_tourament_web.model.enums.MatchEventType.GOAL) agg.goals++;
+				else if (e.getType() == com.example.football_tourament_web.model.enums.MatchEventType.ASSIST) agg.assists++;
+				else if (e.getType() == com.example.football_tourament_web.model.enums.MatchEventType.YELLOW) agg.yellow++;
+				else if (e.getType() == com.example.football_tourament_web.model.enums.MatchEventType.RED) agg.red++;
+			}
+		}
+		List<PlayerStatRow> rows = new java.util.ArrayList<>();
+		for (PlayerAgg a : map.values()) {
+			rows.add(new PlayerStatRow(a.id, a.name, a.jersey, a.avatar, a.goals, a.assists, a.yellow, a.red));
+		}
+		rows.sort(java.util.Comparator
+				.comparingInt(PlayerStatRow::goals).reversed()
+				.thenComparing(PlayerStatRow::name, String.CASE_INSENSITIVE_ORDER));
+		if (rows.size() > 10) {
+			return rows.subList(0, 10);
+		}
+		return rows;
+	}
+
+	private static final class PlayerAgg {
+		private Long id;
+		private String name;
+		private Integer jersey;
+		private String avatar;
+		private int goals;
+		private int assists;
+		private int yellow;
+		private int red;
+	}
+
+	public record PlayerStatRow(Long id, String name, Integer jerseyNumber, String avatarUrl, int goals, int assists, int yellow, int red) {
 	}
 }
 
