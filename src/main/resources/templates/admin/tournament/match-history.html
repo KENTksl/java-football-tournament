@@ -1368,6 +1368,7 @@
                                 <thead>
                                     <tr style="background: transparent;">
                                         <th style="background: transparent;">Ngày/giờ</th>
+                                        <th style="background: transparent; width:72px;">Lượt</th>
                                         <th style="background: transparent;">Đội 1</th>
                                         <th style="background: transparent; text-align: center;">Tỉ số</th>
                                         <th style="background: transparent;">Đội 2</th>
@@ -1385,6 +1386,10 @@
                                                 <div th:text="${#temporals.format(m.scheduledAt, 'yyyy-MM-dd')}">2026-01-07</div>
                                                 <div class="muted" th:text="${#temporals.format(m.scheduledAt, 'HH:mm')}">20:00</div>
                                             </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge" style="background:#eef2ff;color:#3730a3;font-weight:800;padding:4px 8px;border-radius:999px;"
+                                                  th:text="${groupLeg != null && groupLeg[m.id] != null ? groupLeg[m.id] : '-'}">L1</span>
                                         </td>
                                         <td th:text="${m.homeTeam.name}">Đội 1</td>
                                         <td style="text-align: center; font-weight: 700;"
@@ -1464,6 +1469,10 @@
                                                 <div class="muted" th:text="${#temporals.format(m.scheduledAt, 'HH:mm')}">20:00</div>
                                             </div>
                                         </td>
+                                        <td>
+                                            <span class="badge" style="background:#eef2ff;color:#3730a3;font-weight:800;padding:4px 8px;border-radius:999px;"
+                                                  th:text="${groupLeg != null && groupLeg[m.id] != null ? groupLeg[m.id] : '-'}">L1</span>
+                                        </td>
                                         <td th:text="${m.homeTeam.name}">Đội 1</td>
                                         <td style="text-align: center; font-weight: 700;"
                                             th:text="${(m.homeScore != null and m.awayScore != null) ? (m.homeScore + ' : ' + m.awayScore) : ''}"></td>
@@ -1542,6 +1551,10 @@
                                                 <div class="muted" th:text="${#temporals.format(m.scheduledAt, 'HH:mm')}">20:00</div>
                                             </div>
                                         </td>
+                                        <td>
+                                            <span class="badge" style="background:#eef2ff;color:#3730a3;font-weight:800;padding:4px 8px;border-radius:999px;"
+                                                  th:text="${groupLeg != null && groupLeg[m.id] != null ? groupLeg[m.id] : '-'}">L1</span>
+                                        </td>
                                         <td th:text="${m.homeTeam.name}">Đội 1</td>
                                         <td style="text-align: center; font-weight: 700;"
                                             th:text="${(m.homeScore != null and m.awayScore != null) ? (m.homeScore + ' : ' + m.awayScore) : ''}"></td>
@@ -1619,6 +1632,10 @@
                                                 <div th:text="${#temporals.format(m.scheduledAt, 'yyyy-MM-dd')}">2026-01-07</div>
                                                 <div class="muted" th:text="${#temporals.format(m.scheduledAt, 'HH:mm')}">20:00</div>
                                             </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge" style="background:#eef2ff;color:#3730a3;font-weight:800;padding:4px 8px;border-radius:999px;"
+                                                  th:text="${groupLeg != null && groupLeg[m.id] != null ? groupLeg[m.id] : '-'}">L1</span>
                                         </td>
                                         <td th:text="${m.homeTeam.name}">Đội 1</td>
                                         <td style="text-align: center; font-weight: 700;"
@@ -1747,7 +1764,7 @@
 
             <div class="match-header-info"
                 style="padding: 15px; display: flex; gap: 10px; align-items: start; border-bottom: 1px solid #eee; background: #fff;">
-                <form th:action="@{/admin/match-history/save-schedule}" method="post" style="display:flex; gap:10px; width:100%; margin:0;">
+                <form th:action="@{/admin/match-history/save-schedule}" method="post" style="display:flex; gap:10px; width:100%; margin:0; flex-wrap:wrap; align-items:flex-end;">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                     <input type="hidden" name="tournamentId" th:value="${tournamentId}">
                     <input type="hidden" name="matchId" th:value="${selectedMatch != null ? selectedMatch.id : ''}">
@@ -1775,7 +1792,15 @@
                         <input name="location" type="text" placeholder="Sân vận động..." style="width:100%; padding: 8px;"
                                th:value="${selectedMatch != null && selectedMatch.location != null ? selectedMatch.location : ''}">
                     </div>
-                    <button type="submit" class="btn-save-schedule">💾 Lưu Lịch</button>
+                    <button type="submit" class="btn-save-schedule" style="height:42px;">💾 Lưu Lịch</button>
+                    <div class="form-group" style="flex:1 0 100%; max-width:720px;">
+                        <label style="font-size: 13px; font-weight: 600; color: #666; display: block; margin-bottom: 5px;">Link live</label>
+                        <input name="liveStreamUrl" type="url" placeholder="https://youtube.com/watch?v=..." style="width:100%; padding: 8px;"
+                               th:value="${selectedMatch != null && selectedMatch.liveStreamUrl != null ? selectedMatch.liveStreamUrl : ''}">
+                        <a th:if="${selectedMatch != null && selectedMatch.liveStreamUrl != null && !#strings.isEmpty(selectedMatch.liveStreamUrl)}"
+                           th:href="${selectedMatch.liveStreamUrl}" target="_blank" rel="noopener noreferrer"
+                           style="display:inline-block; margin-top:6px; font-size:12px; font-weight:700;">Mở link hiện tại</a>
+                    </div>
                 </form>
             </div>
 
@@ -2095,6 +2120,7 @@
                 if (saved === 'finish') window.showToast('Kết thúc trận đấu thành công');
                 if (saved === 'groups') window.showToast('Xếp bảng ngẫu nhiên thành công');
                 if (saved === 'invalid_schedule') window.showToast('Ngày thi đấu phải nằm trong thời gian của giải', 'error');
+                if (saved === 'invalid_live_url') window.showToast('Link live không hợp lệ. Chỉ hỗ trợ http/https', 'error');
                     if (saved === 'pen_required') window.showToast('Hòa thì phải nhập tỉ số Penalty', 'error');
                     if (saved === 'pen_invalid') window.showToast('Tỉ số Penalty không được hòa', 'error');
                 params.delete('saved');

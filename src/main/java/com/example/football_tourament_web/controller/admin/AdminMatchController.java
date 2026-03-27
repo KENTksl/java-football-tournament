@@ -80,10 +80,11 @@ public class AdminMatchController {
 			@RequestParam(value = "date", required = false) String date,
 			@RequestParam(value = "time", required = false) String time,
 			@RequestParam(value = "location", required = false) String location,
+			@RequestParam(value = "liveStreamUrl", required = false) String liveStreamUrl,
 			@RequestParam(value = "page", required = false, defaultValue = "1") int page,
 			@RequestParam(value = "size", required = false, defaultValue = "10") int size
 	) {
-		return adminMatchHistoryService.saveSchedule(tournamentId, matchId, date, time, location, page, size);
+		return adminMatchHistoryService.saveSchedule(tournamentId, matchId, date, time, location, liveStreamUrl, page, size);
 	}
 
 	@PostMapping("/admin/match-history/save-score")

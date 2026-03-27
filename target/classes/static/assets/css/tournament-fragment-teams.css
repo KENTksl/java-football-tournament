@@ -2,6 +2,55 @@
     padding: 14px 0 0;
 }
 
+/* Team Comparison Form Styles */
+.comparison-form {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    border: 1px solid #e9ecef;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.comparison-form__selects {
+    display: flex;
+    gap: 15px;
+    flex-grow: 1;
+}
+
+.comparison-form__selects select {
+    flex: 1;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    background-color: white;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.comparison-form__selects select:focus {
+    border-color: #007bff;
+}
+
+.comparison-form__btn {
+    padding: 10px 25px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.comparison-form__btn:hover {
+    background-color: #0056b3;
+}
+
 .teams-toolbar {
     display: flex;
     align-items: center;

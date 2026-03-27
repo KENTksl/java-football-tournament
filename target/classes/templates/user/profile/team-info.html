@@ -480,6 +480,14 @@
                           <canvas id="teamGoalsChart"></canvas>
                         </div>
                       </section>
+                      
+                      <section class="team-panelCard">
+                        <div class="team-panelCard__title">Top ghi bàn & thẻ</div>
+                        <div class="chart-box">
+                          <canvas id="playerTopChart"></canvas>
+                        </div>
+                        <div class="team-panelCard__empty" th:if="${playerStats == null or #lists.isEmpty(playerStats)}">Chưa có dữ liệu cầu thủ.</div>
+                      </section>
                     </div>
                   </div>
                 </section>
@@ -556,6 +564,19 @@
           goalsAgainst: /*[[${analysisGoalsAgainst}]]*/ [],
         };
 
+        const playerNames = [];
+        const playerGoals = [];
+        const playerYellows = [];
+        const playerReds = [];
+        const playerAvatars = [];
+        /*[# th:each="p : ${playerStats}"]*/
+        playerNames.push(/*[[${p.name}]]*/ "");
+        playerGoals.push(/*[[${p.goals}]]*/ 0);
+        playerYellows.push(/*[[${p.yellow}]]*/ 0);
+        playerReds.push(/*[[${p.red}]]*/ 0);
+        playerAvatars.push(/*[[${p.avatarUrl}]]*/ "");
+        /*[/]*/
+
         const tabs = Array.from(root.querySelectorAll("[data-tab]"));
         const panels = Array.from(root.querySelectorAll("[data-panel]"));
 
@@ -566,12 +587,50 @@
 
           const wdlEl = document.getElementById("teamWdlChart");
           const goalsEl = document.getElementById("teamGoalsChart");
+          const playerEl = document.getElementById("playerTopChart");
           if (!wdlEl || !goalsEl) return;
 
           const ex1 = Chart.getChart(wdlEl);
           if (ex1) ex1.destroy();
           const ex2 = Chart.getChart(goalsEl);
           if (ex2) ex2.destroy();
+          const ex3 = playerEl ? Chart.getChart(playerEl) : null;
+          if (ex3) ex3.destroy();
+
+          const loadAvatarImages = (urls) => {
+            const imgs = urls.map((u) => {
+              const img = new Image();
+              img.crossOrigin = "anonymous";
+              img.src = (u && u.trim()) ? u : "/img/figma-avatar.png";
+              return img;
+            });
+            return imgs;
+          };
+          const avatarImgs = loadAvatarImages(playerAvatars);
+          const avatarPlugin = {
+            id: "playerAvatarPlugin",
+            afterDatasetsDraw(chart) {
+              if (!avatarImgs.length) return;
+              const ctx = chart.ctx;
+              const meta0 = chart.getDatasetMeta(0);
+              if (!meta0 || !meta0.data) return;
+              const left = chart.chartArea.left;
+              const x = left - 40;
+              meta0.data.forEach((bar, i) => {
+                const img = avatarImgs[i];
+                if (!bar || !img) return;
+                const y = bar.y;
+                const size = 28;
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(x + size / 2, y, size / 2, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.clip();
+                ctx.drawImage(img, x, y - size / 2, size, size);
+                ctx.restore();
+              });
+            },
+          };
 
           new Chart(wdlEl.getContext("2d"), {
             type: "doughnut",
@@ -615,6 +674,40 @@
               },
             },
           });
+
+          if (playerEl && playerNames.length) {
+            new Chart(playerEl.getContext("2d"), {
+              type: "bar",
+              plugins: [avatarPlugin],
+              data: {
+                labels: playerNames,
+                datasets: [
+                  { label: "Bàn thắng", data: playerGoals, backgroundColor: "rgba(44, 158, 73, 0.85)", borderRadius: 8 },
+                  { label: "Thẻ vàng", data: playerYellows, backgroundColor: "rgba(250, 204, 21, 0.85)", borderRadius: 8 },
+                  { label: "Thẻ đỏ", data: playerReds, backgroundColor: "rgba(220, 38, 38, 0.85)", borderRadius: 8 },
+                ],
+              },
+              options: {
+                indexAxis: "y",
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: { padding: { left: 48, right: 8, top: 8, bottom: 8 } },
+                plugins: { legend: { position: "bottom", labels: { usePointStyle: true } } },
+                scales: {
+                  y: {
+                    grid: { display: false },
+                    ticks: {
+                      callback: (val, idx) => {
+                        const label = playerNames[idx] || "";
+                        return label.length > 16 ? label.slice(0, 16) + "…" : label;
+                      },
+                    },
+                  },
+                  x: { beginAtZero: true, grid: { color: "rgba(17, 24, 39, 0.08)" } },
+                },
+              },
+            });
+          }
 
           chartsReady = true;
         };

@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -287,7 +288,7 @@ public class AdminMatchHistoryService {
 		return "redirect:/admin/match-history?id=" + tournamentId;
 	}
 
-	public String saveSchedule(Long tournamentId, Long matchId, String date, String time, String location, int page, int size) {
+	public String saveSchedule(Long tournamentId, Long matchId, String date, String time, String location, String liveStreamUrl, int page, int size) {
 		if (tournamentId == null) return "redirect:/admin/manage/tournament";
 		if (matchId == null) return "redirect:/admin/match-history?id=" + tournamentId;
 
@@ -302,6 +303,15 @@ public class AdminMatchHistoryService {
 
 		String nextLocation = location == null ? "" : location.trim();
 		match.setLocation(nextLocation.isBlank() ? null : nextLocation);
+		String previousLiveStreamUrl = match.getLiveStreamUrl() == null ? null : match.getLiveStreamUrl().trim();
+		String nextLiveStreamUrl = normalizeLiveStreamUrl(liveStreamUrl);
+		if (liveStreamUrl != null && !liveStreamUrl.trim().isBlank() && nextLiveStreamUrl == null) {
+			return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=invalid_live_url";
+		}
+		match.setLiveStreamUrl(nextLiveStreamUrl);
+		if (!Objects.equals(previousLiveStreamUrl, nextLiveStreamUrl) && match.getStatus() != MatchStatus.FINISHED) {
+			match.setLiveArchiveUrl(null);
+		}
 
 		LocalDateTime scheduledAt = null;
 		try {
@@ -508,6 +518,12 @@ public class AdminMatchHistoryService {
 		}
 
 		match.setStatus(MatchStatus.FINISHED);
+		if (match.getLiveArchiveUrl() == null || match.getLiveArchiveUrl().isBlank()) {
+			String streamUrl = match.getLiveStreamUrl() == null ? "" : match.getLiveStreamUrl().trim();
+			if (!streamUrl.isBlank()) {
+				match.setLiveArchiveUrl(streamUrl);
+			}
+		}
 		matchService.save(match);
 
 		// Calculate player ratings
@@ -707,6 +723,36 @@ public class AdminMatchHistoryService {
 		goalsAgainstByGroup.put("C", new HashMap<>());
 		goalsAgainstByGroup.put("D", new HashMap<>());
 
+		Map<String, Map<Long, Integer>> playedByGroup = new HashMap<>();
+		playedByGroup.put("A", new HashMap<>());
+		playedByGroup.put("B", new HashMap<>());
+		playedByGroup.put("C", new HashMap<>());
+		playedByGroup.put("D", new HashMap<>());
+
+		Map<String, Map<Long, Integer>> wonByGroup = new HashMap<>();
+		wonByGroup.put("A", new HashMap<>());
+		wonByGroup.put("B", new HashMap<>());
+		wonByGroup.put("C", new HashMap<>());
+		wonByGroup.put("D", new HashMap<>());
+
+		Map<String, Map<Long, Integer>> drawnByGroup = new HashMap<>();
+		drawnByGroup.put("A", new HashMap<>());
+		drawnByGroup.put("B", new HashMap<>());
+		drawnByGroup.put("C", new HashMap<>());
+		drawnByGroup.put("D", new HashMap<>());
+
+		Map<String, Map<Long, Integer>> lostByGroup = new HashMap<>();
+		lostByGroup.put("A", new HashMap<>());
+		lostByGroup.put("B", new HashMap<>());
+		lostByGroup.put("C", new HashMap<>());
+		lostByGroup.put("D", new HashMap<>());
+
+		Map<String, Map<Long, List<String>>> formByGroup = new HashMap<>();
+		formByGroup.put("A", new HashMap<>());
+		formByGroup.put("B", new HashMap<>());
+		formByGroup.put("C", new HashMap<>());
+		formByGroup.put("D", new HashMap<>());
+
 		for (Match m : matchesForGroups) {
 			if (m == null || m.getRoundName() == null) continue;
 			String rn = m.getRoundName().trim();
@@ -726,6 +772,12 @@ public class AdminMatchHistoryService {
 			Long aid = m.getAwayTeam().getId();
 			if (hid == null || aid == null) continue;
 
+			playedByGroup.get(g).put(hid, playedByGroup.get(g).getOrDefault(hid, 0) + 1);
+			playedByGroup.get(g).put(aid, playedByGroup.get(g).getOrDefault(aid, 0) + 1);
+
+			formByGroup.get(g).computeIfAbsent(hid, k -> new ArrayList<>());
+			formByGroup.get(g).computeIfAbsent(aid, k -> new ArrayList<>());
+
 			goalsForByGroup.get(g).put(hid, goalsForByGroup.get(g).getOrDefault(hid, 0) + hs);
 			goalsAgainstByGroup.get(g).put(hid, goalsAgainstByGroup.get(g).getOrDefault(hid, 0) + as);
 			goalsForByGroup.get(g).put(aid, goalsForByGroup.get(g).getOrDefault(aid, 0) + as);
@@ -733,11 +785,23 @@ public class AdminMatchHistoryService {
 
 			if (hs > as) {
 				pointsByGroup.get(g).put(hid, pointsByGroup.get(g).getOrDefault(hid, 0) + 3);
+				wonByGroup.get(g).put(hid, wonByGroup.get(g).getOrDefault(hid, 0) + 1);
+				lostByGroup.get(g).put(aid, lostByGroup.get(g).getOrDefault(aid, 0) + 1);
+				formByGroup.get(g).get(hid).add("W");
+				formByGroup.get(g).get(aid).add("L");
 			} else if (as > hs) {
 				pointsByGroup.get(g).put(aid, pointsByGroup.get(g).getOrDefault(aid, 0) + 3);
+				wonByGroup.get(g).put(aid, wonByGroup.get(g).getOrDefault(aid, 0) + 1);
+				lostByGroup.get(g).put(hid, lostByGroup.get(g).getOrDefault(hid, 0) + 1);
+				formByGroup.get(g).get(hid).add("L");
+				formByGroup.get(g).get(aid).add("W");
 			} else {
 				pointsByGroup.get(g).put(hid, pointsByGroup.get(g).getOrDefault(hid, 0) + 1);
 				pointsByGroup.get(g).put(aid, pointsByGroup.get(g).getOrDefault(aid, 0) + 1);
+				drawnByGroup.get(g).put(hid, drawnByGroup.get(g).getOrDefault(hid, 0) + 1);
+				drawnByGroup.get(g).put(aid, drawnByGroup.get(g).getOrDefault(aid, 0) + 1);
+				formByGroup.get(g).get(hid).add("D");
+				formByGroup.get(g).get(aid).add("D");
 			}
 		}
 
@@ -753,22 +817,46 @@ public class AdminMatchHistoryService {
 			int points = pointsByGroup.get(g).getOrDefault(teamId, 0);
 			int gf = goalsForByGroup.get(g).getOrDefault(teamId, 0);
 			int ga = goalsAgainstByGroup.get(g).getOrDefault(teamId, 0);
-			groupTeams.get(g).add(new GroupTeamRow(teamId, r.getTeam().getName(), memberCount, points, gf, ga));
+			int played = playedByGroup.get(g).getOrDefault(teamId, 0);
+			int won = wonByGroup.get(g).getOrDefault(teamId, 0);
+			int drawn = drawnByGroup.get(g).getOrDefault(teamId, 0);
+			int lost = lostByGroup.get(g).getOrDefault(teamId, 0);
+			List<String> form = formByGroup.get(g).getOrDefault(teamId, List.of());
+			List<String> last5 = form.size() <= 5 ? form : form.subList(form.size() - 5, form.size());
+			groupTeams.get(g).add(new GroupTeamRow(teamId, r.getTeam().getName(), memberCount, played, won, drawn, lost, points, gf, ga, last5));
 		}
 
 		for (String g : List.of("A", "B", "C", "D")) {
-			groupTeams.get(g).sort(
-					Comparator.comparingInt(GroupTeamRow::getPoints).reversed()
-							.thenComparingInt(GroupTeamRow::getGoalDiff).reversed()
-							.thenComparingInt(GroupTeamRow::getGoalsFor).reversed()
-							.thenComparing(GroupTeamRow::getName, String.CASE_INSENSITIVE_ORDER)
-			);
+			List<Match> ms = groupMatches.get(g);
+			ms.sort(Comparator
+					.comparing((Match m) -> m.getScheduledAt() == null ? LocalDateTime.MAX : m.getScheduledAt())
+					.thenComparing(m -> m.getId() == null ? Long.MAX_VALUE : m.getId()));
+			List<GroupTeamRow> sorted = sortByGroupRules(groupTeams.get(g), ms);
+			groupTeams.put(g, sorted);
+		}
+
+		Map<Long, String> groupLeg = new HashMap<>();
+		for (String g : List.of("A", "B", "C", "D")) {
+			Map<String, Integer> seen = new HashMap<>();
+			for (Match m : groupMatches.get(g)) {
+				if (m == null || m.getHomeTeam() == null || m.getAwayTeam() == null) continue;
+				Long hid = m.getHomeTeam().getId();
+				Long aid = m.getAwayTeam().getId();
+				if (hid == null || aid == null) continue;
+				long a = Math.min(hid, aid);
+				long b = Math.max(hid, aid);
+				String key = a + ":" + b;
+				int cnt = seen.getOrDefault(key, 0);
+				groupLeg.put(m.getId(), cnt == 0 ? "L1" : "L2");
+				seen.put(key, cnt + 1);
+			}
 		}
 
 		model.put("groupTeams", groupTeams);
 		model.put("groupMatches", groupMatches);
 		model.put("groupingLocked", groupingLocked);
 		model.put("groupingReady", readyToAssign);
+		model.put("groupLeg", groupLeg);
 
 		if (groupingLocked) {
 			boolean allGroupMatchesFinished = true;
@@ -964,6 +1052,164 @@ public class AdminMatchHistoryService {
 		}
 	}
 
+	private static String normalizeLiveStreamUrl(String raw) {
+		if (raw == null) return null;
+		String value = raw.trim();
+		if (value.isBlank()) return null;
+		String normalized = value;
+		if (!normalized.startsWith("http://") && !normalized.startsWith("https://")) {
+			normalized = "https://" + normalized;
+		}
+		try {
+			java.net.URI uri = java.net.URI.create(normalized);
+			String scheme = uri.getScheme();
+			String host = uri.getHost();
+			if (scheme == null || host == null) return null;
+			String lowerScheme = scheme.toLowerCase();
+			if (!"http".equals(lowerScheme) && !"https".equals(lowerScheme)) return null;
+			if (normalized.length() > 1000) return null;
+			String embed = toEmbedUrl(uri, normalized);
+			return embed == null || embed.isBlank() ? normalized : embed;
+		} catch (Exception ignored) {
+			return null;
+		}
+	}
+
+	private static String toEmbedUrl(java.net.URI uri, String fallback) {
+		String host = uri.getHost();
+		if (host == null) return fallback;
+		String normalizedHost = host.toLowerCase();
+		if (normalizedHost.startsWith("www.")) normalizedHost = normalizedHost.substring(4);
+		if (normalizedHost.startsWith("m.")) normalizedHost = normalizedHost.substring(2);
+		String path = uri.getPath() == null ? "" : uri.getPath();
+		Map<String, String> query = parseQueryParams(uri.getQuery());
+
+		if ("youtube.com".equals(normalizedHost) || "youtu.be".equals(normalizedHost)) {
+			String videoId = null;
+			if ("youtu.be".equals(normalizedHost)) {
+				videoId = firstPathSegment(path);
+			} else if (path.startsWith("/watch")) {
+				videoId = query.get("v");
+			} else if (path.startsWith("/shorts/")) {
+				videoId = path.substring("/shorts/".length());
+			} else if (path.startsWith("/live/")) {
+				videoId = path.substring("/live/".length());
+			} else if (path.startsWith("/embed/")) {
+				videoId = path.substring("/embed/".length());
+			}
+			videoId = sanitizeVideoId(videoId);
+			if (videoId == null) return fallback;
+			String start = parseStartSeconds(query.get("start"), query.get("t"));
+			StringBuilder embed = new StringBuilder("https://www.youtube.com/embed/").append(videoId);
+			boolean hasQuery = false;
+			if (start != null) {
+				embed.append("?start=").append(start);
+				hasQuery = true;
+			}
+			String list = query.get("list");
+			if (list != null && !list.isBlank()) {
+				embed.append(hasQuery ? "&" : "?").append("list=").append(urlEncode(list));
+			}
+			return embed.toString();
+		}
+
+		if ("drive.google.com".equals(normalizedHost) && path.startsWith("/file/d/")) {
+			String remain = path.substring("/file/d/".length());
+			String fileId = remain.contains("/") ? remain.substring(0, remain.indexOf('/')) : remain;
+			if (fileId != null && !fileId.isBlank()) {
+				return "https://drive.google.com/file/d/" + fileId + "/preview";
+			}
+		}
+
+		if ("vimeo.com".equals(normalizedHost)) {
+			String id = firstPathSegment(path);
+			if (id != null && id.chars().allMatch(Character::isDigit)) {
+				return "https://player.vimeo.com/video/" + id;
+			}
+		}
+
+		return fallback;
+	}
+
+	private static String sanitizeVideoId(String value) {
+		if (value == null) return null;
+		String id = value.trim();
+		if (id.contains("/")) id = id.substring(0, id.indexOf('/'));
+		if (id.contains("?")) id = id.substring(0, id.indexOf('?'));
+		if (id.contains("&")) id = id.substring(0, id.indexOf('&'));
+		if (id.isBlank()) return null;
+		return id;
+	}
+
+	private static String firstPathSegment(String path) {
+		if (path == null) return null;
+		String cleaned = path.startsWith("/") ? path.substring(1) : path;
+		if (cleaned.isBlank()) return null;
+		return cleaned.contains("/") ? cleaned.substring(0, cleaned.indexOf('/')) : cleaned;
+	}
+
+	private static String parseStartSeconds(String startRaw, String tRaw) {
+		String start = parseIntText(startRaw);
+		if (start != null) return start;
+		String t = tRaw == null ? null : tRaw.trim().toLowerCase();
+		if (t == null || t.isBlank()) return null;
+		try {
+			if (t.endsWith("s")) t = t.substring(0, t.length() - 1);
+			int total = 0;
+			int hourIdx = t.indexOf('h');
+			if (hourIdx > 0) {
+				total += Integer.parseInt(t.substring(0, hourIdx)) * 3600;
+				t = t.substring(hourIdx + 1);
+			}
+			int minIdx = t.indexOf('m');
+			if (minIdx > 0) {
+				total += Integer.parseInt(t.substring(0, minIdx)) * 60;
+				t = t.substring(minIdx + 1);
+			}
+			if (!t.isBlank()) total += Integer.parseInt(t);
+			return total > 0 ? String.valueOf(total) : null;
+		} catch (Exception ignored) {
+			return null;
+		}
+	}
+
+	private static String parseIntText(String raw) {
+		if (raw == null) return null;
+		try {
+			int value = Integer.parseInt(raw.trim());
+			return value >= 0 ? String.valueOf(value) : null;
+		} catch (Exception ignored) {
+			return null;
+		}
+	}
+
+	private static Map<String, String> parseQueryParams(String query) {
+		Map<String, String> params = new HashMap<>();
+		if (query == null || query.isBlank()) return params;
+		String[] pairs = query.split("&");
+		for (String pair : pairs) {
+			if (pair == null || pair.isBlank()) continue;
+			int idx = pair.indexOf('=');
+			String key = idx >= 0 ? pair.substring(0, idx) : pair;
+			String value = idx >= 0 ? pair.substring(idx + 1) : "";
+			try {
+				String decodedKey = java.net.URLDecoder.decode(key, java.nio.charset.StandardCharsets.UTF_8);
+				String decodedValue = java.net.URLDecoder.decode(value, java.nio.charset.StandardCharsets.UTF_8);
+				params.put(decodedKey, decodedValue);
+			} catch (Exception ignored) {
+			}
+		}
+		return params;
+	}
+
+	private static String urlEncode(String raw) {
+		try {
+			return java.net.URLEncoder.encode(raw, java.nio.charset.StandardCharsets.UTF_8);
+		} catch (Exception ignored) {
+			return raw;
+		}
+	}
+
 	private void applyTournamentContext(Map<String, Object> model, Tournament tournament) {
 		model.put("tournamentId", tournament.getId());
 		model.put("tournamentName", tournament.getName());
@@ -1014,26 +1260,124 @@ public class AdminMatchHistoryService {
 		private final Long id;
 		private final String name;
 		private final long memberCount;
+		private final int played;
+		private final int won;
+		private final int drawn;
+		private final int lost;
 		private final int points;
 		private final int goalsFor;
 		private final int goalsAgainst;
+		private final List<String> form;
 
-		public GroupTeamRow(Long id, String name, long memberCount, int points, int goalsFor, int goalsAgainst) {
+		public GroupTeamRow(Long id, String name, long memberCount, int played, int won, int drawn, int lost, int points, int goalsFor, int goalsAgainst, List<String> form) {
 			this.id = id;
 			this.name = name;
 			this.memberCount = memberCount;
+			this.played = played;
+			this.won = won;
+			this.drawn = drawn;
+			this.lost = lost;
 			this.points = points;
 			this.goalsFor = goalsFor;
 			this.goalsAgainst = goalsAgainst;
+			this.form = form == null ? List.of() : form;
 		}
 
 		public Long getId() { return id; }
 		public String getName() { return name; }
 		public long getMemberCount() { return memberCount; }
+		public int getPlayed() { return played; }
+		public int getWon() { return won; }
+		public int getDrawn() { return drawn; }
+		public int getLost() { return lost; }
 		public int getPoints() { return points; }
 		public int getGoalsFor() { return goalsFor; }
 		public int getGoalsAgainst() { return goalsAgainst; }
+		public List<String> getForm() { return form; }
 
 		public int getGoalDiff() { return goalsFor - goalsAgainst; }
+
+		public double getFormIndex() {
+			if (form == null || form.isEmpty()) return 0.0;
+			int n = form.size();
+			double sum = 0;
+			for (int i = 0; i < n; i++) {
+				String r = form.get(i);
+				int pts = "W".equalsIgnoreCase(r) ? 3 : ("D".equalsIgnoreCase(r) ? 1 : 0);
+				int weight = i + 1;
+				sum += pts * weight;
+			}
+			return sum / n;
+		}
+	}
+
+	private List<GroupTeamRow> sortByGroupRules(List<GroupTeamRow> rows, List<Match> groupMatches) {
+		if (rows == null || rows.size() <= 1) return rows == null ? List.of() : rows;
+		List<GroupTeamRow> sorted = new ArrayList<>(rows);
+		sorted.sort(
+				Comparator.comparingInt(GroupTeamRow::getPoints).reversed()
+						.thenComparing(Comparator.comparingInt(GroupTeamRow::getGoalDiff).reversed())
+						.thenComparing(Comparator.comparingInt(GroupTeamRow::getGoalsFor).reversed())
+						.thenComparing(GroupTeamRow::getName, String.CASE_INSENSITIVE_ORDER)
+		);
+
+		int i = 0;
+		while (i < sorted.size()) {
+			int j = i + 1;
+			while (j < sorted.size()
+					&& sorted.get(j).getPoints() == sorted.get(i).getPoints()
+					&& sorted.get(j).getGoalDiff() == sorted.get(i).getGoalDiff()
+					&& sorted.get(j).getGoalsFor() == sorted.get(i).getGoalsFor()) {
+				j++;
+			}
+			if (j - i >= 2) {
+				List<GroupTeamRow> block = new ArrayList<>(sorted.subList(i, j));
+				List<GroupTeamRow> resolved = sortTieBlockByHeadToHeadGoalDiff(block, groupMatches);
+				for (int k = 0; k < resolved.size(); k++) {
+					sorted.set(i + k, resolved.get(k));
+				}
+			}
+			i = j;
+		}
+		return sorted;
+	}
+
+	private List<GroupTeamRow> sortTieBlockByHeadToHeadGoalDiff(List<GroupTeamRow> block, List<Match> groupMatches) {
+		if (block == null || block.size() <= 1) return block;
+		java.util.Set<Long> ids = block.stream().map(GroupTeamRow::getId).collect(java.util.stream.Collectors.toSet());
+		java.util.Map<Long, H2H> h2h = new java.util.HashMap<>();
+		for (Long id : ids) h2h.put(id, new H2H());
+
+		if (groupMatches != null) {
+			for (Match m : groupMatches) {
+				if (m == null || m.getStatus() != MatchStatus.FINISHED) continue;
+				if (m.getHomeTeam() == null || m.getAwayTeam() == null) continue;
+				Long hid = m.getHomeTeam().getId();
+				Long aid = m.getAwayTeam().getId();
+				if (hid == null || aid == null) continue;
+				if (!ids.contains(hid) || !ids.contains(aid)) continue;
+				Integer hs = m.getHomeScore();
+				Integer as = m.getAwayScore();
+				if (hs == null || as == null) continue;
+
+				h2h.get(hid).gf += hs;
+				h2h.get(hid).ga += as;
+				h2h.get(aid).gf += as;
+				h2h.get(aid).ga += hs;
+			}
+		}
+
+		List<GroupTeamRow> resolved = new ArrayList<>(block);
+		resolved.sort(Comparator
+				.comparingInt((GroupTeamRow r) -> h2h.getOrDefault(r.getId(), new H2H()).gd()).reversed()
+				.thenComparingInt((GroupTeamRow r) -> h2h.getOrDefault(r.getId(), new H2H()).gf).reversed()
+				.thenComparing(GroupTeamRow::getName, String.CASE_INSENSITIVE_ORDER));
+		return resolved;
+	}
+
+	private static final class H2H {
+		int gf;
+		int ga;
+		int gd() { return gf - ga; }
 	}
 }

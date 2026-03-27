@@ -121,6 +121,17 @@ public class UserTournamentController {
 		return userTournamentViewService.buildMatchLineupView(tournamentId, matchId);
 	}
 
+	@GetMapping("/live-match")
+	public String liveMatch(
+			@RequestParam(value = "id", required = false) Long tournamentId,
+			@RequestParam(value = "matchId", required = false) Long matchId,
+			Model model
+	) {
+		model.addAttribute("liveMatch", userTournamentViewService.buildLiveMatchView(tournamentId, matchId));
+		model.addAttribute("tournamentId", tournamentId);
+		return "user/tournament/live-match";
+	}
+
 	@GetMapping("/team-lineup")
 	@ResponseBody
 	public UserTournamentViewService.TeamSingleLineupView teamLineup(
@@ -188,6 +199,13 @@ public class UserTournamentController {
 		attachTournament(model, id);
 		model.addAttribute("teamCards", userTournamentViewService.buildTournamentTeams(id));
 		return "user/tournament/fragments/teams :: teams";
+	}
+
+	@GetMapping("/live-fragment")
+	public String liveFragment(@RequestParam(value = "id", required = false) Long id, Model model) {
+		attachTournament(model, id);
+		model.addAttribute("liveArchive", userTournamentViewService.buildLiveArchiveView(id));
+		return "user/tournament/fragments/live :: live";
 	}
 
 	private void attachTournament(Model model, Long id) {

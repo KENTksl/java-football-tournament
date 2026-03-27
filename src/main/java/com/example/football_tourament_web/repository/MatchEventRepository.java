@@ -7,9 +7,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.example.football_tourament_web.model.entity.MatchEvent;
+import com.example.football_tourament_web.model.entity.Player;
+import com.example.football_tourament_web.model.enums.MatchEventType;
 
 public interface MatchEventRepository extends JpaRepository<MatchEvent, Long> {
 	List<MatchEvent> findByMatchIdOrderByMinuteAscIdAsc(Long matchId);
+
+	long countByPlayerAndType(Player player, MatchEventType type);
 
 	@Query("""
 			select e

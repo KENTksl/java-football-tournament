@@ -502,11 +502,13 @@ public class UserTournamentViewService {
 		return new MatchLineupView(
 				true,
 				message,
+				match.getId(),
 				match.getRoundName(),
 				match.getScheduledAt(),
 				displayMatchStatus(match.getStatus()),
 				match.getHomeScore(),
 				match.getAwayScore(),
+				match.getLiveStreamUrl(),
 				pitchSlots,
 				homeTeam,
 				awayTeam
@@ -593,6 +595,33 @@ public class UserTournamentViewService {
 		boolean hasLineup = !starters.isEmpty();
 		String message = hasLineup ? "" : "Đội chưa có đội hình được admin thiết lập";
 		return new TeamSingleLineupView(true, message, team.getName(), pitchSlots, starters, bench);
+	}
+
+	@Transactional(readOnly = true)
+	public LiveMatchView buildLiveMatchView(Long tournamentId, Long matchId) {
+		if (tournamentId == null || matchId == null) {
+			return LiveMatchView.notAvailable("Không tìm thấy trận đấu");
+		}
+		Match match = matchService.findByIdWithDetails(matchId).orElse(null);
+		if (match == null || match.getTournament() == null || match.getTournament().getId() == null
+				|| !tournamentId.equals(match.getTournament().getId())) {
+			return LiveMatchView.notAvailable("Không tìm thấy trận đấu");
+		}
+		String homeTeamName = match.getHomeTeam() == null ? "Đội 1" : match.getHomeTeam().getName();
+		String awayTeamName = match.getAwayTeam() == null ? "Đội 2" : match.getAwayTeam().getName();
+		String title = homeTeamName + " vs " + awayTeamName;
+		String liveStreamUrl = match.getLiveStreamUrl() == null ? null : match.getLiveStreamUrl().trim();
+		boolean available = liveStreamUrl != null && !liveStreamUrl.isBlank();
+		String message = available ? "" : "Trận đấu này chưa có link phát trực tiếp";
+		return new LiveMatchView(
+				available,
+				message,
+				match.getId(),
+				title,
+				homeTeamName,
+				awayTeamName,
+				liveStreamUrl
+		);
 	}
 
 	@Transactional(readOnly = true)
@@ -895,11 +924,24 @@ public class UserTournamentViewService {
 			boolean hasGroupMatches = !groupMatchesSource.isEmpty();
 			boolean scheduleReady = hasGroupMatches;
 
-			for (var match : groupMatchesSource) {
+			Map<String, List<Match>> groupEntityMatches = new HashMap<>();
+			for (String g : List.of("A", "B", "C", "D")) {
+				groupEntityMatches.put(g, new ArrayList<>());
+			}
+
+			List<Match> groupMatchesSorted = new ArrayList<>(groupMatchesSource);
+			groupMatchesSorted.sort(
+					Comparator
+							.comparing((Match m) -> m.getScheduledAt() == null ? LocalDateTime.MIN : m.getScheduledAt())
+							.thenComparing(m -> m.getId() == null ? Long.MIN_VALUE : m.getId())
+			);
+
+			for (var match : groupMatchesSorted) {
 				String groupName = toGroupName(match.getRoundName());
 				if (!groupMatches.containsKey(groupName)) {
 					continue;
 				}
+				groupEntityMatches.get(groupName).add(match);
 
 				if (match.getHomeTeam() != null && match.getHomeTeam().getId() != null) {
 					ensureTeamInGroup(groupTeams, statsByGroup, groupName, match.getHomeTeam().getId(), match.getHomeTeam().getName(), match.getHomeTeam().getLogoUrl());
@@ -933,41 +975,77 @@ public class UserTournamentViewService {
 				homeStats.goalsAgainst += awayScore;
 				awayStats.goalsFor += awayScore;
 				awayStats.goalsAgainst += homeScore;
+				LocalDateTime stamp = match.getScheduledAt() == null ? LocalDateTime.MIN : match.getScheduledAt();
 				if (homeScore > awayScore) {
 					homeStats.won++;
 					awayStats.lost++;
 					homeStats.points += 3;
-					homeStats.form.add("W");
-					awayStats.form.add("L");
+					homeStats.results.add(new ResultStamp(stamp, "W"));
+					awayStats.results.add(new ResultStamp(stamp, "L"));
 				} else if (awayScore > homeScore) {
 					awayStats.won++;
 					homeStats.lost++;
 					awayStats.points += 3;
-					homeStats.form.add("L");
-					awayStats.form.add("W");
+					homeStats.results.add(new ResultStamp(stamp, "L"));
+					awayStats.results.add(new ResultStamp(stamp, "W"));
 				} else {
 					homeStats.drawn++;
 					awayStats.drawn++;
 					homeStats.points += 1;
 					awayStats.points += 1;
-					homeStats.form.add("D");
-					awayStats.form.add("D");
+					homeStats.results.add(new ResultStamp(stamp, "D"));
+					awayStats.results.add(new ResultStamp(stamp, "D"));
 				}
 			}
 
 			for (String group : List.of("A", "B", "C", "D")) {
+				Map<String, Integer> seen = new HashMap<>();
+				Map<Long, String> legById = new HashMap<>();
+				for (Match m : groupEntityMatches.get(group)) {
+					if (m == null || m.getHomeTeam() == null || m.getAwayTeam() == null) continue;
+					Long hid = m.getHomeTeam().getId();
+					Long aid = m.getAwayTeam().getId();
+					if (hid == null || aid == null) continue;
+					long a = Math.min(hid, aid);
+					long b = Math.max(hid, aid);
+					String key = a + ":" + b;
+					int cnt = seen.getOrDefault(key, 0);
+					legById.put(m.getId(), cnt == 0 ? "L1" : "L2");
+					seen.put(key, cnt + 1);
+				}
+
+				List<MatchRow> replaced = new ArrayList<>();
+				for (MatchRow mr : groupMatches.get(group)) {
+					String leg = legById.getOrDefault(mr.id(), "");
+					replaced.add(new MatchRow(
+							mr.id(), mr.roundName(), mr.scheduledAt(),
+							mr.homeTeamName(), mr.awayTeamName(),
+							mr.homeScore(), mr.awayScore(),
+							mr.homePenalty(), mr.awayPenalty(),
+							leg,
+							mr.statusLabel(),
+							mr.liveStreamUrl(),
+							mr.liveArchiveUrl()
+					));
+				}
+				groupMatches.put(group, replaced);
+
 				List<GroupTeamRow> rows = new ArrayList<>();
 				for (GroupTeamRow row : groupTeams.get(group)) {
 					TeamStats stats = statsByGroup.get(group).getOrDefault(row.teamId(), new TeamStats());
-					List<String> last5Form = stats.form.subList(Math.max(0, stats.form.size() - 5), stats.form.size());
+					List<ResultStamp> sortedResults = new ArrayList<>(stats.results);
+					sortedResults.sort(Comparator
+							.comparing((ResultStamp r) -> r.time() == null ? LocalDateTime.MIN : r.time())
+							.thenComparing(r -> r.result() == null ? "" : r.result()));
+					List<String> last5Form = sortedResults.stream()
+							.map(ResultStamp::result)
+							.toList();
+					if (last5Form.size() > 5) {
+						last5Form = last5Form.subList(last5Form.size() - 5, last5Form.size());
+					}
 					rows.add(new GroupTeamRow(row.teamId(), row.name(), row.logoUrl(), row.memberCount(), stats.played, stats.won, stats.drawn, stats.lost, stats.points, stats.goalsFor, stats.goalsAgainst, last5Form));
 				}
-				rows.sort(
-						Comparator.comparingInt(GroupTeamRow::points).reversed()
-								.thenComparingInt(GroupTeamRow::goalDiff).reversed()
-								.thenComparingInt(GroupTeamRow::goalsFor).reversed()
-								.thenComparing(GroupTeamRow::name, String.CASE_INSENSITIVE_ORDER)
-				);
+				rows = sortByGroupRules(rows, groupEntityMatches.get(group));
 				groupTeams.put(group, rows);
 				groupMatches.get(group).sort(Comparator.comparing(m -> m.scheduledAt() == null ? LocalDateTime.MAX : m.scheduledAt()));
 			}
@@ -979,6 +1057,43 @@ public class UserTournamentViewService {
 		boolean scheduleReady = !knockoutMatches.isEmpty();
 		String message = scheduleReady ? "" : "Giải đấu chưa chia cặp nên chưa có lịch thi đấu";
 		return new ScheduleView(scheduleReady, "KNOCKOUT", message, false, Map.of(), Map.of(), knockoutMatches);
+	}
+
+	@Transactional(readOnly = true)
+	public LiveArchiveView buildLiveArchiveView(Long tournamentId) {
+		if (tournamentId == null) {
+			return LiveArchiveView.none("Chọn giải đấu để xem video live đã lưu");
+		}
+		Tournament tournament = tournamentService.findById(tournamentId).orElse(null);
+		if (tournament == null) {
+			return LiveArchiveView.none("Không tìm thấy giải đấu");
+		}
+		List<LiveArchiveRow> rows = new ArrayList<>();
+		for (Match match : matchService.listByTournamentIdWithDetails(tournamentId)) {
+			if (match == null || match.getStatus() != MatchStatus.FINISHED) {
+				continue;
+			}
+			String archiveUrl = match.getLiveArchiveUrl();
+			if (archiveUrl == null || archiveUrl.isBlank()) {
+				continue;
+			}
+			String homeName = match.getHomeTeam() == null ? "Đội 1" : match.getHomeTeam().getName();
+			String awayName = match.getAwayTeam() == null ? "Đội 2" : match.getAwayTeam().getName();
+			rows.add(new LiveArchiveRow(
+					match.getId(),
+					homeName + " vs " + awayName,
+					homeName,
+					awayName,
+					match.getRoundName(),
+					match.getScheduledAt(),
+					archiveUrl
+			));
+		}
+		rows.sort(Comparator.comparing((LiveArchiveRow r) -> r.scheduledAt() == null ? LocalDateTime.MIN : r.scheduledAt()).reversed());
+		if (rows.isEmpty()) {
+			return LiveArchiveView.none("Chưa có video live nào được lưu");
+		}
+		return new LiveArchiveView(true, "", rows);
 	}
 
 	private String toGroupName(String roundName) {
@@ -1024,7 +1139,10 @@ public class UserTournamentViewService {
 				match.getAwayScore(),
 				match.getHomePenalty(),
 				match.getAwayPenalty(),
-				displayMatchStatus(match.getStatus())
+				null,
+				displayMatchStatus(match.getStatus()),
+				match.getLiveStreamUrl(),
+				match.getLiveArchiveUrl()
 		);
 	}
 
@@ -1073,7 +1191,80 @@ public class UserTournamentViewService {
 		private int points;
 		private int goalsFor;
 		private int goalsAgainst;
-		private List<String> form = new ArrayList<>();
+		private List<ResultStamp> results = new ArrayList<>();
+	}
+
+	private record ResultStamp(LocalDateTime time, String result) {
+	}
+
+	private List<GroupTeamRow> sortByGroupRules(List<GroupTeamRow> rows, List<Match> groupMatches) {
+		if (rows == null || rows.size() <= 1) return rows;
+		List<GroupTeamRow> sorted = new ArrayList<>(rows);
+		sorted.sort(
+				Comparator.comparingInt(GroupTeamRow::points).reversed()
+						.thenComparing(Comparator.comparingInt(GroupTeamRow::goalDiff).reversed())
+						.thenComparing(Comparator.comparingInt(GroupTeamRow::goalsFor).reversed())
+						.thenComparing(GroupTeamRow::name, String.CASE_INSENSITIVE_ORDER)
+		);
+
+		int i = 0;
+		while (i < sorted.size()) {
+			int j = i + 1;
+			while (j < sorted.size()
+					&& sorted.get(j).points() == sorted.get(i).points()
+					&& sorted.get(j).goalDiff() == sorted.get(i).goalDiff()
+					&& sorted.get(j).goalsFor() == sorted.get(i).goalsFor()) {
+				j++;
+			}
+			if (j - i >= 2) {
+				List<GroupTeamRow> block = new ArrayList<>(sorted.subList(i, j));
+				List<GroupTeamRow> resolved = sortTieBlockByHeadToHeadGoalDiff(block, groupMatches);
+				for (int k = 0; k < resolved.size(); k++) {
+					sorted.set(i + k, resolved.get(k));
+				}
+			}
+			i = j;
+		}
+		return sorted;
+	}
+
+	private List<GroupTeamRow> sortTieBlockByHeadToHeadGoalDiff(List<GroupTeamRow> block, List<Match> groupMatches) {
+		if (block == null || block.size() <= 1) return block;
+		java.util.Set<Long> ids = block.stream().map(GroupTeamRow::teamId).collect(java.util.stream.Collectors.toSet());
+		java.util.Map<Long, H2H> h2h = new java.util.HashMap<>();
+		for (Long id : ids) h2h.put(id, new H2H());
+
+		if (groupMatches != null) {
+			for (Match m : groupMatches) {
+				if (m == null || m.getStatus() != MatchStatus.FINISHED) continue;
+				if (m.getHomeTeam() == null || m.getAwayTeam() == null) continue;
+				Long hid = m.getHomeTeam().getId();
+				Long aid = m.getAwayTeam().getId();
+				if (hid == null || aid == null) continue;
+				if (!ids.contains(hid) || !ids.contains(aid)) continue;
+				Integer hs = m.getHomeScore();
+				Integer as = m.getAwayScore();
+				if (hs == null || as == null) continue;
+
+				h2h.get(hid).gf += hs;
+				h2h.get(hid).ga += as;
+				h2h.get(aid).gf += as;
+				h2h.get(aid).ga += hs;
+			}
+		}
+
+		List<GroupTeamRow> resolved = new ArrayList<>(block);
+		resolved.sort(Comparator
+				.comparingInt((GroupTeamRow r) -> h2h.getOrDefault(r.teamId(), new H2H()).gd()).reversed()
+				.thenComparingInt((GroupTeamRow r) -> h2h.getOrDefault(r.teamId(), new H2H()).gf).reversed()
+				.thenComparing(GroupTeamRow::name, String.CASE_INSENSITIVE_ORDER));
+		return resolved;
+	}
+
+	private static final class H2H {
+		int gf;
+		int ga;
+		int gd() { return gf - ga; }
 	}
 
 	public record PlayerPrefill(String fullName, Integer jerseyNumber, String avatarUrl) {
@@ -1147,6 +1338,19 @@ public class UserTournamentViewService {
 	public record GroupTeamRow(Long teamId, String name, String logoUrl, long memberCount, int played, int won, int drawn, int lost, int points, int goalsFor, int goalsAgainst, List<String> form) {
 		public int goalDiff() {
 			return goalsFor - goalsAgainst;
+		}
+
+		public double formIndex() {
+			if (form == null || form.isEmpty()) return 0.0;
+			int n = form.size();
+			double sum = 0;
+			for (int i = 0; i < n; i++) {
+				String r = form.get(i);
+				int pts = "W".equalsIgnoreCase(r) ? 3 : ("D".equalsIgnoreCase(r) ? 1 : 0);
+				int weight = i + 1;
+				sum += pts * weight;
+			}
+			return sum / n;
 		}
 	}
 
@@ -1267,7 +1471,10 @@ public class UserTournamentViewService {
 			Integer awayScore,
 			Integer homePenalty,
 			Integer awayPenalty,
-			String statusLabel
+			String legLabel,
+			String statusLabel,
+			String liveStreamUrl,
+			String liveArchiveUrl
 	) {
 		public String homeDisplayScore() {
 			if (homeScore == null) return "-";
@@ -1334,6 +1541,27 @@ public class UserTournamentViewService {
 		}
 	}
 
+	public record LiveArchiveRow(
+			Long matchId,
+			String title,
+			String homeTeamName,
+			String awayTeamName,
+			String roundName,
+			LocalDateTime scheduledAt,
+			String archiveUrl
+	) {
+	}
+
+	public record LiveArchiveView(
+			boolean hasVideos,
+			String message,
+			List<LiveArchiveRow> videos
+	) {
+		public static LiveArchiveView none(String message) {
+			return new LiveArchiveView(false, message, List.of());
+		}
+	}
+
 	public record LineupSlotView(int index, int top, int left, String label) {
 	}
 
@@ -1363,17 +1591,33 @@ public class UserTournamentViewService {
 	public record MatchLineupView(
 			boolean found,
 			String message,
+			Long matchId,
 			String roundName,
 			LocalDateTime scheduledAt,
 			String statusLabel,
 			Integer homeScore,
 			Integer awayScore,
+			String liveStreamUrl,
 			List<LineupSlotView> pitchSlots,
 			TeamLineupView homeTeam,
 			TeamLineupView awayTeam
 	) {
 		public static MatchLineupView notFound(String message) {
-			return new MatchLineupView(false, message, null, null, null, null, null, List.of(), null, null);
+			return new MatchLineupView(false, message, null, null, null, null, null, null, null, List.of(), null, null);
+		}
+	}
+
+	public record LiveMatchView(
+			boolean available,
+			String message,
+			Long matchId,
+			String title,
+			String homeTeamName,
+			String awayTeamName,
+			String liveStreamUrl
+	) {
+		public static LiveMatchView notAvailable(String message) {
+			return new LiveMatchView(false, message, null, "Phát trực tiếp", "Đội 1", "Đội 2", null);
 		}
 	}
 
