@@ -17,6 +17,7 @@ import com.example.football_tourament_web.repository.MatchRepository;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -122,6 +123,7 @@ public class MatchService {
 			nextMatch.setStatus(MatchStatus.SCHEDULED);
 			nextRoundMatches.add(nextMatch);
 		}
+		assignKnockoutTimes(tournament, currentRoundMatches, nextRoundName, nextRoundMatches);
 		matchRepository.saveAll(nextRoundMatches);
 		return true;
 	}
@@ -297,6 +299,7 @@ public class MatchService {
 		quarterFinals.add(buildKnockoutMatch(tournament, "Tứ kết", a2, b1));
 		quarterFinals.add(buildKnockoutMatch(tournament, "Tứ kết", c1, d2));
 		quarterFinals.add(buildKnockoutMatch(tournament, "Tứ kết", c2, d1));
+		assignQuarterFinalTimes(tournament, groupMatches, quarterFinals);
 		matchRepository.saveAll(quarterFinals);
 		return true;
 	}
@@ -327,22 +330,93 @@ public class MatchService {
 	private static List<Match> buildRoundRobinMatches(Tournament tournament, String roundName, List<Team> teams) {
 		List<Match> matches = new ArrayList<>();
 		if (teams == null || teams.size() != 4) return matches;
-		for (int i = 0; i < teams.size(); i++) {
-			for (int j = i + 1; j < teams.size(); j++) {
-				Team home = teams.get(i);
-				Team away = teams.get(j);
-				Match leg1 = new Match(tournament, home, away);
-				leg1.setRoundName(roundName);
-				leg1.setStatus(MatchStatus.SCHEDULED);
-				matches.add(leg1);
+		Team t0 = teams.get(0);
+		Team t1 = teams.get(1);
+		Team t2 = teams.get(2);
+		Team t3 = teams.get(3);
 
-				Match leg2 = new Match(tournament, away, home);
-				leg2.setRoundName(roundName);
-				leg2.setStatus(MatchStatus.SCHEDULED);
-				matches.add(leg2);
+		int roundGapDays = 2;
+		LocalDate start = tournament.getStartDate() != null ? tournament.getStartDate() : LocalDate.now().plusDays(1);
+		LocalDateTime base = start.atTime(18, 0);
+
+		// Lượt 1
+		matches.add(buildScheduledGroupMatch(tournament, roundName, t0, t1, base.plusHours(0)));
+		matches.add(buildScheduledGroupMatch(tournament, roundName, t2, t3, base.plusHours(2)));
+		matches.add(buildScheduledGroupMatch(tournament, roundName, t0, t2, base.plusDays(roundGapDays).plusHours(0)));
+		matches.add(buildScheduledGroupMatch(tournament, roundName, t1, t3, base.plusDays(roundGapDays).plusHours(2)));
+		matches.add(buildScheduledGroupMatch(tournament, roundName, t0, t3, base.plusDays(roundGapDays * 2L).plusHours(0)));
+		matches.add(buildScheduledGroupMatch(tournament, roundName, t1, t2, base.plusDays(roundGapDays * 2L).plusHours(2)));
+
+		// Lượt 2
+		LocalDateTime baseLeg2 = base.plusDays(roundGapDays * 3L);
+		matches.add(buildScheduledGroupMatch(tournament, roundName, t1, t0, baseLeg2.plusHours(0)));
+		matches.add(buildScheduledGroupMatch(tournament, roundName, t3, t2, baseLeg2.plusHours(2)));
+		matches.add(buildScheduledGroupMatch(tournament, roundName, t2, t0, baseLeg2.plusDays(roundGapDays).plusHours(0)));
+		matches.add(buildScheduledGroupMatch(tournament, roundName, t3, t1, baseLeg2.plusDays(roundGapDays).plusHours(2)));
+		matches.add(buildScheduledGroupMatch(tournament, roundName, t3, t0, baseLeg2.plusDays(roundGapDays * 2L).plusHours(0)));
+		matches.add(buildScheduledGroupMatch(tournament, roundName, t2, t1, baseLeg2.plusDays(roundGapDays * 2L).plusHours(2)));
+
+		return matches;
+	}
+
+	private static Match buildScheduledGroupMatch(Tournament t, String roundName, Team home, Team away, LocalDateTime when) {
+		Match m = new Match(t, home, away);
+		m.setRoundName(roundName);
+		m.setStatus(MatchStatus.SCHEDULED);
+		m.setScheduledAt(when);
+		return m;
+	}
+
+	private static LocalDateTime latestScheduledAt(List<Match> matches) {
+		LocalDateTime max = null;
+		for (Match m : matches) {
+			if (m == null) continue;
+			LocalDateTime s = m.getScheduledAt();
+			if (s == null) continue;
+			if (max == null || s.isAfter(max)) max = s;
+		}
+		return max;
+	}
+
+	private void assignQuarterFinalTimes(Tournament tournament, List<Match> groupMatches, List<Match> qfs) {
+		if (qfs == null || qfs.isEmpty()) return;
+		LocalDateTime base = latestScheduledAt(groupMatches);
+		if (base == null) {
+			LocalDate start = tournament.getStartDate() != null ? tournament.getStartDate() : LocalDate.now().plusDays(1);
+			base = start.atTime(18, 0);
+		} else {
+			base = base.plusDays(1).withHour(18).withMinute(0).withSecond(0).withNano(0);
+		}
+		for (int i = 0; i < qfs.size(); i++) {
+			int dayOffset = i < 2 ? 0 : 1;
+			int hourOffset = (i % 2 == 0) ? 0 : 2;
+			qfs.get(i).setScheduledAt(base.plusDays(dayOffset).plusHours(hourOffset));
+		}
+	}
+
+	private void assignKnockoutTimes(Tournament tournament, List<Match> prevRoundMatches, String nextRoundName, List<Match> nextMatches) {
+		if (nextMatches == null || nextMatches.isEmpty()) return;
+		LocalDateTime base = latestScheduledAt(prevRoundMatches);
+		if (base == null) {
+			LocalDate start = tournament.getStartDate() != null ? tournament.getStartDate() : LocalDate.now().plusDays(1);
+			base = start.atTime(18, 0);
+		} else {
+			base = base.plusDays(2).withHour(18).withMinute(0).withSecond(0).withNano(0);
+		}
+		if ("Bán kết".equalsIgnoreCase(nextRoundName)) {
+			for (int i = 0; i < nextMatches.size(); i++) {
+				int hourOffset = (i % 2 == 0) ? 0 : 2;
+				nextMatches.get(i).setScheduledAt(base.plusHours(hourOffset));
+			}
+		} else if ("Chung kết".equalsIgnoreCase(nextRoundName)) {
+			nextMatches.get(0).setScheduledAt(base.plusDays(2).plusHours(1));
+		} else {
+			for (int i = 0; i < nextMatches.size(); i++) {
+				int dayOffset = i < 2 ? 0 : 1;
+				int hourOffset = (i % 2 == 0) ? 0 : 2;
+				nextMatches.get(i).setScheduledAt(base.plusDays(dayOffset).plusHours(hourOffset));
 			}
 		}
-		return matches;
 	}
 
 	public Team winnerOf(Match match) {
