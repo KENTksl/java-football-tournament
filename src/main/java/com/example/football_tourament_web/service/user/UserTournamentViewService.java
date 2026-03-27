@@ -1008,7 +1008,10 @@ public class UserTournamentViewService {
 							mr.homeTeamName(), mr.awayTeamName(),
 							mr.homeScore(), mr.awayScore(),
 							mr.homePenalty(), mr.awayPenalty(),
-							leg, mr.statusLabel()
+							leg,
+							mr.statusLabel(),
+							mr.liveStreamUrl(),
+							mr.liveArchiveUrl()
 					));
 				}
 				groupMatches.put(group, replaced);
@@ -1122,14 +1125,10 @@ public class UserTournamentViewService {
 				match.getAwayScore(),
 				match.getHomePenalty(),
 				match.getAwayPenalty(),
-<<<<<<< Updated upstream
+				null,
 				displayMatchStatus(match.getStatus()),
 				match.getLiveStreamUrl(),
 				match.getLiveArchiveUrl()
-=======
-				"",
-				displayMatchStatus(match.getStatus())
->>>>>>> Stashed changes
 		);
 	}
 
@@ -1458,14 +1457,10 @@ public class UserTournamentViewService {
 			Integer awayScore,
 			Integer homePenalty,
 			Integer awayPenalty,
-<<<<<<< Updated upstream
+			String legLabel,
 			String statusLabel,
 			String liveStreamUrl,
 			String liveArchiveUrl
-=======
-			String legLabel,
-			String statusLabel
->>>>>>> Stashed changes
 	) {
 		public String homeDisplayScore() {
 			if (homeScore == null) return "-";

@@ -12,7 +12,6 @@ import com.example.football_tourament_web.model.enums.MatchEventType;
 import com.example.football_tourament_web.repository.MatchEventRepository;
 import com.example.football_tourament_web.repository.MatchRepository;
 import com.example.football_tourament_web.repository.TeamRepository;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,12 +21,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
 public class TeamComparisonService {
 
     private final TeamRepository teamRepository;
     private final MatchRepository matchRepository;
     private final MatchEventRepository matchEventRepository;
+
+    public TeamComparisonService(TeamRepository teamRepository, MatchRepository matchRepository, MatchEventRepository matchEventRepository) {
+        this.teamRepository = teamRepository;
+        this.matchRepository = matchRepository;
+        this.matchEventRepository = matchEventRepository;
+    }
 
     @Transactional(readOnly = true)
     public TeamComparisonDto getComparison(Long team1Id, Long team2Id) {
