@@ -74,6 +74,23 @@
             </div>
         </div>
 
+        <!-- Form so sánh đội bóng -->
+        <section class="teams-section" style="margin-top: 20px;">
+            <form th:action="@{/tournaments/{tournamentId}/compare-teams(tournamentId=${tournament.id})}" method="get" class="comparison-form">
+                <div class="comparison-form__selects">
+                    <select name="team1Id" required>
+                        <option value="" disabled selected>Chọn đội 1</option>
+                        <option th:each="team : ${teamCards}" th:value="${team.teamId}" th:text="${team.teamName}"></option>
+                    </select>
+                    <select name="team2Id" required>
+                        <option value="" disabled selected>Chọn đội 2</option>
+                        <option th:each="team : ${teamCards}" th:value="${team.teamId}" th:text="${team.teamName}"></option>
+                    </select>
+                </div>
+                <button type="submit" class="comparison-form__btn">So sánh</button>
+            </form>
+        </section>
+
         <th:block th:replace="~{user/tournament/fragments/teams :: teams}"></th:block>
     </div>
 </main>
