@@ -281,7 +281,7 @@ public class AdminMatchHistoryService {
 		return "redirect:/admin/match-history?id=" + tournamentId;
 	}
 
-	public String saveSchedule(Long tournamentId, Long matchId, String date, String time, String location, int page, int size) {
+	public String saveSchedule(Long tournamentId, Long matchId, String date, String time, String location, String liveStreamUrl, int page, int size) {
 		if (tournamentId == null) return "redirect:/admin/manage/tournament";
 		if (matchId == null) return "redirect:/admin/match-history?id=" + tournamentId;
 
@@ -296,6 +296,11 @@ public class AdminMatchHistoryService {
 
 		String nextLocation = location == null ? "" : location.trim();
 		match.setLocation(nextLocation.isBlank() ? null : nextLocation);
+		String nextLiveStreamUrl = normalizeLiveStreamUrl(liveStreamUrl);
+		if (liveStreamUrl != null && !liveStreamUrl.trim().isBlank() && nextLiveStreamUrl == null) {
+			return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=invalid_live_url";
+		}
+		match.setLiveStreamUrl(nextLiveStreamUrl);
 
 		LocalDateTime scheduledAt = null;
 		try {
@@ -891,6 +896,164 @@ public class AdminMatchHistoryService {
 			return Long.parseLong(s);
 		} catch (Exception ignored) {
 			return null;
+		}
+	}
+
+	private static String normalizeLiveStreamUrl(String raw) {
+		if (raw == null) return null;
+		String value = raw.trim();
+		if (value.isBlank()) return null;
+		String normalized = value;
+		if (!normalized.startsWith("http://") && !normalized.startsWith("https://")) {
+			normalized = "https://" + normalized;
+		}
+		try {
+			java.net.URI uri = java.net.URI.create(normalized);
+			String scheme = uri.getScheme();
+			String host = uri.getHost();
+			if (scheme == null || host == null) return null;
+			String lowerScheme = scheme.toLowerCase();
+			if (!"http".equals(lowerScheme) && !"https".equals(lowerScheme)) return null;
+			if (normalized.length() > 1000) return null;
+			String embed = toEmbedUrl(uri, normalized);
+			return embed == null || embed.isBlank() ? normalized : embed;
+		} catch (Exception ignored) {
+			return null;
+		}
+	}
+
+	private static String toEmbedUrl(java.net.URI uri, String fallback) {
+		String host = uri.getHost();
+		if (host == null) return fallback;
+		String normalizedHost = host.toLowerCase();
+		if (normalizedHost.startsWith("www.")) normalizedHost = normalizedHost.substring(4);
+		if (normalizedHost.startsWith("m.")) normalizedHost = normalizedHost.substring(2);
+		String path = uri.getPath() == null ? "" : uri.getPath();
+		Map<String, String> query = parseQueryParams(uri.getQuery());
+
+		if ("youtube.com".equals(normalizedHost) || "youtu.be".equals(normalizedHost)) {
+			String videoId = null;
+			if ("youtu.be".equals(normalizedHost)) {
+				videoId = firstPathSegment(path);
+			} else if (path.startsWith("/watch")) {
+				videoId = query.get("v");
+			} else if (path.startsWith("/shorts/")) {
+				videoId = path.substring("/shorts/".length());
+			} else if (path.startsWith("/live/")) {
+				videoId = path.substring("/live/".length());
+			} else if (path.startsWith("/embed/")) {
+				videoId = path.substring("/embed/".length());
+			}
+			videoId = sanitizeVideoId(videoId);
+			if (videoId == null) return fallback;
+			String start = parseStartSeconds(query.get("start"), query.get("t"));
+			StringBuilder embed = new StringBuilder("https://www.youtube.com/embed/").append(videoId);
+			boolean hasQuery = false;
+			if (start != null) {
+				embed.append("?start=").append(start);
+				hasQuery = true;
+			}
+			String list = query.get("list");
+			if (list != null && !list.isBlank()) {
+				embed.append(hasQuery ? "&" : "?").append("list=").append(urlEncode(list));
+			}
+			return embed.toString();
+		}
+
+		if ("drive.google.com".equals(normalizedHost) && path.startsWith("/file/d/")) {
+			String remain = path.substring("/file/d/".length());
+			String fileId = remain.contains("/") ? remain.substring(0, remain.indexOf('/')) : remain;
+			if (fileId != null && !fileId.isBlank()) {
+				return "https://drive.google.com/file/d/" + fileId + "/preview";
+			}
+		}
+
+		if ("vimeo.com".equals(normalizedHost)) {
+			String id = firstPathSegment(path);
+			if (id != null && id.chars().allMatch(Character::isDigit)) {
+				return "https://player.vimeo.com/video/" + id;
+			}
+		}
+
+		return fallback;
+	}
+
+	private static String sanitizeVideoId(String value) {
+		if (value == null) return null;
+		String id = value.trim();
+		if (id.contains("/")) id = id.substring(0, id.indexOf('/'));
+		if (id.contains("?")) id = id.substring(0, id.indexOf('?'));
+		if (id.contains("&")) id = id.substring(0, id.indexOf('&'));
+		if (id.isBlank()) return null;
+		return id;
+	}
+
+	private static String firstPathSegment(String path) {
+		if (path == null) return null;
+		String cleaned = path.startsWith("/") ? path.substring(1) : path;
+		if (cleaned.isBlank()) return null;
+		return cleaned.contains("/") ? cleaned.substring(0, cleaned.indexOf('/')) : cleaned;
+	}
+
+	private static String parseStartSeconds(String startRaw, String tRaw) {
+		String start = parseIntText(startRaw);
+		if (start != null) return start;
+		String t = tRaw == null ? null : tRaw.trim().toLowerCase();
+		if (t == null || t.isBlank()) return null;
+		try {
+			if (t.endsWith("s")) t = t.substring(0, t.length() - 1);
+			int total = 0;
+			int hourIdx = t.indexOf('h');
+			if (hourIdx > 0) {
+				total += Integer.parseInt(t.substring(0, hourIdx)) * 3600;
+				t = t.substring(hourIdx + 1);
+			}
+			int minIdx = t.indexOf('m');
+			if (minIdx > 0) {
+				total += Integer.parseInt(t.substring(0, minIdx)) * 60;
+				t = t.substring(minIdx + 1);
+			}
+			if (!t.isBlank()) total += Integer.parseInt(t);
+			return total > 0 ? String.valueOf(total) : null;
+		} catch (Exception ignored) {
+			return null;
+		}
+	}
+
+	private static String parseIntText(String raw) {
+		if (raw == null) return null;
+		try {
+			int value = Integer.parseInt(raw.trim());
+			return value >= 0 ? String.valueOf(value) : null;
+		} catch (Exception ignored) {
+			return null;
+		}
+	}
+
+	private static Map<String, String> parseQueryParams(String query) {
+		Map<String, String> params = new HashMap<>();
+		if (query == null || query.isBlank()) return params;
+		String[] pairs = query.split("&");
+		for (String pair : pairs) {
+			if (pair == null || pair.isBlank()) continue;
+			int idx = pair.indexOf('=');
+			String key = idx >= 0 ? pair.substring(0, idx) : pair;
+			String value = idx >= 0 ? pair.substring(idx + 1) : "";
+			try {
+				String decodedKey = java.net.URLDecoder.decode(key, java.nio.charset.StandardCharsets.UTF_8);
+				String decodedValue = java.net.URLDecoder.decode(value, java.nio.charset.StandardCharsets.UTF_8);
+				params.put(decodedKey, decodedValue);
+			} catch (Exception ignored) {
+			}
+		}
+		return params;
+	}
+
+	private static String urlEncode(String raw) {
+		try {
+			return java.net.URLEncoder.encode(raw, java.nio.charset.StandardCharsets.UTF_8);
+		} catch (Exception ignored) {
+			return raw;
 		}
 	}
 

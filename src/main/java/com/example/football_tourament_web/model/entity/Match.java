@@ -55,6 +55,9 @@ public class Match {
 	@Column(columnDefinition = "TEXT")
 	private String eventsJson;
 
+	@Column(columnDefinition = "TEXT")
+	private String liveStreamUrl;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private MatchStatus status = MatchStatus.SCHEDULED;
@@ -172,6 +175,14 @@ public class Match {
 
 	public void setEventsJson(String eventsJson) {
 		this.eventsJson = eventsJson;
+	}
+
+	public String getLiveStreamUrl() {
+		return liveStreamUrl;
+	}
+
+	public void setLiveStreamUrl(String liveStreamUrl) {
+		this.liveStreamUrl = liveStreamUrl;
 	}
 
 	public MatchStatus getStatus() {

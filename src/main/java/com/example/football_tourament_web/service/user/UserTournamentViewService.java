@@ -488,11 +488,13 @@ public class UserTournamentViewService {
 		return new MatchLineupView(
 				true,
 				message,
+				match.getId(),
 				match.getRoundName(),
 				match.getScheduledAt(),
 				displayMatchStatus(match.getStatus()),
 				match.getHomeScore(),
 				match.getAwayScore(),
+				match.getLiveStreamUrl(),
 				pitchSlots,
 				homeTeam,
 				awayTeam
@@ -579,6 +581,33 @@ public class UserTournamentViewService {
 		boolean hasLineup = !starters.isEmpty();
 		String message = hasLineup ? "" : "Đội chưa có đội hình được admin thiết lập";
 		return new TeamSingleLineupView(true, message, team.getName(), pitchSlots, starters, bench);
+	}
+
+	@Transactional(readOnly = true)
+	public LiveMatchView buildLiveMatchView(Long tournamentId, Long matchId) {
+		if (tournamentId == null || matchId == null) {
+			return LiveMatchView.notAvailable("Không tìm thấy trận đấu");
+		}
+		Match match = matchService.findByIdWithDetails(matchId).orElse(null);
+		if (match == null || match.getTournament() == null || match.getTournament().getId() == null
+				|| !tournamentId.equals(match.getTournament().getId())) {
+			return LiveMatchView.notAvailable("Không tìm thấy trận đấu");
+		}
+		String homeTeamName = match.getHomeTeam() == null ? "Đội 1" : match.getHomeTeam().getName();
+		String awayTeamName = match.getAwayTeam() == null ? "Đội 2" : match.getAwayTeam().getName();
+		String title = homeTeamName + " vs " + awayTeamName;
+		String liveStreamUrl = match.getLiveStreamUrl() == null ? null : match.getLiveStreamUrl().trim();
+		boolean available = liveStreamUrl != null && !liveStreamUrl.isBlank();
+		String message = available ? "" : "Trận đấu này chưa có link phát trực tiếp";
+		return new LiveMatchView(
+				available,
+				message,
+				match.getId(),
+				title,
+				homeTeamName,
+				awayTeamName,
+				liveStreamUrl
+		);
 	}
 
 	@Transactional(readOnly = true)
@@ -1010,7 +1039,8 @@ public class UserTournamentViewService {
 				match.getAwayScore(),
 				match.getHomePenalty(),
 				match.getAwayPenalty(),
-				displayMatchStatus(match.getStatus())
+				displayMatchStatus(match.getStatus()),
+				match.getLiveStreamUrl()
 		);
 	}
 
@@ -1253,7 +1283,8 @@ public class UserTournamentViewService {
 			Integer awayScore,
 			Integer homePenalty,
 			Integer awayPenalty,
-			String statusLabel
+			String statusLabel,
+			String liveStreamUrl
 	) {
 		public String homeDisplayScore() {
 			if (homeScore == null) return "-";
@@ -1349,17 +1380,33 @@ public class UserTournamentViewService {
 	public record MatchLineupView(
 			boolean found,
 			String message,
+			Long matchId,
 			String roundName,
 			LocalDateTime scheduledAt,
 			String statusLabel,
 			Integer homeScore,
 			Integer awayScore,
+			String liveStreamUrl,
 			List<LineupSlotView> pitchSlots,
 			TeamLineupView homeTeam,
 			TeamLineupView awayTeam
 	) {
 		public static MatchLineupView notFound(String message) {
-			return new MatchLineupView(false, message, null, null, null, null, null, List.of(), null, null);
+			return new MatchLineupView(false, message, null, null, null, null, null, null, null, List.of(), null, null);
+		}
+	}
+
+	public record LiveMatchView(
+			boolean available,
+			String message,
+			Long matchId,
+			String title,
+			String homeTeamName,
+			String awayTeamName,
+			String liveStreamUrl
+	) {
+		public static LiveMatchView notAvailable(String message) {
+			return new LiveMatchView(false, message, null, "Phát trực tiếp", "Đội 1", "Đội 2", null);
 		}
 	}
 
