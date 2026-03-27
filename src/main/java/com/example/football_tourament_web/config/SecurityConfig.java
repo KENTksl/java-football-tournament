@@ -169,7 +169,7 @@ public class SecurityConfig {
 						"/lich-su-giao-dich.html",
 						"/thanh-toan",
 						"/thanh-toan.html"
-				).hasAnyRole("USER", "ADMIN")
+				).hasRole("USER")
 				.anyRequest().permitAll());
 
 		http.formLogin(form -> form

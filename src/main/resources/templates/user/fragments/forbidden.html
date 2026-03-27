@@ -1,0 +1,20 @@
+<div th:fragment="forbidden" xmlns:th="http://www.thymeleaf.org">
+  <section class="banner">
+    <div class="container">
+      <h1>KHÔNG CÓ QUYỀN TRUY CẬP</h1>
+      <p class="crumb">Home / 403</p>
+    </div>
+  </section>
+
+  <section class="home-section">
+    <div class="container">
+      <div class="profile-balance" style="flex-direction: column; align-items: flex-start; justify-content: flex-start;">
+        <div style="font-weight: 800; font-size: 18px; line-height: 1.25;">Bạn không có quyền truy cập trang này.</div>
+        <div class="muted" style="margin-top: 6px;">Hãy đăng nhập đúng tài khoản hoặc quay lại trang trước.</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px;">
+          <button class="profile-btn" type="button" onclick="history.back()">Quay lại</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
