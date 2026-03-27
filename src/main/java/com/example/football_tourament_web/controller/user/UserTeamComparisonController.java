@@ -2,7 +2,6 @@ package com.example.football_tourament_web.controller.user;
 
 import com.example.football_tourament_web.model.dto.comparison.TeamComparisonDto;
 import com.example.football_tourament_web.service.core.TeamComparisonService;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,10 +10,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/user/tournament/compare-teams")
-@AllArgsConstructor
 public class UserTeamComparisonController {
 
     private final TeamComparisonService teamComparisonService;
+
+    public UserTeamComparisonController(TeamComparisonService teamComparisonService) {
+        this.teamComparisonService = teamComparisonService;
+    }
 
     @GetMapping
     public String getTeamComparison(
