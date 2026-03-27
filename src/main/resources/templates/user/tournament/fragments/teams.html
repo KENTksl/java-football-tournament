@@ -2,35 +2,55 @@
     <link rel="stylesheet" th:href="@{/assets/css/tournament-fragment-teams.css}">
 
     <section class="teams-section">
-        <div class="teams-toolbar">
-            <div>
-                <h2 class="teams-title">Danh sách đội tham gia</h2>
-                <div class="teams-count" th:text="${(teamCards != null ? #lists.size(teamCards) : 0) + ' đội đã xác nhận tham gia'}">0 đội đã xác nhận tham gia</div>
-            </div>
-            <input id="teamsSearchInput" class="search-box-teams" type="text" placeholder="Tìm theo tên đội...">
+        <!-- Form so sánh đội bóng -->
+        <div class="comparison-form" style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 24px; border: 1px solid #e9ecef; display: flex; gap: 15px; align-items: center;">
+            <form th:action="@{/user/tournament/compare-teams}" method="get" style="display: flex; gap: 15px; width: 100%; align-items: center;">
+                <input type="hidden" name="tournamentId" th:value="${tournament.id}">
+                <div style="display: flex; gap: 15px; flex-grow: 1;">
+                    <select name="team1Id" required style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                        <option value="" disabled selected>Chọn đội 1</option>
+                        <option th:each="team : ${teamCards}" th:value="${team.teamId}" th:text="${team.teamName}"></option>
+                    </select>
+                    <select name="team2Id" required style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                        <option value="" disabled selected>Chọn đội 2</option>
+                        <option th:each="team : ${teamCards}" th:value="${team.teamId}" th:text="${team.teamName}"></option>
+                    </select>
+                </div>
+                <button type="submit" style="padding: 10px 25px; background: #007bff; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">So sánh</button>
+            </form>
         </div>
 
-        <div class="team-grid">
-            <article class="team-card" th:each="team : ${teamCards}" th:attr="data-team-name=${team.teamName}">
-                <div class="team-card__cover" th:text="${team.coverLetter}">T</div>
-                <div class="team-card__body">
-                    <div class="team-card__head">
-                        <div class="team-card__logo">
-                            <img th:if="${team.logoUrl != null and !#strings.isEmpty(team.logoUrl)}" th:src="${team.logoUrl}" alt="logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
-                        </div>
-                        <h3 class="team-card__name" th:text="${team.teamName}">Tên đội</h3>
-                    </div>
-                    <div class="team-card__meta">
-                        <div th:text="${'Đội trưởng: ' + (team.captainName != null and !#strings.isEmpty(team.captainName) ? team.captainName : 'Chưa cập nhật')}">Đội trưởng</div>
-                        <div th:text="${'Mã đội: #' + team.teamCode}">Mã đội</div>
-                    </div>
-                    <div class="team-card__actions">
-                        <span class="member-chip" th:text="${team.memberCount + ' thành viên'}">0 thành viên</span>
-                        <button type="button" class="detail-btn" th:attr="data-team-name=${team.teamName},data-lineup-url=@{/user/tournament/team-lineup(tournamentId=${tournament != null ? tournament.id : null},teamId=${team.teamId})}">Xem đội hình</button>
-                    </div>
+        <div id="teamsContentContainer">
+            <div class="teams-toolbar">
+                <div>
+                    <h2 class="teams-title">Danh sách đội tham gia</h2>
+                    <div class="teams-count" th:text="${(teamCards != null ? #lists.size(teamCards) : 0) + ' đội đã xác nhận tham gia'}">0 đội đã xác nhận tham gia</div>
                 </div>
-            </article>
-            <div th:if="${teamCards == null or #lists.isEmpty(teamCards)}" style="padding:16px; border:1px dashed #d9d9d9; border-radius:12px;">Chưa có đội được xác nhận ở giải đấu này</div>
+                <input id="teamsSearchInput" class="search-box-teams" type="text" placeholder="Tìm theo tên đội...">
+            </div>
+
+            <div class="team-grid">
+                <article class="team-card" th:each="team : ${teamCards}" th:attr="data-team-name=${team.teamName}">
+                    <div class="team-card__cover" th:text="${team.coverLetter}">T</div>
+                    <div class="team-card__body">
+                        <div class="team-card__head">
+                            <div class="team-card__logo">
+                                <img th:if="${team.logoUrl != null and !#strings.isEmpty(team.logoUrl)}" th:src="${team.logoUrl}" alt="logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                            </div>
+                            <h3 class="team-card__name" th:text="${team.teamName}">Tên đội</h3>
+                        </div>
+                        <div class="team-card__meta">
+                            <div th:text="${'Đội trưởng: ' + (team.captainName != null and !#strings.isEmpty(team.captainName) ? team.captainName : 'Chưa cập nhật')}">Đội trưởng</div>
+                            <div th:text="${'Mã đội: #' + team.teamCode}">Mã đội</div>
+                        </div>
+                        <div class="team-card__actions">
+                            <span class="member-chip" th:text="${team.memberCount + ' thành viên'}">0 thành viên</span>
+                            <button type="button" class="detail-btn" th:attr="data-team-name=${team.teamName},data-lineup-url=@{/user/tournament/team-lineup(tournamentId=${tournament != null ? tournament.id : null},teamId=${team.teamId})}">Xem đội hình</button>
+                        </div>
+                    </div>
+                </article>
+                <div th:if="${teamCards == null or #lists.isEmpty(teamCards)}" style="padding:16px; border:1px dashed #d9d9d9; border-radius:12px;">Chưa có đội được xác nhận ở giải đấu này</div>
+            </div>
         </div>
     </section>
 
@@ -153,6 +173,55 @@
                     }
                 });
             });
+
+            const comparisonForm = document.querySelector('.comparison-form form');
+            const teamsContentContainer = document.getElementById('teamsContentContainer');
+            if (comparisonForm && teamsContentContainer) {
+                const team1Select = comparisonForm.querySelector('select[name="team1Id"]');
+                const team2Select = comparisonForm.querySelector('select[name="team2Id"]');
+
+                comparisonForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (team1Select.value === team2Select.value) {
+                        alert('Vui lòng chọn hai đội khác nhau để so sánh.');
+                        return;
+                    }
+
+                    const submitBtn = comparisonForm.querySelector('button[type="submit"]');
+                    const originalBtnText = submitBtn.textContent;
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Đang phân tích...';
+
+                    try {
+                        const formData = new FormData(comparisonForm);
+                        const params = new URLSearchParams(formData);
+                        const url = comparisonForm.action + '/fragment?' + params.toString();
+
+                        const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                        if (!response.ok) throw new Error('Không thể tải dữ liệu so sánh');
+
+                        const html = await response.text();
+                        teamsContentContainer.innerHTML = html;
+                        
+                        // Scroll to result
+                        teamsContentContainer.scrollIntoView({ behavior: 'smooth' });
+                    } catch (error) {
+                        console.error(error);
+                        alert('Đã xảy ra lỗi khi so sánh. Vui lòng thử lại.');
+                    } finally {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalBtnText;
+                        
+                        // Hide global loader if it appeared
+                        const globalLoader = document.querySelector('[data-page-loader]');
+                        if (globalLoader) {
+                            globalLoader.classList.remove('is-visible');
+                            globalLoader.setAttribute('aria-hidden', 'true');
+                        }
+                    }
+                });
+            }
         })();
     </script>
 </div>
