@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -296,11 +297,15 @@ public class AdminMatchHistoryService {
 
 		String nextLocation = location == null ? "" : location.trim();
 		match.setLocation(nextLocation.isBlank() ? null : nextLocation);
+		String previousLiveStreamUrl = match.getLiveStreamUrl() == null ? null : match.getLiveStreamUrl().trim();
 		String nextLiveStreamUrl = normalizeLiveStreamUrl(liveStreamUrl);
 		if (liveStreamUrl != null && !liveStreamUrl.trim().isBlank() && nextLiveStreamUrl == null) {
 			return "redirect:/admin/match-history?id=" + tournamentId + "&matchId=" + matchId + "&tab=lineup&page=" + page + "&size=" + size + "&saved=invalid_live_url";
 		}
 		match.setLiveStreamUrl(nextLiveStreamUrl);
+		if (!Objects.equals(previousLiveStreamUrl, nextLiveStreamUrl) && match.getStatus() != MatchStatus.FINISHED) {
+			match.setLiveArchiveUrl(null);
+		}
 
 		LocalDateTime scheduledAt = null;
 		try {
@@ -507,6 +512,12 @@ public class AdminMatchHistoryService {
 		}
 
 		match.setStatus(MatchStatus.FINISHED);
+		if (match.getLiveArchiveUrl() == null || match.getLiveArchiveUrl().isBlank()) {
+			String streamUrl = match.getLiveStreamUrl() == null ? "" : match.getLiveStreamUrl().trim();
+			if (!streamUrl.isBlank()) {
+				match.setLiveArchiveUrl(streamUrl);
+			}
+		}
 		matchService.save(match);
 
 		if ("Chung kết".equalsIgnoreCase(match.getRoundName() != null ? match.getRoundName().trim() : "")) {

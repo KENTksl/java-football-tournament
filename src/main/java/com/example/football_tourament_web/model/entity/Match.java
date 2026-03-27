@@ -58,6 +58,9 @@ public class Match {
 	@Column(columnDefinition = "TEXT")
 	private String liveStreamUrl;
 
+	@Column(columnDefinition = "TEXT")
+	private String liveArchiveUrl;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private MatchStatus status = MatchStatus.SCHEDULED;
@@ -183,6 +186,14 @@ public class Match {
 
 	public void setLiveStreamUrl(String liveStreamUrl) {
 		this.liveStreamUrl = liveStreamUrl;
+	}
+
+	public String getLiveArchiveUrl() {
+		return liveArchiveUrl;
+	}
+
+	public void setLiveArchiveUrl(String liveArchiveUrl) {
+		this.liveArchiveUrl = liveArchiveUrl;
 	}
 
 	public MatchStatus getStatus() {
