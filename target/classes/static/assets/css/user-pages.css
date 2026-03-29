@@ -235,6 +235,24 @@ select.profile-input {
   box-shadow: 0 0 0 3px rgba(255, 170, 23, 0.25);
 }
 
+.profile-input.is-invalid {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.14);
+}
+
+.field-hint {
+  margin-top: -2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.field-error {
+  font-size: 13px;
+  font-weight: 800;
+  color: #dc2626;
+}
+
 .avatar-field {
   display: grid;
   gap: 12px;

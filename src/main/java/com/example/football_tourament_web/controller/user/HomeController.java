@@ -200,7 +200,19 @@ public class HomeController {
 			userService.registerUser(form.fullName, form.email, form.phone, form.password);
 			return "redirect:/dang-nhap?registered";
 		} catch (IllegalArgumentException ex) {
-			bindingResult.rejectValue("email", "email.exists", ex.getMessage());
+			String msg = ex.getMessage() == null ? "Đăng ký thất bại" : ex.getMessage();
+			String lower = msg.toLowerCase();
+			if (lower.contains("email")) {
+				bindingResult.rejectValue("email", "email.exists", msg);
+			} else if (lower.contains("điện thoại") || lower.contains("phone")) {
+				bindingResult.rejectValue("phone", "phone.exists", msg);
+			} else {
+				bindingResult.reject("register.failed", msg);
+			}
+			model.addAttribute("form", form);
+			return "user/auth/register";
+		} catch (Exception ex) {
+			bindingResult.reject("register.failed", "Đăng ký thất bại. Vui lòng kiểm tra lại thông tin và thử lại.");
 			model.addAttribute("form", form);
 			return "user/auth/register";
 		}
@@ -419,6 +431,8 @@ public class HomeController {
 
 	public static class RegisterForm {
 		@NotBlank(message = "Vui lòng nhập họ tên")
+		@Size(min = 2, max = 50, message = "Họ tên phải từ 2–50 ký tự")
+		@jakarta.validation.constraints.Pattern(regexp = "^[\\p{L}][\\p{L}\\s]{1,49}$", message = "Họ tên chỉ được chứa chữ và khoảng trắng")
 		private String fullName;
 
 		@NotBlank(message = "Vui lòng nhập email")
@@ -426,6 +440,7 @@ public class HomeController {
 		private String email;
 
 		@NotBlank(message = "Vui lòng nhập số điện thoại")
+		@jakarta.validation.constraints.Pattern(regexp = "^0\\d{9}$", message = "Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0")
 		private String phone;
 
 		@NotBlank(message = "Vui lòng nhập mật khẩu")

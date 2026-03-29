@@ -8,5 +8,6 @@ import com.example.football_tourament_web.model.entity.AppUser;
 
 public interface AppUserRepository extends JpaRepository<AppUser, Long> {
 	Optional<AppUser> findByEmail(String email);
+	Optional<AppUser> findByPhone(String phone);
 }
 

@@ -48,6 +48,9 @@ public class UserService {
 		if (userRepository.findByEmail(email).isPresent()) {
 			throw new IllegalArgumentException("Email đã tồn tại");
 		}
+		if (phone != null && !phone.isBlank() && userRepository.findByPhone(phone).isPresent()) {
+			throw new IllegalArgumentException("Số điện thoại đã tồn tại");
+		}
 
 		AppUser user = new AppUser();
 		user.setFullName(fullName);
