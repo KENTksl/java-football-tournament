@@ -10,6 +10,7 @@ import com.example.football_tourament_web.model.enums.UserRole;
 
 public interface AppUserRepository extends JpaRepository<AppUser, Long> {
 	Optional<AppUser> findByEmail(String email);
+	Optional<AppUser> findByPhone(String phone);
 	List<AppUser> findByRoleOrderByCreatedAtDesc(UserRole role);
 }
 
