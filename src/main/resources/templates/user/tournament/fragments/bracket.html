@@ -2,142 +2,246 @@
     <link rel="stylesheet" th:href="@{/assets/css/tournament-fragment-bracket.css}">
 
     <div class="bracket-section">
-        <div class="bracket-container">
-            <!-- Quarter Finals -->
-            <div class="bracket-column round-quarter">
-                <div class="bracket-round-title">Tứ kết</div>
+        <div th:if="${#lists.isEmpty(bracket.rounds)}" class="alert alert-info text-center py-5" style="border-radius: 12px;">
+            Giải đấu chưa bước vào vòng Knockout hoặc chưa có lịch thi đấu vòng loại trực tiếp.
+        </div>
+
+        <div th:if="${!#lists.isEmpty(bracket.rounds)}" class="bracket-container">
+            <svg class="bracket-lines" aria-hidden="true"></svg>
+            <!-- Dynamic Rounds -->
+            <div th:each="round, iter : ${bracket.rounds}" 
+                 class="bracket-column" 
+                 th:attr="data-round-index=${iter.index}"
+                 th:classappend="${#strings.containsIgnoreCase(round.roundName, 'tứ kết') ? 'round-quarter' : (#strings.containsIgnoreCase(round.roundName, 'bán kết') ? 'round-semi' : (#strings.containsIgnoreCase(round.roundName, 'chung kết') ? 'round-final' : ''))}">
                 
-                <div class="bracket-match">
-                    <div class="bracket-team bracket-winner">
-                        <div class="bracket-team-info">
-                            <div class="bracket-team-logo logo-manu">M</div>
-                            <span class="bracket-team-name">Man United</span>
+                <div class="bracket-round-title" th:text="${round.roundName}" style="position: sticky; top: 0; z-index: 5; background: rgba(255,255,255,0.92); padding: 10px 8px; border-radius: 12px;">Tứ kết</div>
+
+                <!-- Trophy icon for final -->
+                <div th:if="${#strings.containsIgnoreCase(round.roundName, 'chung kết')}" class="trophy-final">🏆</div>
+
+                <div th:if="${!#strings.containsIgnoreCase(round.roundName, 'chung kết')}" class="bracket-pair-wrapper">
+                    <!-- Quarter Finals usually pairs matches for visual lines, for now just list matches -->
+                    <div th:each="m, mIter : ${round.matches}"
+                         class="bracket-match"
+                         th:attr="data-match-index=${mIter.index},data-match-key=${iter.index + ':' + mIter.index},data-status=${m.statusLabel},data-finished=${m.statusLabel == 'Hoàn thành'},data-live=${m.statusLabel == 'Đang diễn ra'},data-home-team=${m.homeTeamName},data-away-team=${m.awayTeamName}"
+                         th:classappend="(${m.statusLabel == 'Đang diễn ra'} ? ' match-live' : '') + (${m.statusLabel == 'Hoàn thành'} ? ' match-finished' : '')">
+                        <span th:if="${m.statusLabel == 'Đang diễn ra'}" class="badge-live">LIVE</span>
+                        <span th:if="${m.decidedByPenalties()}" class="badge-pen">PEN</span>
+                        <div class="bracket-team"
+                             th:attr="data-team-name=${m.homeTeamName}"
+                             th:classappend="${m.homeScore != null and m.awayScore != null} ? (${m.homeWinner()} ? ' bracket-winner' : ' bracket-loser') : ''">
+                            <div class="bracket-team-info">
+                                <span class="bracket-seed" th:text="${bracket.seedLabels[m.homeTeamName]}">T1</span>
+                                <div class="bracket-team-logo" th:text="${#strings.substring(m.homeTeamName, 0, 1).toUpperCase()}">M</div>
+                                <span class="bracket-team-name" th:text="${m.homeTeamName}">Man United</span>
+                            </div>
+                            <span class="bracket-score score-pill" th:classappend="${m.decidedByPenalties() and m.homeWinner()} ? ' pen-winner' : ''" th:text="${m.homeDisplayScore()}">3</span>
                         </div>
-                        <span class="bracket-score">3</span>
-                    </div>
-                    <div class="bracket-team">
-                        <div class="bracket-team-info">
-                            <div class="bracket-team-logo logo-chelsea">C</div>
-                            <span class="bracket-team-name">Chelsea FC</span>
+                        <div class="bracket-team"
+                             th:attr="data-team-name=${m.awayTeamName}"
+                             th:classappend="${m.homeScore != null and m.awayScore != null} ? (${m.awayWinner()} ? ' bracket-winner' : ' bracket-loser') : ''">
+                            <div class="bracket-team-info">
+                                <span class="bracket-seed" th:text="${bracket.seedLabels[m.awayTeamName]}">T2</span>
+                                <div class="bracket-team-logo" th:text="${#strings.substring(m.awayTeamName, 0, 1).toUpperCase()}">C</div>
+                                <span class="bracket-team-name" th:text="${m.awayTeamName}">Chelsea FC</span>
+                            </div>
+                            <span class="bracket-score score-pill" th:classappend="${m.decidedByPenalties() and m.awayWinner()} ? ' pen-winner' : ''" th:text="${m.awayDisplayScore()}">1</span>
                         </div>
-                        <span class="bracket-score">1</span>
                     </div>
                 </div>
 
-                <div class="bracket-match">
-                    <div class="bracket-team">
-                        <div class="bracket-team-info">
-                            <div class="bracket-team-logo logo-bayern">B</div>
-                            <span class="bracket-team-name">Bayern Munich</span>
-                        </div>
-                        <span class="bracket-score">0</span>
-                    </div>
-                    <div class="bracket-team bracket-winner">
-                        <div class="bracket-team-info">
-                            <div class="bracket-team-logo logo-liverpool">L</div>
-                            <span class="bracket-team-name">Liverpool FC</span>
-                        </div>
-                        <span class="bracket-score">2</span>
-                    </div>
-                </div>
-
-                <div class="bracket-match">
-                    <div class="bracket-team bracket-winner">
-                        <div class="bracket-team-info">
-                            <div class="bracket-team-logo logo-dortmund">D</div>
-                            <span class="bracket-team-name">Dortmund</span>
-                        </div>
-                        <span class="bracket-score">2</span>
-                    </div>
-                    <div class="bracket-team">
-                        <div class="bracket-team-info">
-                            <div class="bracket-team-logo logo-psg">P</div>
-                            <span class="bracket-team-name">PSG</span>
-                        </div>
-                        <span class="bracket-score">1</span>
-                    </div>
-                </div>
-
-                <div class="bracket-match">
-                    <div class="bracket-team">
-                        <div class="bracket-team-info">
-                            <div class="bracket-team-logo logo-arsenal">A</div>
-                            <span class="bracket-team-name">Arsenal</span>
-                        </div>
-                        <span class="bracket-score">1</span>
-                    </div>
-                    <div class="bracket-team bracket-winner">
-                        <div class="bracket-team-info">
-                            <div class="bracket-team-logo logo-juventus">J</div>
-                            <span class="bracket-team-name">Juventus</span>
-                        </div>
-                        <span class="bracket-score">2</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Semi Finals -->
-            <div class="bracket-column round-semi">
-                <div class="bracket-round-title">Bán kết</div>
-
-                <div class="bracket-match">
-                    <div class="bracket-team bracket-winner">
-                        <div class="bracket-team-info">
-                            <div class="bracket-team-logo logo-manu">M</div>
-                            <span class="bracket-team-name">Man United</span>
-                        </div>
-                        <span class="bracket-score">2</span>
-                    </div>
-                    <div class="bracket-team">
-                        <div class="bracket-team-info">
-                            <div class="bracket-team-logo logo-liverpool">L</div>
-                            <span class="bracket-team-name">Liverpool FC</span>
-                        </div>
-                        <span class="bracket-score">1</span>
-                    </div>
-                </div>
-
-                <div class="bracket-match">
-                    <div class="bracket-team bracket-winner">
-                        <div class="bracket-team-info">
-                            <div class="bracket-team-logo logo-dortmund">D</div>
-                            <span class="bracket-team-name">Dortmund</span>
-                        </div>
-                        <span class="bracket-score">3</span>
-                    </div>
-                    <div class="bracket-team">
-                        <div class="bracket-team-info">
-                            <div class="bracket-team-logo logo-juventus">J</div>
-                            <span class="bracket-team-name">Juventus</span>
-                        </div>
-                        <span class="bracket-score">2</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Final -->
-            <div class="bracket-column round-final">
-                <div class="bracket-round-title">Chung kết</div>
-
-                <div class="trophy-final">🏆</div>
-                <div class="bracket-match">
+                <!-- Special styling for Final match -->
+                <div th:if="${#strings.containsIgnoreCase(round.roundName, 'chung kết')}"
+                     th:each="m, mIter : ${round.matches}"
+                     class="bracket-match grand-final"
+                     th:attr="data-match-index=${mIter.index},data-match-key=${iter.index + ':' + mIter.index},data-status=${m.statusLabel},data-finished=${m.statusLabel == 'Hoàn thành'},data-live=${m.statusLabel == 'Đang diễn ra'},data-home-team=${m.homeTeamName},data-away-team=${m.awayTeamName}"
+                     th:classappend="(${m.statusLabel == 'Đang diễn ra'} ? ' match-live' : '') + (${m.statusLabel == 'Hoàn thành'} ? ' match-finished' : '')">
                     <span class="final-badge">GRAND FINAL</span>
-                    <div class="bracket-team bracket-winner">
+                    <span th:if="${m.statusLabel == 'Đang diễn ra'}" class="badge-live">LIVE</span>
+                    <span th:if="${m.decidedByPenalties()}" class="badge-pen">PEN</span>
+                    <div class="bracket-team"
+                         th:attr="data-team-name=${m.homeTeamName}"
+                         th:classappend="(${m.homeScore != null and m.awayScore != null} ? (${m.homeWinner()} ? ' bracket-winner-final' : ' bracket-loser') : '') + (${m.statusLabel == 'Hoàn thành' and m.homeWinner()} ? ' champion-gold' : '')">
                         <div class="bracket-team-info">
-                            <div class="bracket-team-logo logo-manu">M</div>
-                            <span class="bracket-team-name">Man United</span>
+                            <span class="bracket-seed" th:text="${bracket.seedLabels[m.homeTeamName]}">T1</span>
+                            <div class="bracket-team-logo" th:text="${#strings.substring(m.homeTeamName, 0, 1).toUpperCase()}">M</div>
+                            <span class="bracket-team-name" th:text="${m.homeTeamName}">Man United</span>
                         </div>
-                        <span class="bracket-score">1</span>
+                        <span class="bracket-score score-pill" th:classappend="${m.decidedByPenalties() and m.homeWinner()} ? ' pen-winner' : ''" th:text="${m.homeDisplayScore()}">1</span>
                     </div>
-                    <div class="bracket-team">
+                    <div class="bracket-team"
+                         th:attr="data-team-name=${m.awayTeamName}"
+                         th:classappend="(${m.homeScore != null and m.awayScore != null} ? (${m.awayWinner()} ? ' bracket-winner-final' : ' bracket-loser') : '') + (${m.statusLabel == 'Hoàn thành' and m.awayWinner()} ? ' champion-gold' : '')">
                         <div class="bracket-team-info">
-                            <div class="bracket-team-logo logo-dortmund">D</div>
-                            <span class="bracket-team-name">Dortmund</span>
+                            <span class="bracket-seed" th:text="${bracket.seedLabels[m.awayTeamName]}">T2</span>
+                            <div class="bracket-team-logo" th:text="${#strings.substring(m.awayTeamName, 0, 1).toUpperCase()}">D</div>
+                            <span class="bracket-team-name" th:text="${m.awayTeamName}">Dortmund</span>
                         </div>
-                        <span class="bracket-score">0</span>
+                        <span class="bracket-score score-pill" th:classappend="${m.decidedByPenalties() and m.awayWinner()} ? ' pen-winner' : ''" th:text="${m.awayDisplayScore()}">0</span>
+                    </div>
+
+                    <div th:if="${m.statusLabel == 'Hoàn thành'}" class="champion-area">
+                        <div class="confetti" aria-hidden="true">
+                            <span class="confetti__piece"></span><span class="confetti__piece"></span><span class="confetti__piece"></span><span class="confetti__piece"></span><span class="confetti__piece"></span><span class="confetti__piece"></span>
+                            <span class="confetti__piece"></span><span class="confetti__piece"></span><span class="confetti__piece"></span><span class="confetti__piece"></span><span class="confetti__piece"></span><span class="confetti__piece"></span>
+                            <span class="confetti__piece"></span><span class="confetti__piece"></span><span class="confetti__piece"></span><span class="confetti__piece"></span><span class="confetti__piece"></span><span class="confetti__piece"></span>
+                        </div>
+                        <div class="champion-left">
+                            <span class="champion-trophy">🏆</span>
+                            <div>
+                                <div class="champion-label">CHAMPION</div>
+                                <div class="champion-name" th:text="${m.homeWinner() ? m.homeTeamName : m.awayTeamName}">—</div>
+                            </div>
+                        </div>
+                        <div class="champion-right">
+                            <span class="champion-score" th:text="${m.homeDisplayScore() + ' - ' + m.awayDisplayScore()}">—</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        (() => {
+            const container = document.querySelector('.bracket-container');
+            if (!container) return;
+            const svg = container.querySelector('svg.bracket-lines');
+            if (!svg) return;
+
+            const ns = 'http://www.w3.org/2000/svg';
+            const clearSvg = () => {
+                while (svg.firstChild) svg.removeChild(svg.firstChild);
+            };
+            const toLocal = rect => {
+                const base = container.getBoundingClientRect();
+                return {
+                    left: rect.left - base.left + container.scrollLeft,
+                    top: rect.top - base.top + container.scrollTop,
+                    right: rect.right - base.left + container.scrollLeft,
+                    midY: rect.top - base.top + container.scrollTop + rect.height / 2,
+                    midX: rect.left - base.left + container.scrollLeft + rect.width / 2
+                };
+            };
+            const strokeWidth = 2;
+            const drawLine = (x1, y1, x2, y2, opts) => {
+                const line = document.createElementNS(ns, 'line');
+                line.setAttribute('x1', String(x1));
+                line.setAttribute('y1', String(y1));
+                line.setAttribute('x2', String(x2));
+                line.setAttribute('y2', String(y2));
+                line.setAttribute('stroke-width', String(strokeWidth));
+                line.setAttribute('stroke-linecap', 'round');
+                line.classList.add('bracket-connector');
+                if (opts && opts.finished) line.classList.add('connector--finished');
+                else line.classList.add('connector--pending');
+                if (opts && opts.srcKey) line.dataset.srcKey = opts.srcKey;
+                if (opts && opts.dstKey) line.dataset.dstKey = opts.dstKey;
+                svg.appendChild(line);
+            };
+            const drawSingle = (src, dst, opts) => {
+                const midX = (src.right + dst.left) / 2;
+                drawLine(src.right, src.midY, midX, src.midY, opts);
+                drawLine(midX, src.midY, midX, dst.midY, opts);
+                drawLine(midX, dst.midY, dst.left, dst.midY, opts);
+            };
+            const drawPair = (src1, src2, dst, opts) => {
+                const maxRight = Math.max(src1.right, src2.right);
+                const preferredJoinX = maxRight + 34;
+                const joinX = Math.min(preferredJoinX, dst.left - 34);
+                const joinY = (src1.midY + src2.midY) / 2;
+
+                drawLine(src1.right, src1.midY, joinX, src1.midY, opts);
+                drawLine(src2.right, src2.midY, joinX, src2.midY, opts);
+                drawLine(joinX, Math.min(src1.midY, src2.midY), joinX, Math.max(src1.midY, src2.midY), opts);
+                drawLine(joinX, joinY, dst.left, dst.midY, opts);
+            };
+
+            const redraw = () => {
+                const w = Math.max(container.scrollWidth, container.clientWidth);
+                const h = Math.max(container.scrollHeight, container.clientHeight);
+                svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+                svg.style.width = `${w}px`;
+                svg.style.height = `${h}px`;
+                clearSvg();
+
+                const cols = Array.from(container.querySelectorAll('.bracket-column'));
+                const rounds = cols.map(col => Array.from(col.querySelectorAll('.bracket-match')));
+                for (let r = 0; r < rounds.length - 1; r++) {
+                    const curr = rounds[r];
+                    const next = rounds[r + 1];
+                    if (!curr.length || !next.length) continue;
+                    for (let j = 0; j < next.length; j++) {
+                        const targetEl = next[j];
+                        const a1El = curr[j * 2];
+                        const a2El = curr[j * 2 + 1];
+                        if (!targetEl || !a1El) continue;
+
+                        const dst = toLocal(targetEl.getBoundingClientRect());
+                        const src1 = toLocal(a1El.getBoundingClientRect());
+                        const srcKey1 = a1El.dataset.matchKey || '';
+                        const srcKey2 = a2El ? (a2El.dataset.matchKey || '') : '';
+                        const dstKey = targetEl.dataset.matchKey || '';
+                        const finished = a2El ? (a1El.dataset.finished === 'true' && a2El.dataset.finished === 'true') : (a1El.dataset.finished === 'true');
+                        const opts = { finished, srcKey: a2El ? `${srcKey1},${srcKey2}` : srcKey1, dstKey };
+                        if (!a2El) {
+                            drawSingle(src1, dst, opts);
+                            continue;
+                        }
+                        const src2 = toLocal(a2El.getBoundingClientRect());
+                        drawPair(src1, src2, dst, opts);
+                    }
+                }
+            };
+
+            const scheduleRedraw = () => {
+                window.requestAnimationFrame(() => {
+                    redraw();
+                });
+            };
+
+            window.addEventListener('resize', scheduleRedraw);
+            container.addEventListener('scroll', scheduleRedraw);
+            setTimeout(scheduleRedraw, 30);
+            setTimeout(scheduleRedraw, 200);
+
+            const clearHover = () => {
+                container.classList.remove('path-dim');
+                container.querySelectorAll('.bracket-match.is-path').forEach(el => el.classList.remove('is-path'));
+                svg.querySelectorAll('line.bracket-connector.is-path').forEach(el => el.classList.remove('is-path'));
+            };
+            const applyHover = (teamName) => {
+                if (!teamName) return;
+                const matches = Array.from(container.querySelectorAll('.bracket-match'));
+                const matchKeys = new Set();
+                matches.forEach(m => {
+                    if (m.dataset.homeTeam === teamName || m.dataset.awayTeam === teamName) {
+                        m.classList.add('is-path');
+                        if (m.dataset.matchKey) matchKeys.add(m.dataset.matchKey);
+                    }
+                });
+                container.classList.add('path-dim');
+                svg.querySelectorAll('line.bracket-connector').forEach(line => {
+                    const src = (line.dataset.srcKey || '').split(',').filter(Boolean);
+                    const dst = line.dataset.dstKey || '';
+                    const hit = src.some(k => matchKeys.has(k)) || matchKeys.has(dst);
+                    if (hit) line.classList.add('is-path');
+                });
+            };
+
+            container.addEventListener('mouseover', (e) => {
+                const teamEl = e.target.closest('.bracket-team');
+                if (!teamEl) return;
+                const teamName = teamEl.dataset.teamName;
+                if (!teamName) return;
+                clearHover();
+                applyHover(teamName);
+            });
+            container.addEventListener('mouseout', (e) => {
+                if (!e.relatedTarget || !container.contains(e.relatedTarget)) {
+                    clearHover();
+                }
+            });
+        })();
+    </script>
 </div>

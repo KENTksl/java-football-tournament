@@ -12,35 +12,234 @@
     />
     <link rel="stylesheet" th:href="@{/assets/css/user-home.css}" />
   </head>
-  <body>
+  <body class="home-page">
     <header th:replace="~{user/fragments/header :: header('home')}"></header>
 
     <main>
       <section class="hero">
         <div class="container hero-inner">
-          <div>
+          <div class="home-hero__content">
+            <span class="home-kicker">NỀN TẢNG GIẢI ĐẤU</span>
             <h1>NỀN TẢNG TỔ CHỨC GIẢI ĐẤU BÓNG ĐÁ TRỰC TUYẾN</h1>
             <p>
-              Website cung cấp thông tin và nội dung liên quan đến các hoạt động thể thao,
-              giải đấu và sự kiện. Giao diện được thiết kế hiện đại, đơn giản và thân thiện,
-              giúp người dùng dễ dàng theo dõi và tiếp cận các thông tin thể thao cần thiết.
+              Quản lý đội hình, đăng ký giải đấu, theo dõi lịch đấu và kết quả — tất cả trong một trải nghiệm nhanh,
+              rõ ràng và dễ dùng.
             </p>
+            <div class="home-hero__actions">
+              <a class="home-btn home-btn--primary" th:href="@{/dang-ky}">Bắt đầu ngay</a>
+              <a class="home-btn home-btn--ghost" th:href="@{/user/tournament}">Xem giải đấu</a>
+            </div>
+            <div class="home-stats" aria-label="Thống kê nhanh">
+              <div class="home-stat">
+                <div class="home-stat__value">100+</div>
+                <div class="home-stat__label">Giải đấu</div>
+              </div>
+              <div class="home-stat">
+                <div class="home-stat__value">500+</div>
+                <div class="home-stat__label">Đội tham gia</div>
+              </div>
+              <div class="home-stat">
+                <div class="home-stat__value">2K+</div>
+                <div class="home-stat__label">Trận đấu</div>
+              </div>
+            </div>
           </div>
-          <div class="hero-image" aria-hidden="true">
-            <img src="/assets/figma/home-hero.png" alt="" />
+          <div class="hero-image home-hero__media" aria-hidden="true">
+            <img th:src="@{/img/home-hero.jpg}" alt="" />
           </div>
         </div>
       </section>
 
-      <section class="intro">
+      <section class="intro home-section">
         <div class="container">
           <h2>Kết nối cộng đồng yêu thích thể thao</h2>
           <p>
-            Nền tảng được xây dựng nhằm giới thiệu và cập nhật thông tin về các hoạt động thể thao và
-            giải đấu. Người dùng có thể theo dõi tin tức, lịch trình và các nội dung liên quan đến
-            thể thao trong một giao diện trực quan và dễ sử dụng.
+            Nền tảng hỗ trợ bạn từ khâu tạo đội hình, tham gia giải đấu đến việc theo dõi lịch thi đấu và kết quả.
+            Mọi thông tin được trình bày trực quan, dễ đọc trên cả máy tính và điện thoại.
           </p>
-          <div class="label">GIỚI THIỆU NỀN TẢNG</div>
+        </div>
+      </section>
+
+      <section class="home-section home-section--alt" aria-label="Tính năng nổi bật">
+        <div class="container">
+          <div class="home-section__head">
+            <h2 class="home-section__title">Tính năng nổi bật</h2>
+            <p class="home-section__desc">Đầy đủ công cụ cần thiết để bạn tham gia giải đấu một cách chuyên nghiệp.</p>
+          </div>
+          <div class="home-cardGrid">
+            <article class="home-card">
+              <div class="home-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <circle cx="9.5" cy="7" r="3.5" stroke="currentColor" stroke-width="2"/>
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M16.5 3.13a3.5 3.5 0 0 1 0 6.74" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <h3 class="home-card__title">Quản lý đội hình</h3>
+              <p class="home-card__desc">Tạo đội, thêm cầu thủ, cập nhật logo và thông tin nhanh chóng.</p>
+            </article>
+            <article class="home-card">
+              <div class="home-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <h3 class="home-card__title">Đăng ký giải đấu</h3>
+              <p class="home-card__desc">Theo dõi lịch sử đăng ký, trạng thái duyệt và thông tin giải đấu.</p>
+            </article>
+            <article class="home-card">
+              <div class="home-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M8 7V3m8 4V3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+                  <path d="M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M8 14h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <h3 class="home-card__title">Lịch đấu & kết quả</h3>
+              <p class="home-card__desc">Xem lịch thi đấu, kết quả, đối thủ và vòng đấu rõ ràng theo giải.</p>
+            </article>
+            <article class="home-card">
+              <div class="home-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M3 3v18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M7 15l3-3 3 2 5-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <h3 class="home-card__title">Phân tích hiệu suất</h3>
+              <p class="home-card__desc">Tổng hợp thắng/hòa/thua, bàn thắng ghi và thủng lưới theo mùa giải.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="home-section" aria-label="Cách hoạt động">
+        <div class="container">
+          <div class="home-section__head">
+            <h2 class="home-section__title">Cách hoạt động</h2>
+            <p class="home-section__desc">Chỉ 4 bước để bắt đầu tham gia giải đấu.</p>
+          </div>
+          <div class="home-steps">
+            <div class="home-step">
+              <div class="home-step__no">1</div>
+              <div>
+                <div class="home-step__title">Tạo tài khoản</div>
+                <div class="home-step__desc">Đăng ký và hoàn thiện hồ sơ để quản lý đội bóng.</div>
+              </div>
+            </div>
+            <div class="home-step">
+              <div class="home-step__no">2</div>
+              <div>
+                <div class="home-step__title">Tạo đội hình</div>
+                <div class="home-step__desc">Thêm tối đa 10 cầu thủ, cập nhật logo và thông tin đội.</div>
+              </div>
+            </div>
+            <div class="home-step">
+              <div class="home-step__no">3</div>
+              <div>
+                <div class="home-step__title">Chọn giải đấu</div>
+                <div class="home-step__desc">Xem danh sách giải, điều lệ, lịch trình và đăng ký tham gia.</div>
+              </div>
+            </div>
+            <div class="home-step">
+              <div class="home-step__no">4</div>
+              <div>
+                <div class="home-step__title">Theo dõi kết quả</div>
+                <div class="home-step__desc">Cập nhật lịch đấu, kết quả và phân tích hiệu suất theo giải.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="home-section home-section--alt" aria-label="Giải đấu nổi bật">
+        <div class="container">
+          <div class="home-section__head home-section__head--row">
+            <div>
+              <h2 class="home-section__title">Giải đấu nổi bật</h2>
+              <p class="home-section__desc">Khám phá các giải đấu đang mở đăng ký và sắp diễn ra.</p>
+            </div>
+            <a class="home-btn home-btn--primary home-btn--sm" th:href="@{/user/tournament}">Xem tất cả</a>
+          </div>
+
+          <div class="home-tournamentGrid" th:if="${hasFeaturedTournaments}">
+            <article class="home-tournamentCard" th:each="t : ${featuredTournaments}">
+              <div class="home-tournamentCard__media" aria-hidden="true">
+                <img th:if="${t.imageUrl != null and !#strings.isEmpty(t.imageUrl)}" th:src="${t.imageUrl}" alt="" />
+                <img th:unless="${t.imageUrl != null and !#strings.isEmpty(t.imageUrl)}" th:src="@{/img/home-hero.jpg}" alt="" />
+              </div>
+              <div class="home-tournamentCard__body">
+                <div class="home-tournamentCard__title" th:text="${t.name}">Giải đấu</div>
+                <div class="home-tournamentCard__meta">
+                  <span th:text="${t.meta}">---</span>
+                  <span th:if="${t.meta != null and !#strings.isEmpty(t.meta)}"> • </span>
+                  <span th:text="${t.statusLabel}">---</span>
+                </div>
+                <a class="home-btn home-btn--ghost home-btn--sm" th:href="@{/user/tournament}">Xem chi tiết</a>
+              </div>
+            </article>
+          </div>
+
+          <div class="home-empty" th:unless="${hasFeaturedTournaments}">
+            Chưa có giải đấu nào. Vui lòng quay lại sau.
+          </div>
+        </div>
+      </section>
+
+      <section class="home-section" aria-label="Tin tức mới nhất">
+        <div class="container">
+          <div class="home-section__head home-section__head--row">
+            <div>
+              <h2 class="home-section__title">Tin tức mới nhất</h2>
+              <p class="home-section__desc">Cập nhật nhanh tin bóng đá và sự kiện nổi bật.</p>
+            </div>
+            <a class="home-btn home-btn--ghost home-btn--sm" th:href="@{/tin-tuc}">Xem tin tức</a>
+          </div>
+
+          <div class="home-newsGrid">
+            <a class="home-newsCard" th:href="@{/tin-tuc}">
+              <div class="home-newsCard__media" aria-hidden="true">
+                <img th:src="@{/assets/figma/news-1.png}" alt="" />
+              </div>
+              <div class="home-newsCard__body">
+                <div class="home-newsCard__title">Những trận cầu đáng chờ đợi cuối tuần</div>
+                <div class="home-newsCard__desc">Tổng hợp các cặp đấu nổi bật và điểm nhấn chiến thuật.</div>
+              </div>
+            </a>
+            <a class="home-newsCard" th:href="@{/tin-tuc}">
+              <div class="home-newsCard__media" aria-hidden="true">
+                <img th:src="@{/assets/figma/news-2.png}" alt="" />
+              </div>
+              <div class="home-newsCard__body">
+                <div class="home-newsCard__title">Bí quyết chuẩn bị đội hình thi đấu</div>
+                <div class="home-newsCard__desc">Gợi ý cách phân bổ vị trí và tối ưu thể lực trước giải.</div>
+              </div>
+            </a>
+            <a class="home-newsCard" th:href="@{/tin-tuc}">
+              <div class="home-newsCard__media" aria-hidden="true">
+                <img th:src="@{/assets/figma/news-3.png}" alt="" />
+              </div>
+              <div class="home-newsCard__body">
+                <div class="home-newsCard__title">Cập nhật xu hướng bóng đá phong trào</div>
+                <div class="home-newsCard__desc">Những điểm mới về sân bãi, luật chơi và tổ chức giải.</div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="home-cta" aria-label="Kêu gọi hành động">
+        <div class="container home-cta__inner">
+          <div>
+            <h2 class="home-cta__title">Sẵn sàng tham gia giải đấu tiếp theo?</h2>
+            <p class="home-cta__desc">Tạo đội hình, đăng ký giải và theo dõi kết quả ngay hôm nay.</p>
+          </div>
+          <div class="home-cta__actions">
+            <a class="home-btn home-btn--primary" th:href="@{/dang-ky}">Tạo tài khoản</a>
+            <a class="home-btn home-btn--ghost" th:href="@{/user/tournament}">Khám phá giải đấu</a>
+          </div>
         </div>
       </section>
     </main>

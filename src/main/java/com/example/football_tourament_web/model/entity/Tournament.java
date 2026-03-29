@@ -1,10 +1,12 @@
 package com.example.football_tourament_web.model.entity;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.football_tourament_web.model.enums.PitchType;
 import com.example.football_tourament_web.model.enums.TournamentMode;
 import com.example.football_tourament_web.model.enums.TournamentStatus;
 
@@ -40,7 +42,12 @@ public class Tournament {
 	@Column(nullable = false)
 	private TournamentMode mode = TournamentMode.KNOCKOUT;
 
+	@Enumerated(EnumType.STRING)
+	private PitchType pitchType = PitchType.PITCH_7;
+
 	private Integer teamLimit;
+
+	private String imageUrl;
 
 	@Column(columnDefinition = "TEXT")
 	private String description;
@@ -52,6 +59,14 @@ public class Tournament {
 	private LocalDate startDate;
 
 	private LocalDate endDate;
+
+	@Column(nullable = false, precision = 19, scale = 2)
+	private BigDecimal registrationFee = BigDecimal.ZERO;
+
+	@Column(nullable = false, precision = 19, scale = 2)
+	private BigDecimal prizePool = BigDecimal.ZERO;
+
+	private Instant prizeDistributedAt;
 
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
@@ -116,12 +131,28 @@ public class Tournament {
 		this.mode = mode;
 	}
 
+	public PitchType getPitchType() {
+		return pitchType;
+	}
+
+	public void setPitchType(PitchType pitchType) {
+		this.pitchType = pitchType;
+	}
+
 	public Integer getTeamLimit() {
 		return teamLimit;
 	}
 
 	public void setTeamLimit(Integer teamLimit) {
 		this.teamLimit = teamLimit;
+	}
+
+	public String getImageUrl() {
+		return imageUrl;
+	}
+
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
 	}
 
 	public String getDescription() {
@@ -154,6 +185,30 @@ public class Tournament {
 
 	public void setEndDate(LocalDate endDate) {
 		this.endDate = endDate;
+	}
+
+	public BigDecimal getRegistrationFee() {
+		return registrationFee;
+	}
+
+	public void setRegistrationFee(BigDecimal registrationFee) {
+		this.registrationFee = registrationFee == null ? BigDecimal.ZERO : registrationFee;
+	}
+
+	public BigDecimal getPrizePool() {
+		return prizePool;
+	}
+
+	public void setPrizePool(BigDecimal prizePool) {
+		this.prizePool = prizePool == null ? BigDecimal.ZERO : prizePool;
+	}
+
+	public Instant getPrizeDistributedAt() {
+		return prizeDistributedAt;
+	}
+
+	public void setPrizeDistributedAt(Instant prizeDistributedAt) {
+		this.prizeDistributedAt = prizeDistributedAt;
 	}
 
 	public Instant getCreatedAt() {

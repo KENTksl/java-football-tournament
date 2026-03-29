@@ -258,48 +258,150 @@
             opacity: 0.65;
         }
 
-        /* Table Specific Styles from image */
-        .section-title {
-            font-size: 32px;
-            font-weight: 600;
-            margin-bottom: 24px;
-            color: #111827;
+        .page {
+            display: grid;
+            gap: 18px;
         }
 
-        .tabs {
+        .page__header {
             display: flex;
-            gap: 0;
-            margin-bottom: 20px;
-            border-radius: 12px;
-            overflow: hidden;
-            width: fit-content;
-            border: 1px solid #000;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
         }
 
-        .tab {
-            padding: 10px 24px;
-            background: #fff;
-            border: none;
-            border-right: 1px solid #000;
+        .page__title {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 0.2px;
+        }
+
+        .page__subtitle {
+            margin: 6px 0 0;
+            font-size: 14px;
             font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            color: #111827;
+            color: var(--muted);
         }
 
-        .tab:last-child {
-            border-right: none;
+        .page__headerRight {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }
 
-        .tab--active {
+        .invoice-tabs {
+            display: flex;
+            gap: 12px;
+            width: fit-content;
+            flex-wrap: wrap;
+        }
+
+        .invoice-tab {
+            padding: 10px 20px;
             background: #fff;
-            color: #111827;
-            text-decoration: underline;
+            border: 1px solid var(--border);
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .invoice-tab:hover {
+            border-color: var(--brand);
+            color: var(--brand);
+            background: rgba(0, 156, 255, 0.05);
+        }
+
+        .invoice-tab--active {
+            background: var(--brand) !important;
+            color: #fff !important;
+            border-color: var(--brand) !important;
+        }
+
+        .invoice-tab--active:hover {
+            background: #008ae6 !important;
+            color: #fff !important;
+        }
+
+        .invoice-tab--status { 
+            position: relative; 
+            padding-bottom: 10px;
+            margin-bottom: -10px;
+        }
+        
+        .status-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+            display: none;
+            flex-direction: column;
+            min-width: 240px;
+            z-index: 100;
+            overflow: hidden;
+            margin-top: 2px;
+        }
+        
+        .invoice-tab--status:hover .status-dropdown {
+            display: flex;
+        }
+        
+        .status-option {
+            padding: 10px 16px;
+            text-decoration: none;
+            color: var(--text);
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+        
+        .status-option:hover {
+            background: var(--surface);
+            color: var(--brand);
+        }
+
+        .invoice-tab svg {
+            width: 14px !important;
+            height: 14px !important;
+        }
+
+        /* Update search styling to match */
+        .search {
+            height: 44px;
+            width: 320px;
+            border-radius: 9999px;
+            background: #fff;
+            border: 1px solid rgba(17, 24, 39, 0.10);
+            padding: 0 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .search input {
+            font-size: 14px;
+            border: 0;
+            outline: none;
+            background: transparent;
+            width: 100%;
+            color: var(--text);
+            font-weight: 600;
         }
 
         .table-container {
-            border: 2px solid #000;
-            border-radius: 0;
+            border: 1px solid rgba(17, 24, 39, 0.08);
+            border-radius: 16px;
             overflow: hidden;
             background: #fff;
         }
@@ -310,17 +412,22 @@
         }
 
         .data-table th, .data-table td {
-            border: 1px solid #000;
-            padding: 16px;
-            text-align: center;
-            font-size: 16px;
+            border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 14px;
             font-weight: 600;
-            color: #000;
+            color: var(--text);
         }
 
         .data-table th {
-            background: #fff;
-            font-weight: 700;
+            background: var(--surface);
+            font-weight: 800;
+            border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+        }
+        
+        .data-table tbody tr:hover td {
+            background: rgba(243, 246, 249, 0.75);
         }
 
         .badge {
@@ -344,18 +451,65 @@
             background: #fbc02d;
             color: #000;
         }
+        .badge--rejected {
+            background: #c62828;
+            color: #fff;
+        }
 
         .btn-detail {
-            background: #fff;
-            border: 1.5px solid #000;
-            border-radius: 20px;
-            padding: 6px 20px;
+            background: rgba(0, 156, 255, 0.10);
+            border: 1px solid rgba(0, 156, 255, 0.35);
+            border-radius: 9999px;
+            padding: 8px 14px;
             font-weight: 700;
-            font-size: 14px;
+            font-size: 13px;
             cursor: pointer;
             text-decoration: none;
-            color: inherit;
+            color: #0074be;
             display: inline-block;
+        }
+        
+        .btn-detail:hover {
+            background: rgba(0, 156, 255, 0.16);
+            border-color: rgba(0, 156, 255, 0.5);
+        }
+
+        .action-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-status {
+            border: 1px solid #000;
+            background: #fff;
+            border-radius: 16px;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-status--approve {
+            border-color: #2e7d32;
+            color: #2e7d32;
+        }
+
+        .btn-status--reject {
+            border-color: #c62828;
+            color: #c62828;
+        }
+
+        .flash-message {
+            margin-bottom: 12px;
+            padding: 10px 12px;
+            border: 1px solid #9ec5fe;
+            border-radius: 8px;
+            background: #eef4ff;
+            font-weight: 600;
+            color: #12418f;
         }
 
         /* Pagination Styles */
@@ -375,18 +529,35 @@
         .page-btn {
             width: 36px;
             height: 36px;
-            border: 1px solid #000;
+            border: 1px solid var(--border);
+            border-radius: 4px;
             background: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            font-size: 16px;
+            font-weight: 600;
+            font-size: 14px;
             cursor: pointer;
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover {
+            border-color: var(--brand);
+            color: var(--brand);
         }
 
         .page-btn--active {
-            background: #fff;
+            background: var(--brand);
+            color: #fff !important;
+            border-color: var(--brand);
+        }
+
+        .page-btn--disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
         }
 
         .arrow-btn {
@@ -417,6 +588,8 @@
         @media (max-width: 900px) {
             .sidebar { display: none; }
             .content { padding: 18px; }
+            .page__header { flex-direction: column; align-items: stretch; }
+            .page__headerRight { justify-content: flex-start; }
             .search { width: 100%; }
         }
     </style>
@@ -428,119 +601,114 @@
     <main class="content">
         <header th:replace="~{admin/fragments_admin/header :: header}"></header>
 
-        <!-- Main Content: Team Management Table -->
-        <h1 class="section-title">Danh Sách Hồ Sơ Đội Tuyển</h1>
+        <section class="page" aria-label="Quản lý hồ sơ đội tuyển">
+            <div class="page__header">
+                <div>
+                    <h1 class="page__title">Danh sách hồ sơ đội tuyển</h1>
+                    <p class="page__subtitle">Theo dõi và xét duyệt hồ sơ đăng ký đội theo giải đấu</p>
+                </div>
+                <div class="page__headerRight">
+                    <div class="invoice-tab invoice-tab--status" th:classappend="${selectedTournamentId != null} ? 'invoice-tab--active' : ''">
+                        <span th:with="selectedTournament=${tournaments.?[id == __${selectedTournamentId}__]}"
+                              th:text="${selectedTournament != null and !selectedTournament.isEmpty() ? selectedTournament[0].name : 'Chọn giải đấu'}">Giải đấu</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                        <div class="status-dropdown">
+                            <a th:each="t : ${tournaments}"
+                               th:href="@{/admin/team-management(tournamentId=${t.id}, status=${selectedStatus}, search=${currentSearch})}"
+                               class="status-option" th:text="${t.name}">Tên giải</a>
+                        </div>
+                    </div>
 
-        <div class="tabs">
-            <button class="tab tab--active">Tất cả</button>
-            <button class="tab">Chờ duyệt</button>
-            <button class="tab">Đã duyệt</button>
-            <button class="tab">Đã hủy</button>
-        </div>
-
-        <div class="table-container">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Ngày nộp</th>
-                        <th>Tên đội</th>
-                        <th>Người đại diện</th>
-                        <th>SĐT</th>
-                        <th>Số thành viên</th>
-                        <th>Trạng thái</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>8/1/2026</td>
-                        <td>FC Test 196267</td>
-                        <td>Nguyen Van B</td>
-                        <td>0901234567</td>
-                        <td>6</td>
-                        <td><span class="badge badge--approved">Đã duyệt</span></td>
-                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
-                    </tr>
-                    <tr>
-                        <td>8/1/2026</td>
-                        <td>FC Test 196093</td>
-                        <td>Nguyen Van C</td>
-                        <td>0982219370</td>
-                        <td>6</td>
-                        <td><span class="badge badge--pending">Chờ duyệt</span></td>
-                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
-                    </tr>
-                    <tr>
-                        <td>8/1/2026</td>
-                        <td>FC Test 195891</td>
-                        <td>Nguyen Van D</td>
-                        <td>0982219370</td>
-                        <td>6</td>
-                        <td><span class="badge badge--pending">Chờ duyệt</span></td>
-                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
-                    </tr>
-                    <tr>
-                        <td>8/1/2026</td>
-                        <td>FC Test 159841</td>
-                        <td>Nguyen Van T</td>
-                        <td>0982219370</td>
-                        <td>6</td>
-                        <td><span class="badge badge--approved">Đã duyệt</span></td>
-                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
-                    </tr>
-                    <tr>
-                        <td>8/1/2026</td>
-                        <td>FC Test 156940</td>
-                        <td>Nguyen Van E</td>
-                        <td>0982219370</td>
-                        <td>6</td>
-                        <td><span class="badge badge--approved">Đã duyệt</span></td>
-                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
-                    </tr>
-                    <tr>
-                        <td>8/1/2026</td>
-                        <td>22DTHC3</td>
-                        <td>Nhan</td>
-                        <td>0982219370</td>
-                        <td>6</td>
-                        <td><span class="badge badge--approved">Đã duyệt</span></td>
-                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
-                    </tr>
-                    <tr>
-                        <td>8/1/2026</td>
-                        <td>22DTHC5</td>
-                        <td>Nguyen Van Z</td>
-                        <td>0982219370</td>
-                        <td>6</td>
-                        <td><span class="badge badge--approved">Đã duyệt</span></td>
-                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
-                    </tr>
-                    <tr>
-                        <td>8/1/2026</td>
-                        <td>22DTHC6</td>
-                        <td>Nguyen Van M</td>
-                        <td>0982219370</td>
-                        <td>6</td>
-                        <td><span class="badge badge--approved">Đã duyệt</span></td>
-                        <td><a th:href="@{/admin/team-detail}" class="btn-detail">Chi tiết</a></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="pagination-container">
-            <button class="arrow-btn"><div class="triangle-left"></div></button>
-            <div class="page-numbers">
-                <button class="page-btn page-btn--active">1</button>
-                <button class="page-btn">2</button>
-                <button class="page-btn">3</button>
-                <button class="page-btn">4</button>
-                <button class="page-btn">5</button>
-                <button class="page-btn">6</button>
-                <button class="page-btn">...</button>
+                    <form th:action="@{/admin/team-management}" method="get" class="search">
+                        <input type="hidden" name="tournamentId" th:value="${selectedTournamentId}">
+                        <input type="hidden" name="status" th:value="${selectedStatus}">
+                        <button type="submit" style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center;">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width: 18px; height: 18px; color: var(--muted-2);">
+                                <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2"/>
+                                <path d="M16.3 16.3 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                        <input type="text" name="search" th:value="${currentSearch}" placeholder="Tìm tên đội, người đại diện..." aria-label="Tìm kiếm">
+                        <a th:if="${currentSearch != null and !currentSearch.isEmpty()}"
+                           th:href="@{/admin/team-management(tournamentId=${selectedTournamentId}, status=${selectedStatus}, search='')}"
+                           style="text-decoration: none; color: var(--muted-2); font-size: 18px; padding: 0 6px;">&times;</a>
+                    </form>
+                </div>
             </div>
-            <button class="arrow-btn"><div class="triangle-right"></div></button>
-        </div>
+
+            <div class="invoice-tabs">
+                <a class="invoice-tab" th:classappend="${selectedStatus == 'ALL' ? ' invoice-tab--active' : ''}"
+                   th:href="@{/admin/team-management(tournamentId=${selectedTournamentId},status='ALL', search=${currentSearch})}">Tất cả</a>
+
+                <a class="invoice-tab" th:classappend="${selectedStatus == 'PENDING' ? ' invoice-tab--active' : ''}"
+                   th:href="@{/admin/team-management(tournamentId=${selectedTournamentId},status='PENDING', search=${currentSearch})}">Chờ duyệt</a>
+
+                <a class="invoice-tab" th:classappend="${selectedStatus == 'APPROVED' ? ' invoice-tab--active' : ''}"
+                   th:href="@{/admin/team-management(tournamentId=${selectedTournamentId},status='APPROVED', search=${currentSearch})}">Đã duyệt</a>
+
+                <a class="invoice-tab" th:classappend="${selectedStatus == 'REJECTED' ? ' invoice-tab--active' : ''}"
+                   th:href="@{/admin/team-management(tournamentId=${selectedTournamentId},status='REJECTED', search=${currentSearch})}">Đã hủy</a>
+            </div>
+
+            <div class="flash-message" th:if="${teamManageMessage != null}" th:text="${teamManageMessage}">Thông báo</div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 140px;">Ngày nộp</th>
+                            <th>Tên đội</th>
+                            <th>Người đại diện</th>
+                            <th style="width: 140px;">SĐT</th>
+                            <th style="width: 140px;">Số thành viên</th>
+                            <th style="width: 160px;">Trạng thái</th>
+                            <th style="width: 140px;">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${registrationRows == null or #lists.isEmpty(registrationRows)}">
+                            <td colspan="7" style="color: var(--muted); font-weight: 700;">Chưa có hồ sơ đăng ký trong giải đấu này</td>
+                        </tr>
+                        <tr th:each="row : ${registrationRows}">
+                            <td th:text="${row.submittedDateText}">08/01/2026</td>
+                            <td th:text="${row.teamName}">Tên đội</td>
+                            <td th:text="${row.representativeName}">Đại diện</td>
+                            <td th:text="${row.phone}">0900000000</td>
+                            <td th:text="${row.memberCount}">10</td>
+                            <td><span class="badge" th:classappend="${' ' + row.statusClass}" th:text="${row.statusLabel}">Chờ duyệt</span></td>
+                            <td>
+                                <div class="action-row">
+                                    <a th:href="@{/admin/team-detail(id=${row.registrationId})}" class="btn-detail">Chi tiết</a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination-container" th:if="${totalPages > 1}">
+                <a class="arrow-btn" th:href="@{/admin/team-management(tournamentId=${selectedTournamentId}, status=${selectedStatus}, search=${currentSearch}, page=${currentPage - 1})}"
+                   th:classappend="${currentPage == 1} ? 'page-btn--disabled' : ''">
+                    <div class="triangle-left"></div>
+                </a>
+
+                <div class="page-numbers">
+                    <a th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
+                       th:href="@{/admin/team-management(tournamentId=${selectedTournamentId}, status=${selectedStatus}, search=${currentSearch}, page=${pageNum})}"
+                       class="page-btn"
+                       th:classappend="${pageNum == currentPage} ? 'page-btn--active' : ''"
+                       th:text="${pageNum}">1</a>
+                </div>
+
+                <a class="arrow-btn" th:href="@{/admin/team-management(tournamentId=${selectedTournamentId}, status=${selectedStatus}, search=${currentSearch}, page=${currentPage + 1})}"
+                   th:classappend="${currentPage == totalPages} ? 'page-btn--disabled' : ''">
+                    <div class="triangle-right"></div>
+                </a>
+            </div>
+        </section>
+
         <footer th:replace="~{admin/fragments_admin/footer :: footer}"></footer>
     </main>
 </div>

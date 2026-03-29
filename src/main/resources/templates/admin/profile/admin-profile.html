@@ -482,13 +482,18 @@
                     <div class="profile-avatar-col">
                         <span>Ảnh đại diện</span>
                         <div class="profile-avatar-circle">
-                            <img id="avatar-preview" th:src="${admin != null && admin.avatar != null} ? @{${admin.avatar}} : @{/assets/figma/avatar.jpg}" alt="">
+                            <img id="avatar-preview" th:src="${admin != null && admin.avatar != null} ? @{${admin.avatar}} : @{/img/figma-avatar.png}" alt="">
                         </div>
                         <button type="button" class="btn-change-avatar" onclick="document.getElementById('avatar-file').click()">Đổi ảnh đại diện</button>
                         <input type="file" id="avatar-file" name="avatarFile" style="display: none;" accept="image/*" onchange="previewImage(this)">
                     </div>
 
                     <div class="profile-form-col">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" th:value="${admin != null ? admin.email : ''}" readonly style="background-color: #f0f0f0; cursor: not-allowed;">
+                        </div>
+
                         <div class="form-group">
                             <label for="fullName">Họ và tên</label>
                             <input type="text" id="fullName" name="fullName" th:value="${admin != null ? admin.fullName : ''}">

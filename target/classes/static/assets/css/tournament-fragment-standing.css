@@ -1,15 +1,12 @@
 .standing-section {
-    padding: 24px 0;
-    background: #fff;
-    border-radius: 12px;
-    margin-top: 8px;
+    padding: 14px 0 0;
 }
 
 .standing-table-container {
     overflow-x: auto;
-    border: 1px solid #eee;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 16px;
+    background: #ffffff;
 }
 
 .standing-table {
@@ -20,14 +17,14 @@
 }
 
 .standing-table thead {
-    background: #171717;
-    color: #fff;
+    background: rgba(0, 0, 0, 0.03);
+    color: rgba(0, 0, 0, 0.7);
 }
 
 .standing-table th {
     padding: 16px;
     text-align: center;
-    font-weight: 600;
+    font-weight: 900;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-size: 12px;
@@ -42,6 +39,7 @@
     border-bottom: 1px solid #f0f0f0;
     text-align: center;
     vertical-align: middle;
+    font-weight: 800;
 }
 
 .standing-table tr:last-child td {
@@ -49,7 +47,7 @@
 }
 
 .standing-table tr:hover {
-    background-color: #fcfcfc;
+    background-color: rgba(0, 0, 0, 0.02);
 }
 
 .rank-cell {
@@ -86,8 +84,8 @@
 
 .pts-cell {
     font-weight: 700;
-    color: #e8b931;
-    background: rgba(232, 185, 49, 0.05);
+    color: rgba(0, 0, 0, 0.88);
+    background: rgba(255, 170, 23, 0.14);
 }
 
 .form-cell {
@@ -121,5 +119,5 @@
 }
 
 .rank-top {
-    border-left: 4px solid #e8b931;
+    border-left: 4px solid var(--brand);
 }

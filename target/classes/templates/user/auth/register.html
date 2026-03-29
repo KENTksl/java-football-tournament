@@ -16,7 +16,7 @@
   <body>
     <header th:replace="~{user/fragments/header :: header('login')}"></header>
     <main>
-      <section class="profile-hero">
+      <section class="banner">
         <div class="container">
           <h1>ĐĂNG KÝ</h1>
           <p class="crumb">Home / REGISTER</p>
@@ -26,15 +26,29 @@
       <section class="auth-page">
         <div class="container auth-grid">
           <section class="profile-card auth-side" aria-label="Giới thiệu">
-            <h2>SPORT TOURNAMENT</h2>
+            <div class="auth-side__kicker">SPORT TOURNAMENT</div>
+            <h2>Tạo tài khoản</h2>
             <p class="lead">
               Tạo tài khoản để tham gia giải đấu, quản lý đội và theo dõi lịch sử hoạt động.
             </p>
+            <div class="auth-perks" aria-label="Lợi ích">
+              <div class="auth-perk">Tạo tối đa 2 đội cho mỗi tài khoản</div>
+              <div class="auth-perk">Đăng ký giải đấu và theo dõi trạng thái</div>
+              <div class="auth-perk">Lưu lịch sử giao dịch & số dư</div>
+            </div>
             <div class="auth-info" aria-label="Hỗ trợ">
-              <img src="/assets/figma/icon-phone.svg" alt="" />
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M22 16.9v3a2 2 0 0 1-2.2 2c-9.6-.9-17.2-8.5-18.1-18.1A2 2 0 0 1 3.7 1h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.6a2 2 0 0 1-.5 2.1L7.8 8.4a16 16 0 0 0 7.8 7.8l1-1a2 2 0 0 1 2.1-.5c.8.3 1.7.5 2.6.6A2 2 0 0 1 22 16.9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
               <div>0123456789</div>
-              <img src="/assets/figma/icon-mail.svg" alt="" />
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 6h16v12H4V6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                <path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
               <div>sporttournament@example.com</div>
+            </div>
+            <div class="auth-side__media" aria-hidden="true">
+              <img th:src="@{/img/home-hero.jpg}" alt="" />
             </div>
           </section>
 
@@ -84,7 +98,7 @@
                 </div>
                 <div class="auth-row" aria-label="Điều khoản">
                   <label for="terms">
-                    <input id="terms" th:field="*{terms}" type="checkbox" />
+                  <input id="terms" th:field="*{acceptTerms}" type="checkbox" />
                     <span>Đồng ý điều khoản</span>
                   </label>
                   <span></span>

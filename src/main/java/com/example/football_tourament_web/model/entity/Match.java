@@ -46,9 +46,28 @@ public class Match {
 
 	private LocalDateTime scheduledAt;
 
+	@Column(columnDefinition = "TEXT")
+	private String location;
+
+	@Column(columnDefinition = "TEXT")
+	private String lineupJson;
+
+	@Column(columnDefinition = "TEXT")
+	private String eventsJson;
+
+	@Column(columnDefinition = "TEXT")
+	private String liveStreamUrl;
+
+	@Column(columnDefinition = "TEXT")
+	private String liveArchiveUrl;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private MatchStatus status = MatchStatus.SCHEDULED;
+
+	// Penalty shootout scores for knockout ties
+	private Integer homePenalty;
+	private Integer awayPenalty;
 
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
@@ -137,12 +156,68 @@ public class Match {
 		this.scheduledAt = scheduledAt;
 	}
 
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
+	public String getLineupJson() {
+		return lineupJson;
+	}
+
+	public void setLineupJson(String lineupJson) {
+		this.lineupJson = lineupJson;
+	}
+
+	public String getEventsJson() {
+		return eventsJson;
+	}
+
+	public void setEventsJson(String eventsJson) {
+		this.eventsJson = eventsJson;
+	}
+
+	public String getLiveStreamUrl() {
+		return liveStreamUrl;
+	}
+
+	public void setLiveStreamUrl(String liveStreamUrl) {
+		this.liveStreamUrl = liveStreamUrl;
+	}
+
+	public String getLiveArchiveUrl() {
+		return liveArchiveUrl;
+	}
+
+	public void setLiveArchiveUrl(String liveArchiveUrl) {
+		this.liveArchiveUrl = liveArchiveUrl;
+	}
+
 	public MatchStatus getStatus() {
 		return status;
 	}
 
 	public void setStatus(MatchStatus status) {
 		this.status = status;
+	}
+
+	public Integer getHomePenalty() {
+		return homePenalty;
+	}
+
+	public void setHomePenalty(Integer homePenalty) {
+		this.homePenalty = homePenalty;
+	}
+
+	public Integer getAwayPenalty() {
+		return awayPenalty;
+	}
+
+	public void setAwayPenalty(Integer awayPenalty) {
+		this.awayPenalty = awayPenalty;
 	}
 }
 

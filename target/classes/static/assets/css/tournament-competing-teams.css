@@ -1,4 +1,4 @@
-﻿:root {
+:root {
             --bg: #ffffff;
             --text: #1e1e1e;
             --surface: #f3f3f3;
@@ -115,6 +115,11 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
+        }
+        .tournament-logo__img {
+            width: 110px;
+            height: 110px;
+            object-fit: contain;
         }
         .club-logo-svg { width: 110px; height: 110px; }
         .tournament-details { padding-top: 4px; }

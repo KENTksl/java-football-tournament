@@ -1,6 +1,7 @@
 package com.example.football_tourament_web.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -8,12 +9,70 @@ import com.example.football_tourament_web.model.entity.Match;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 public interface MatchRepository extends JpaRepository<Match, Long> {
 	List<Match> findByTournamentIdOrderByScheduledAtAsc(Long tournamentId);
 
-	@Query("SELECT COUNT(m) FROM Match m WHERE m.scheduledAt >= :start AND m.scheduledAt < :end")
-	long countMatchesByScheduledAtBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+	long countByTournamentId(Long tournamentId);
+
+	@Query("""
+			select m
+			from Match m
+			join fetch m.tournament t
+			join fetch m.homeTeam ht
+			join fetch m.awayTeam at
+			where t.id = :tournamentId
+			order by case when m.scheduledAt is null then 1 else 0 end asc, m.scheduledAt asc, m.id asc
+			""")
+	List<Match> findByTournamentIdWithDetails(@Param("tournamentId") Long tournamentId);
+
+	@Query("""
+			select m
+			from Match m
+			join fetch m.tournament t
+			join fetch m.homeTeam ht
+			join fetch m.awayTeam at
+			where m.id = :matchId
+			""")
+	Optional<Match> findByIdWithDetails(@Param("matchId") Long matchId);
+
+	@Query("""
+			SELECT COUNT(m)
+			FROM Match m
+			WHERE (m.scheduledAt >= :start AND m.scheduledAt < :end)
+			   OR (m.scheduledAt IS NULL AND m.createdAt >= :startInstant AND m.createdAt < :endInstant)
+			""")
+	long countMatchesByScheduleOrCreation(
+			@Param("start") LocalDateTime start,
+			@Param("end") LocalDateTime end,
+			@Param("startInstant") Instant startInstant,
+			@Param("endInstant") Instant endInstant);
+
+	@Query("""
+			select m
+			from Match m
+			join fetch m.tournament t
+			join fetch m.homeTeam ht
+			join fetch m.awayTeam at
+			where ht.id = :teamId or at.id = :teamId
+			order by m.scheduledAt asc
+			""")
+	List<Match> findByTeamIdWithDetails(@Param("teamId") Long teamId);
+
+	@Query("""
+			select m
+			from Match m
+			join fetch m.tournament t
+			join fetch m.homeTeam ht
+			join fetch m.awayTeam at
+			where (ht.id = :teamId or at.id = :teamId) and t.id = :tournamentId
+			order by m.scheduledAt asc
+			""")
+	List<Match> findByTeamIdAndTournamentIdWithDetails(@Param("teamId") Long teamId, @Param("tournamentId") Long tournamentId);
+
+	@Query("SELECT m FROM Match m WHERE (m.homeTeam.id = :team1Id AND m.awayTeam.id = :team2Id) OR (m.homeTeam.id = :team2Id AND m.awayTeam.id = :team1Id)")
+	List<Match> findMatchesBetweenTeams(@Param("team1Id") Long team1Id, @Param("team2Id") Long team2Id);
 }
 

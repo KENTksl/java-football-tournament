@@ -23,27 +23,31 @@
         </div>
       </section>
 
-      <section class="news">
+      <section class="home-section">
         <div class="container">
-          <p th:if="${!hasNews}">Không tải được tin tức từ CBS Sports. Vui lòng thử lại sau.</p>
+          <div class="home-section__head home-section__head--row">
+            <div>
+              <h2 class="home-section__title">Tin tức mới nhất</h2>
+              <p class="home-section__desc">Nguồn: CBS Sports</p>
+            </div>
+          </div>
 
-          <div class="news-grid" th:if="${hasNews}">
-            <article class="card" th:each="item : ${newsItems}">
-              <a th:href="${item.link}" target="_blank" rel="noopener noreferrer">
-                <img
-                  th:src="${item.imageUrl} ?: '/assets/figma/news-1.png'"
-                  th:alt="${item.title}"
-                />
-              </a>
-              <div class="content">
-                <h2 class="title">
-                  <a th:href="${item.link}" target="_blank" rel="noopener noreferrer" th:text="${item.title}">
-                    Tiêu đề tin tức
-                  </a>
-                </h2>
-                <p class="desc" th:text="${item.description}">Nội dung mô tả ngắn</p>
+          <div class="home-empty" th:if="${!hasNews}">
+            Không tải được tin tức từ CBS Sports. Vui lòng thử lại sau.
+          </div>
+
+          <div class="news-page__grid" th:if="${hasNews}">
+            <a class="news-page__card" th:each="item : ${newsItems}" th:href="${item.link}" target="_blank" rel="noopener noreferrer">
+              <div class="news-page__media" aria-hidden="true">
+                <img th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}" th:src="${item.imageUrl}" alt="" />
+                <img th:unless="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}" th:src="@{/assets/figma/news-1.png}" alt="" />
               </div>
-            </article>
+              <div class="news-page__body">
+                <div class="news-page__title" th:text="${item.title}">Tiêu đề tin tức</div>
+                <div class="news-page__desc" th:text="${item.description}">Nội dung mô tả ngắn</div>
+                <div class="news-page__more">Đọc tiếp</div>
+              </div>
+            </a>
           </div>
 
           <nav class="pagination" aria-label="Phân trang" th:if="${totalPages > 1}">

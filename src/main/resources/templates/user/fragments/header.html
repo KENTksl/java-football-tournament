@@ -4,7 +4,12 @@
     <th:block th:fragment="header(active)">
       <header class="header">
         <div class="container header-inner">
-          <div class="brand">SPORT TOURNAMENT</div>
+          <a class="brand" th:href="@{/}" aria-label="Sport Tournament">
+            <span class="brand__logoWrap" aria-hidden="true">
+              <img class="brand__logo" th:src="@{/assets/logo/logo-signature.png}" alt="" />
+            </span>
+            <span class="brand__text">SPORT TOURNAMENT</span>
+          </a>
           <nav class="nav" aria-label="Điều hướng chính">
             <a th:href="@{/}" th:attr="aria-current=${active == 'home'} ? 'page' : null">TRANG CHỦ</a>
             <a th:href="@{/user/tournament}" th:attr="aria-current=${active == 'tournament'} ? 'page' : null">GIẢI ĐẤU</a>
@@ -24,7 +29,7 @@
                 <img
                   th:unless="${currentUserAvatarUrl != null and !#strings.isEmpty(currentUserAvatarUrl)}"
                   class="user-avatar__img"
-                  th:src="@{/assets/figma/avatar.jpg}"
+                  th:src="@{/img/figma-avatar.png}"
                   alt="Avatar"
                 />
               </button>
@@ -62,10 +67,34 @@
           </nav>
         </div>
       </header>
+      <div class="page-loader" data-page-loader aria-hidden="true">
+        <div class="page-loader__box">
+          <div class="page-loader__spinner" aria-hidden="true"></div>
+          <div class="page-loader__text">Đang tải...</div>
+        </div>
+      </div>
       <script>
         (() => {
           if (window.__userMenuInit) return;
           window.__userMenuInit = true;
+
+          const ensureFavicon = () => {
+            const href = "/assets/logo/logo-signature.png?v=2";
+            const head = document.head || document.getElementsByTagName("head")[0];
+            if (!head) return;
+
+            const existing = head.querySelector("link[rel~='icon']");
+            if (existing) {
+              existing.setAttribute("href", href);
+              return;
+            }
+            const link = document.createElement("link");
+            link.setAttribute("rel", "icon");
+            link.setAttribute("type", "image/png");
+            link.setAttribute("href", href);
+            head.appendChild(link);
+          };
+          ensureFavicon();
 
           const closeAll = () => {
             document.querySelectorAll("[data-user-menu].is-open").forEach((m) => {
@@ -95,6 +124,65 @@
 
           document.addEventListener("keydown", (e) => {
             if (e.key === "Escape") closeAll();
+          });
+        })();
+      </script>
+      <script>
+        (() => {
+          if (window.__pageTransitionInit) return;
+          window.__pageTransitionInit = true;
+
+          const loader = document.querySelector("[data-page-loader]");
+          const showLoader = () => {
+            if (!loader) return;
+            loader.classList.add("is-visible");
+            loader.setAttribute("aria-hidden", "false");
+          };
+          const hideLoader = () => {
+            if (!loader) return;
+            loader.classList.remove("is-visible");
+            loader.setAttribute("aria-hidden", "true");
+          };
+
+          window.addEventListener("pageshow", () => {
+            document.documentElement.classList.remove("is-leaving");
+            hideLoader();
+          });
+
+          document.addEventListener("click", (e) => {
+            if (e.defaultPrevented) return;
+            if (e.button !== 0) return;
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+            const a = e.target instanceof Element ? e.target.closest("a[href]") : null;
+            if (!a) return;
+            if (a.getAttribute("target") === "_blank") return;
+            if (a.hasAttribute("download")) return;
+
+            const href = a.getAttribute("href");
+            if (!href || href.startsWith("#")) return;
+
+            let url;
+            try {
+              url = new URL(href, window.location.href);
+            } catch {
+              return;
+            }
+            if (url.origin !== window.location.origin) return;
+
+            e.preventDefault();
+            document.documentElement.classList.add("is-leaving");
+            showLoader();
+            window.setTimeout(() => {
+              window.location.href = url.href;
+            }, 80);
+          });
+
+          document.addEventListener("submit", (e) => {
+            const form = e.target instanceof HTMLFormElement ? e.target : null;
+            if (!form) return;
+            if (form.getAttribute("target") === "_blank") return;
+            showLoader();
           });
         })();
       </script>

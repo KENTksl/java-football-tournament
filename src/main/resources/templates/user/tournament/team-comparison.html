@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>So sánh đội bóng - Phân tích chuyên sâu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/assets/css/user-home.css}">
+    <link rel="stylesheet" th:href="@{/assets/css/user-pages.css}">
+    <link rel="stylesheet" th:href="@{/assets/css/tournament-match-schedule.css}">
+    <link rel="stylesheet" th:href="@{/assets/css/tournament-team-comparison.css}">
+</head>
+<body class="tournament-page">
+<th:block th:replace="~{user/fragments/header :: header('tournament')}"></th:block>
+
+<div th:fragment="comparison-result">
+    <link rel="stylesheet" th:href="@{/assets/css/tournament-team-comparison.css}">
+    <section class="comparison-hero">
+        <div class="team-item">
+            <div class="team-logo-lg">
+                <img th:if="${comparison.team1Stats.logoUrl != null and !#strings.isEmpty(comparison.team1Stats.logoUrl)}"
+                     th:src="${comparison.team1Stats.logoUrl}" th:alt="${comparison.team1Stats.name}">
+                <div th:unless="${comparison.team1Stats.logoUrl != null and !#strings.isEmpty(comparison.team1Stats.logoUrl)}"
+                     class="placeholder-logo" th:text="${#strings.substring(comparison.team1Stats.name, 0, 1)}">T</div>
+            </div>
+            <h2 th:text="${comparison.team1Stats.name}">Đội 1</h2>
+        </div>
+
+        <div class="vs-divider">VS</div>
+
+        <div class="team-item">
+            <div class="team-logo-lg">
+                <img th:if="${comparison.team2Stats.logoUrl != null and !#strings.isEmpty(comparison.team2Stats.logoUrl)}"
+                     th:src="${comparison.team2Stats.logoUrl}" th:alt="${comparison.team2Stats.name}">
+                <div th:unless="${comparison.team2Stats.logoUrl != null and !#strings.isEmpty(comparison.team2Stats.logoUrl)}"
+                     class="placeholder-logo" th:text="${#strings.substring(comparison.team2Stats.name, 0, 1)}">T</div>
+            </div>
+            <h2 th:text="${comparison.team2Stats.name}">Đội 2</h2>
+        </div>
+    </section>
+
+    <main class="container" style="margin-top: -30px; position: relative; z-index: 10;">
+        <div class="back-link-bar" style="background: transparent; border: 0; padding: 0 0 20px;">
+            <a href="javascript:location.reload()" class="back-link" style="background: #fff; padding: 8px 16px; border-radius: 999px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                <span class="back-link__icon">↺</span>
+                Xem tất cả đội
+            </a>
+        </div>
+
+        <div class="stats-grid">
+            <!-- Đối đầu Đội 1 -->
+            <div class="stats-card-custom">
+                <h3 th:text="${'Thống kê ' + comparison.team1Stats.name}">Thống kê Đội 1</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Thắng</span>
+                    <span class="stat-value" th:text="${comparison.team1Stats.headToHeadStats.wins}">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Hòa</span>
+                    <span class="stat-value" th:text="${comparison.team1Stats.headToHeadStats.draws}">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Thua</span>
+                    <span class="stat-value" th:text="${comparison.team1Stats.headToHeadStats.losses}">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Bàn thắng</span>
+                    <span class="stat-value" th:text="${comparison.team1Stats.headToHeadStats.goalsFor}">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Bàn thua</span>
+                    <span class="stat-value" th:text="${comparison.team1Stats.headToHeadStats.goalsAgainst}">0</span>
+                </div>
+            </div>
+
+            <!-- Đối đầu Đội 2 -->
+            <div class="stats-card-custom">
+                <h3 th:text="${'Thống kê ' + comparison.team2Stats.name}">Thống kê Đội 2</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Thắng</span>
+                    <span class="stat-value" th:text="${comparison.team2Stats.headToHeadStats.wins}">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Hòa</span>
+                    <span class="stat-value" th:text="${comparison.team2Stats.headToHeadStats.draws}">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Thua</span>
+                    <span class="stat-value" th:text="${comparison.team2Stats.headToHeadStats.losses}">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Bàn thắng</span>
+                    <span class="stat-value" th:text="${comparison.team2Stats.headToHeadStats.goalsFor}">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Bàn thua</span>
+                    <span class="stat-value" th:text="${comparison.team2Stats.headToHeadStats.goalsAgainst}">0</span>
+                </div>
+        </div>
+
+        <!-- Lịch sử đối đầu -->
+        <div class="stats-card-custom" style="grid-column: 1 / -1;">
+            <h3>Lịch sử đối đầu gần đây</h3>
+            <div class="table-responsive">
+                <table class="match-history-table">
+                    <thead>
+                        <tr>
+                            <th>Giải đấu</th>
+                            <th>Ngày đấu</th>
+                            <th>Tỷ số</th>
+                            <th>Kết quả</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="match : ${comparison.matchHistory}">
+                            <td th:text="${match.tournamentName}">Giải đấu</td>
+                            <td th:text="${#temporals.format(match.matchDate, 'dd/MM/yyyy')}">01/01/2024</td>
+                            <td th:text="${match.score}" style="font-weight: 800;">0 - 0</td>
+                            <td>
+                                <span class="result-badge" 
+                                      th:classappend="${match.result == 'Thắng' ? 'result-win' : (match.result == 'Thua' ? 'result-loss' : 'result-draw')}"
+                                      th:text="${match.result}">Thắng</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(comparison.matchHistory)}">
+                            <td colspan="4" style="text-align: center; color: #888; padding: 30px;">Hai đội chưa có lịch sử đối đầu trước đó</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Cầu thủ nổi bật Đội 1 -->
+            <div class="stats-card-custom">
+                <h3>Cầu thủ nổi bật</h3>
+                <div class="player-list">
+                    <div th:each="player : ${comparison.team1Stats.topPlayers}" class="player-row">
+                        <div class="player-avatar-sm">
+                            <img th:if="${player.playerAvatar != null and !#strings.isEmpty(player.playerAvatar)}"
+                                 th:src="${player.playerAvatar}" alt="Avatar">
+                            <span th:unless="${player.playerAvatar != null and !#strings.isEmpty(player.playerAvatar)}"
+                                  th:text="${#strings.substring(player.playerName, 0, 1)}">P</span>
+                        </div>
+                        <div class="player-info">
+                            <span class="player-name" th:text="${player.playerName}">Cầu thủ</span>
+                            <div class="player-meta-stats">
+                                <span>⚽ <span th:text="${player.goals}">0</span></span>
+                                <span>🟨 <span th:text="${player.yellowCards}">0</span></span>
+                                <span>🟥 <span th:text="${player.redCards}">0</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${#lists.isEmpty(comparison.team1Stats.topPlayers)}" class="team-table__empty" style="padding: 20px;">
+                        Chưa có dữ liệu cầu thủ
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cầu thủ nổi bật Đội 2 -->
+            <div class="stats-card-custom">
+                <h3>Cầu thủ nổi bật</h3>
+                <div class="player-list">
+                    <div th:each="player : ${comparison.team2Stats.topPlayers}" class="player-row">
+                        <div class="player-avatar-sm">
+                            <img th:if="${player.playerAvatar != null and !#strings.isEmpty(player.playerAvatar)}"
+                                 th:src="${player.playerAvatar}" alt="Avatar">
+                            <span th:unless="${player.playerAvatar != null and !#strings.isEmpty(player.playerAvatar)}"
+                                  th:text="${#strings.substring(player.playerName, 0, 1)}">P</span>
+                        </div>
+                        <div class="player-info">
+                            <span class="player-name" th:text="${player.playerName}">Cầu thủ</span>
+                            <div class="player-meta-stats">
+                                <span>⚽ <span th:text="${player.goals}">0</span></span>
+                                <span>🟨 <span th:text="${player.yellowCards}">0</span></span>
+                                <span>🟥 <span th:text="${player.redCards}">0</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${#lists.isEmpty(comparison.team2Stats.topPlayers)}" class="team-table__empty" style="padding: 20px;">
+                        Chưa có dữ liệu cầu thủ
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nhận định chiến thuật -->
+        <div class="insight-card">
+            <h3 class="section-title">Nhận định chiến thuật</h3>
+            <div class="insight-list">
+                <div th:each="insight : ${comparison.tacticalInsights}" class="insight-item-custom">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span th:text="${insight}">Dữ liệu đang được phân tích...</span>
+                </div>
+                <div th:if="${#lists.isEmpty(comparison.tacticalInsights)}" class="insight-item-custom" style="background: rgba(0,0,0,0.03); border-color: #ccc;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    <span>Chưa có đủ dữ liệu để đưa ra nhận định chuyên sâu.</span>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+
+<th:block th:replace="~{user/fragments/footer :: footer('tournament')}"></th:block>
+</body>
+</html>

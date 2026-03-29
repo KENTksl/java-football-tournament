@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cầu thủ xuất sắc</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/assets/css/admin.css}">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --surface: #f3f6f9;
+            --border: #d9d9d9;
+            --text: #111827;
+            --muted: #6b7280;
+            --brand: #009cff;
+            --radius-xl: 25px;
+            --radius-lg: 20px;
+        }
+
+        .app { min-height: 100vh; display: flex; }
+        .content { flex: 1 1 auto; padding: 28px 32px; }
+
+        .best-players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 20px;
+        }
+
+        .player-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .player-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+
+        .player-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: var(--surface);
+            border: 3px solid var(--brand);
+            flex-shrink: 0;
+        }
+
+        .player-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .player-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0 0 4px;
+            color: var(--text);
+        }
+
+        .player-team {
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .player-stats {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .rating-badge {
+            background: var(--brand);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .position-tag {
+            background: var(--surface);
+            color: var(--text);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: var(--muted);
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="app" th:with="activePage='manage', activeSubPage='tournament', activeTab='best-players'">
+    <aside th:replace="~{admin/fragments_admin/sidebar :: sidebar}"></aside>
+
+    <main class="content">
+        <header th:replace="~{admin/fragments_admin/header :: header}"></header>
+
+        <div class="tournament-details">
+            <th:block th:replace="~{admin/tournament/fragments/tournament-header-tabs :: headerTabs(${activeTab}, ${tournamentId}, ${tournamentName})}"></th:block>
+
+            <div th:if="${#lists.isEmpty(matchesWithBestPlayers)}" class="empty-state">
+                <p>Chưa có dữ liệu tính điểm cầu thủ. Điểm sẽ được tính tự động sau khi các trận đấu kết thúc.</p>
+            </div>
+
+            <div th:if="${not #lists.isEmpty(matchesWithBestPlayers)}" class="matches-best-players-container">
+                <div th:each="match : ${matchesWithBestPlayers}" class="match-best-players-section" style="margin-bottom: 40px;">
+                    <div class="match-header" style="background: var(--surface); padding: 16px 24px; border-radius: var(--radius-lg); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border);">
+                        <div style="font-weight: 700; color: var(--brand); font-size: 16px;" th:text="${match.roundName}">Vòng đấu</div>
+                        <div style="font-size: 18px; font-weight: 800;">
+                            <span th:text="${match.homeTeamName}">Đội 1</span>
+                            <span style="margin: 0 12px; color: var(--brand);" th:text="${match.homeScore + ' - ' + match.awayScore}">0 - 0</span>
+                            <span th:text="${match.awayTeamName}">Đội 2</span>
+                        </div>
+                    </div>
+
+                    <div class="best-players-grid">
+                        <div th:each="player, iter : ${match.players}" class="player-card">
+                            <div class="player-avatar">
+                                <img th:src="${player.avatarUrl ?: '/assets/images/default-avatar.png'}" alt="Avatar">
+                            </div>
+                            <div class="player-info">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                    <h3 class="player-name" th:text="${player.fullName}">Nguyễn Văn A</h3>
+                                    <span class="rating-badge" th:text="${#numbers.formatDecimal(player.totalRating, 1, 1)}">8.5</span>
+                                </div>
+                                <div class="player-team">
+                                    <span th:text="${player.teamName}">FC Hutech</span>
+                                    <span class="position-tag" th:text="${player.position}">FW</span>
+                                    <span th:if="${player.jerseyNumber != null}" style="font-size: 12px; color: var(--muted); font-weight: 600;" th:text="'Số áo: ' + ${player.jerseyNumber}">Số áo: 10</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                                    <div style="font-size: 13px; color: var(--text); font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #10b981;"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4l3 3"></path></svg>
+                                        <span th:text="${player.goals} + ' Bàn thắng'">0 Bàn thắng</span>
+                                    </div>
+                                    <div style="font-size: 12px; color: var(--muted);">
+                                        Hạng: <span th:text="${iter.index + 1}" style="font-weight: 700; color: var(--brand);">1</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer th:replace="~{admin/fragments_admin/footer :: footer}"></footer>
+    </main>
+</div>
+</body>
+</html>

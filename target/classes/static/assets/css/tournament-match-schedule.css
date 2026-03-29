@@ -1,48 +1,15 @@
-﻿:root {
-            --bg: #ffffff;
-            --text: #1e1e1e;
-            --surface: #f3f3f3;
-            --surface-muted: #d5d5d5;
-            --brand: #f4a21e;
-            --dark: #171717;
-            --line: #d9d9d9;
-            --muted: #5a5a5a;
-            --chip: #f0f0f0;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: Inter, system-ui, -apple-system, sans-serif;
-            color: var(--text);
-            background: var(--bg);
-        }
-
-        .container {
-            width: min(1170px, calc(100% - 48px));
-            margin: 0 auto;
-        }
-
-        .header .container {
-            max-width: 1366px;
-            width: 100%;
-            padding: 0 24px;
-        }
-
-        .header a,
-.header a:visited {
-    text-decoration: none; /* bá» gáº¡ch chÃ¢n */
-    color: #000; /* chá»¯ mÃ u Ä‘en */
+.tournament-page {
+  --surface: #f3f3f3;
+  --surface-muted: #d5d5d5;
+  --line: #d9d9d9;
+  --chip: #f0f0f0;
+  --muted: rgba(0, 0, 0, 0.72);
+  --dark: #171717;
 }
 
-.header a:hover {
-    color: #e8b931; /* (tuá»³ chá»n) hover Ä‘á»•i mÃ u vÃ ng cho Ä‘áº¹p */
+.tournament-page main {
+  padding-bottom: 70px;
 }
-        .header .brand {
-            font-weight: 700;
-            font-size: 35px;
-            letter-spacing: 0.2px;
-        }
 
         .hero {
             background: var(--brand);
@@ -145,30 +112,34 @@
 
         /* TABS */
         .tabs {
-            display: flex;
-            gap: 4px;
-            border-bottom: 2px solid var(--line);
-            margin-bottom: 0;
-            overflow-x: auto;
+            display: inline-flex;
+            gap: 0;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            border-radius: 14px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.02);
+            margin: 10px 0 0;
+            max-width: 100%;
         }
         .tab {
-            border: none;
+            border: 0;
             background: transparent;
-            color: var(--muted);
-            font-size: 14px;
-            font-weight: 500;
-            padding: 10px 18px;
+            color: rgba(0, 0, 0, 0.72);
+            font-size: 13px;
+            font-weight: 900;
+            padding: 10px 14px;
             cursor: pointer;
             white-space: nowrap;
-            border-bottom: 2px solid transparent;
-            margin-bottom: -2px;
             font-family: inherit;
+            outline: none;
+            transition: background 0.16s ease, color 0.16s ease;
+        }
+        .tab:hover {
+            background: rgba(255, 170, 23, 0.12);
         }
         .tab--active {
-            color: #fff;
-            background: var(--brand);
-            border-radius: 6px 6px 0 0;
-            border-bottom-color: var(--brand);
+            color: rgba(0, 0, 0, 0.88);
+            background: rgba(255, 170, 23, 0.18);
         }
 
         /* MATCHES */
@@ -304,6 +275,71 @@
 
         .modal__body {
             padding: 22px 26px 26px;
+        }
+
+        .signup-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1600;
+            display: none;
+        }
+
+        .signup-overlay.is-open {
+            display: block;
+        }
+
+        .signup-overlay__backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.58);
+        }
+
+        .signup-overlay__dialog {
+            position: relative;
+            width: min(1200px, 96vw);
+            height: min(92vh, 980px);
+            margin: 2vh auto 0;
+            background: #fff;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .signup-overlay__header {
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #fafafa;
+        }
+
+        .signup-overlay__header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .signup-overlay__close {
+            border: none;
+            background: #111827;
+            color: #fff;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        .signup-overlay__frame {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: #fff;
         }
 
         .score-strip {
@@ -490,6 +526,65 @@
             touch-action: none;
             position: relative;
             z-index: 2;
+        }
+
+        .lineup-slot-marker {
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .lineup-player-token {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            text-align: center;
+            color: #ffffff;
+            width: 96px;
+            pointer-events: none;
+        }
+
+        .lineup-player-token img {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+            margin-bottom: 4px;
+        }
+
+        .lineup-player-meta {
+            font-size: 10px;
+            line-height: 1.2;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.45);
+            word-break: break-word;
+        }
+
+        .lineup-bench-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 8px;
+            background: #5f6c81;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .lineup-bench-item img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+
+        .lineup-empty {
+            color: #666;
+            font-size: 12px;
+            font-style: italic;
         }
 
         .player-token.is-dragging {

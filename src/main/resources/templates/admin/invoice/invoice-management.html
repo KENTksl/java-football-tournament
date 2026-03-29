@@ -269,105 +269,239 @@
         }
 
         /* Invoice specific styles */
-        .section-title {
-            font-size: 32px;
+        .page {
+            display: grid;
+            gap: 18px;
+        }
+
+        .page__header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .page__title {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 0.2px;
+        }
+
+        .page__subtitle {
+            margin: 6px 0 0;
+            font-size: 14px;
             font-weight: 600;
-            margin-bottom: 24px;
-            color: #111827;
+            color: var(--muted);
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .invoice-tabs {
             display: flex;
-            gap: 0;
-            margin-bottom: 30px;
-            border-radius: 12px;
-            overflow: hidden;
+            gap: 12px;
             width: fit-content;
-            border: 1px solid #000;
+            flex-wrap: wrap;
         }
 
         .invoice-tab {
-            padding: 10px 24px;
+            padding: 10px 20px;
             background: #fff;
-            border: none;
-            border-right: 1px solid #000;
-            font-weight: 600;
-            font-size: 16px;
+            border: 1px solid var(--border);
+            border-radius: 9999px;
+            font-weight: 800;
+            font-size: 14px;
             cursor: pointer;
-            color: #111827;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .invoice-tab:hover {
+            border-color: var(--brand);
+            color: var(--brand);
+            background: rgba(0, 156, 255, 0.05);
+        }
+
+        .invoice-tab--active {
+            background: var(--brand) !important;
+            color: #fff !important;
+            border-color: var(--brand) !important;
+        }
+
+        .invoice-tab--active:hover {
+            background: #008ae6 !important; /* Slightly darker blue on hover when active */
+            color: #fff !important;
+        }
+
+        .invoice-tab--status { 
+            position: relative; 
+            padding-bottom: 10px;
+            margin-bottom: -10px;
+        }
+        
+        .status-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+            display: none;
+            flex-direction: column;
+            min-width: 240px;
+            z-index: 100;
+            overflow: hidden;
+            margin-top: 2px;
+        }
+        
+        .invoice-tab--status:hover .status-dropdown {
+            display: flex;
+        }
+        
+        .status-option {
+            padding: 10px 16px;
+            text-decoration: none;
+            color: var(--text);
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+        
+        .status-option:hover {
+            background: var(--surface);
+            color: var(--brand);
+        }
+
+        .invoice-tab svg {
+            width: 14px !important;
+            height: 14px !important;
+        }
+
+        .pageSearch {
+            height: 44px;
+            width: 340px;
+            border-radius: 9999px;
+            background: #fff;
+            border: 1px solid rgba(17, 24, 39, 0.10);
+            padding: 0 14px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-
-        .invoice-tab:last-child {
-            border-right: none;
-        }
-
-        .invoice-tab--all { background: #4fc3f7; }
-        .invoice-tab--time { background: #fff176; }
-        .invoice-tab--value { background: #81c784; }
-        .invoice-tab--status { background: #ffb74d; }
-
-        .invoice-tab svg {
-            width: 16px !important;
-            height: 16px !important;
+        
+        .pageSearch input {
+            font-size: 14px;
+            border: 0;
+            outline: none;
+            background: transparent;
+            width: 100%;
+            color: var(--text);
+            font-weight: 600;
         }
 
         .table-container {
-            border: 2px solid #000;
-            border-radius: 0;
-            overflow: hidden;
+            border: 1px solid rgba(17, 24, 39, 0.08);
+            border-radius: 16px;
+            overflow: auto;
             background: #fff;
         }
 
         .data-table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 860px;
         }
 
         .data-table th, .data-table td {
-            border: 1px solid #000;
-            padding: 16px;
-            text-align: center;
-            font-size: 16px;
-            font-weight: 700;
-            color: #000;
+            border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
         }
 
         .data-table th {
-            background: #fff;
+            background: var(--surface);
+            border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+            font-weight: 800;
         }
 
-        .badge {
+        .data-table tbody tr:hover td {
+            background: rgba(243, 246, 249, 0.75);
+        }
+
+        .amountCell {
+            text-align: right;
+        }
+
+        .status-badge {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            height: 32px;
-            width: 160px;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 14px;
-            color: #fff;
-            text-align: center;
+            height: 28px;
+            padding: 0 12px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 800;
+            border: 1px solid;
+            white-space: nowrap;
         }
 
-        .badge--success {
-            background: #2e7d32;
+        .status-badge--success {
+            background: rgba(46, 125, 50, 0.10);
+            border-color: rgba(46, 125, 50, 0.35);
+            color: #2e7d32;
         }
 
-        .badge--fail {
-            background: #d32f2f;
+        .status-badge--failed {
+            background: rgba(198, 40, 40, 0.10);
+            border-color: rgba(198, 40, 40, 0.35);
+            color: #c62828;
+        }
+
+        .status-badge--pending {
+            background: rgba(251, 191, 36, 0.18);
+            border-color: rgba(251, 191, 36, 0.45);
+            color: #9a6400;
+        }
+
+        .status-badge--unknown {
+            background: rgba(107, 114, 128, 0.12);
+            border-color: rgba(107, 114, 128, 0.35);
+            color: rgba(17, 24, 39, 0.8);
         }
 
         .btn-detail {
-            background: #fff;
-            border: 1.5px solid #000;
-            border-radius: 20px;
-            padding: 6px 20px;
-            font-weight: 700;
-            font-size: 14px;
+            background: rgba(0, 156, 255, 0.10);
+            border: 1px solid rgba(0, 156, 255, 0.35);
+            border-radius: 9999px;
+            padding: 8px 14px;
+            font-weight: 800;
+            font-size: 13px;
             cursor: pointer;
+            color: #0074be;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-detail:hover {
+            background: rgba(0, 156, 255, 0.16);
+            border-color: rgba(0, 156, 255, 0.5);
         }
 
         /* Pagination Styles */
@@ -387,14 +521,35 @@
         .page-btn {
             width: 36px;
             height: 36px;
-            border: 1px solid #000;
+            border: 1px solid var(--border);
+            border-radius: 12px;
             background: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            font-size: 16px;
+            font-weight: 600;
+            font-size: 14px;
             cursor: pointer;
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover {
+            border-color: var(--brand);
+            color: var(--brand);
+        }
+
+        .page-btn--active {
+            background: var(--brand);
+            color: #fff !important;
+            border-color: var(--brand);
+        }
+
+        .page-btn--disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
         }
 
         .arrow-btn {
@@ -425,6 +580,7 @@
         @media (max-width: 900px) {
             .sidebar { display: none; }
             .content { padding: 18px; }
+            .pageSearch { width: 100%; }
         }
     </style>
 </head>
@@ -435,106 +591,115 @@
     <main class="content">
         <header th:replace="~{admin/fragments_admin/header :: header}"></header>
 
-        <h1 class="section-title">Danh Sách Hóa Đơn</h1>
+        <section class="page" aria-label="Quản lý hóa đơn">
+        <div class="page__header">
+            <div>
+                <h1 class="page__title">Danh sách hóa đơn</h1>
+                <p class="page__subtitle">Theo dõi các giao dịch nạp tiền và trạng thái thanh toán</p>
+            </div>
+        </div>
 
-        <div class="invoice-tabs">
-            <button class="invoice-tab invoice-tab--all">Tất cả</button>
-            <button class="invoice-tab invoice-tab--time">Thời gian</button>
-            <button class="invoice-tab invoice-tab--value">Giá trị</button>
-            <button class="invoice-tab invoice-tab--status">
-                Trạng thái
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-            </button>
+        <div class="controls">
+            <div class="invoice-tabs">
+                <a th:href="@{/admin/invoice-management(status='ALL', sort=${currentSort}, search=${currentSearch})}" 
+                   class="invoice-tab invoice-tab--all" th:classappend="${currentStatus == 'ALL'} ? 'invoice-tab--active' : ''">Tất cả</a>
+                
+                <a th:href="@{/admin/invoice-management(status=${currentStatus}, sort=${currentSort == 'time_desc' ? 'time_asc' : 'time_desc'}, search=${currentSearch})}" 
+                   class="invoice-tab invoice-tab--time" th:classappend="${currentSort.contains('time')} ? 'invoice-tab--active' : ''">
+                    Thời gian
+                    <svg th:if="${currentSort == 'time_desc'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    <svg th:if="${currentSort == 'time_asc'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                </a>
+                
+                <a th:href="@{/admin/invoice-management(status=${currentStatus}, sort=${currentSort == 'value_desc' ? 'value_asc' : 'value_desc'}, search=${currentSearch})}" 
+                   class="invoice-tab invoice-tab--value" th:classappend="${currentSort.contains('value')} ? 'invoice-tab--active' : ''">
+                    Giá trị
+                    <svg th:if="${currentSort == 'value_desc'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    <svg th:if="${currentSort == 'value_asc'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                </a>
+                
+                <div class="invoice-tab invoice-tab--status" th:classappend="${currentStatus != 'ALL'} ? 'invoice-tab--active' : ''">
+                    <span th:text="${currentStatus == 'ALL' ? 'Trạng thái' : (currentStatus == 'SUCCESS' ? 'Thành công' : (currentStatus == 'FAILED' ? 'Thất bại' : 'Đang xử lý'))}">Trạng thái</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                    <div class="status-dropdown">
+                        <a th:href="@{/admin/invoice-management(status='ALL', sort=${currentSort}, search=${currentSearch})}" class="status-option">Tất cả trạng thái</a>
+                        <a th:href="@{/admin/invoice-management(status='SUCCESS', sort=${currentSort}, search=${currentSearch})}" class="status-option">Thành công</a>
+                        <a th:href="@{/admin/invoice-management(status='FAILED', sort=${currentSort}, search=${currentSearch})}" class="status-option">Thất bại</a>
+                    </div>
+                </div>
+            </div>
+
+            <form th:action="@{/admin/invoice-management}" method="get" class="pageSearch">
+                <input type="hidden" name="status" th:value="${currentStatus}">
+                <input type="hidden" name="sort" th:value="${currentSort}">
+                <button type="submit" style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center;">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width: 18px; height: 18px; color: var(--muted-2);">
+                        <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2"/>
+                        <path d="M16.3 16.3 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <input type="text" name="search" th:value="${currentSearch}" placeholder="Tìm mã HĐ, khách hàng..." aria-label="Tìm kiếm">
+                <a th:if="${currentSearch != null and !currentSearch.isEmpty()}" 
+                   th:href="@{/admin/invoice-management(status=${currentStatus}, sort=${currentSort}, search='')}" 
+                   style="text-decoration: none; color: var(--muted-2); font-size: 18px; padding: 0 6px;">&times;</a>
+            </form>
         </div>
 
         <div class="table-container">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Mã hóa đơn</th>
+                        <th style="width: 160px;">Mã hóa đơn</th>
                         <th>Khách hàng</th>
-                        <th>Ngày xuất HĐ</th>
-                        <th>Tổng tiền</th>
-                        <th>Trạng thái</th>
+                        <th style="width: 200px;">Ngày xuất HĐ</th>
+                        <th style="width: 160px; text-align:right;">Tổng tiền</th>
+                        <th style="width: 160px;">Trạng thái</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>#INV-102</td>
-                        <td>Nguyen Van B</td>
-                        <td>9/12/2024</td>
-                        <td>5000000</td>
-                        <td><span class="badge badge--success">Thành công</span></td>
+                    <tr th:each="transaction : ${transactions}">
+                        <td th:text="${transaction.code}">#INV-102</td>
+                        <td th:text="${transaction.user != null ? transaction.user.fullName : 'N/A'}">Nguyen Van B</td>
+                        <td th:text="${transaction.createdAt != null ? #temporals.format(transaction.createdAt.atZone(T(java.time.ZoneId).of('Asia/Ho_Chi_Minh')), 'dd/MM/yyyy HH:mm') : 'N/A'}">9/12/2024</td>
+                        <td class="amountCell" th:text="${transaction.amount != null ? #numbers.formatDecimal(transaction.amount, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : '0 VNĐ'}">5,000,000 VNĐ</td>
+                        <td>
+                            <span th:if="${transaction.status != null and transaction.status.name() == 'SUCCESS'}" class="status-badge status-badge--success">Thành công</span>
+                            <span th:if="${transaction.status != null and transaction.status.name() == 'FAILED'}" class="status-badge status-badge--failed">Thất bại</span>
+                            <span th:if="${transaction.status != null and transaction.status.name() == 'PENDING'}" class="status-badge status-badge--pending">Đang xử lý</span>
+                            <span th:if="${transaction.status == null}" class="status-badge status-badge--unknown">Không xác định</span>
+                        </td>
                     </tr>
-                    <tr>
-                        <td>#INV-103</td>
-                        <td>Nguyen Van C</td>
-                        <td>9/12/2024</td>
-                        <td>2000000</td>
-                        <td><span class="badge badge--success">Thành công</span></td>
-                    </tr>
-                    <tr>
-                        <td>#INV-104</td>
-                        <td>Nguyen Van D</td>
-                        <td>9/12/2024</td>
-                        <td>1000000</td>
-                        <td><span class="badge badge--fail">Không thành công</span></td>
-                    </tr>
-                    <tr>
-                        <td>#INV-105</td>
-                        <td>Nguyen Van T</td>
-                        <td>9/12/2025</td>
-                        <td>4000000</td>
-                        <td><span class="badge badge--success">Thành công</span></td>
-                    </tr>
-                    <tr>
-                        <td>#INV-106</td>
-                        <td>Nguyen Van E</td>
-                        <td>9/12/2024</td>
-                        <td>2000000</td>
-                        <td><span class="badge badge--fail">Không thành công</span></td>
-                    </tr>
-                    <tr>
-                        <td>#INV-107</td>
-                        <td>Nhan</td>
-                        <td>9/12/2024</td>
-                        <td>6000000</td>
-                        <td><span class="badge badge--success">Thành công</span></td>
-                    </tr>
-                    <tr>
-                        <td>#INV-108</td>
-                        <td>Nguyen Van Z</td>
-                        <td>9/12/2023</td>
-                        <td>3000000</td>
-                        <td><span class="badge badge--success">Thành công</span></td>
-                    </tr>
-                    <tr>
-                        <td>#INV-109</td>
-                        <td>Nguyen Van M</td>
-                        <td>9/12/2024</td>
-                        <td>120000</td>
-                        <td><span class="badge badge--success">Thành công</span></td>
+                    <tr th:if="${#lists.isEmpty(transactions)}">
+                        <td colspan="5" style="padding: 40px; color: var(--muted);">Chưa có dữ liệu giao dịch nào.</td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div class="pagination-container">
-            <button class="arrow-btn"><div class="triangle-left"></div></button>
+        <div class="pagination-container" th:if="${totalPages > 1}">
+            <a class="arrow-btn" th:href="@{/admin/invoice-management(status=${currentStatus}, sort=${currentSort}, search=${currentSearch}, page=${currentPage - 1})}"
+               th:classappend="${currentPage == 1} ? 'page-btn--disabled' : ''">
+                <div class="triangle-left"></div>
+            </a>
+            
             <div class="page-numbers">
-                <button class="page-btn">1</button>
-                <button class="page-btn">2</button>
-                <button class="page-btn">3</button>
-                <button class="page-btn">4</button>
-                <button class="page-btn">5</button>
-                <button class="page-btn">6</button>
-                <button class="page-btn">...</button>
+                <!-- Hiển thị danh sách số trang -->
+                <a th:each="pageNum : ${#numbers.sequence(1, totalPages)}"
+                   th:href="@{/admin/invoice-management(status=${currentStatus}, sort=${currentSort}, search=${currentSearch}, page=${pageNum})}"
+                   class="page-btn"
+                   th:classappend="${pageNum == currentPage} ? 'page-btn--active' : ''"
+                   th:text="${pageNum}">1</a>
             </div>
-            <button class="arrow-btn"><div class="triangle-right"></div></button>
+            
+            <a class="arrow-btn" th:href="@{/admin/invoice-management(status=${currentStatus}, sort=${currentSort}, search=${currentSearch}, page=${currentPage + 1})}"
+               th:classappend="${currentPage == totalPages} ? 'page-btn--disabled' : ''">
+                <div class="triangle-right"></div>
+            </a>
         </div>
         <footer th:replace="~{admin/fragments_admin/footer :: footer}"></footer>
+        </section>
     </main>
 </div>
 </body>
