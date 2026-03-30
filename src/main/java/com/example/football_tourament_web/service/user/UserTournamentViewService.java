@@ -996,43 +996,6 @@ public class UserTournamentViewService {
 		return new ScheduleView(scheduleReady, "KNOCKOUT", message, false, Map.of(), Map.of(), knockoutMatches);
 	}
 
-	@Transactional(readOnly = true)
-	public LiveArchiveView buildLiveArchiveView(Long tournamentId) {
-		if (tournamentId == null) {
-			return LiveArchiveView.none("Chọn giải đấu để xem video live đã lưu");
-		}
-		Tournament tournament = tournamentService.findById(tournamentId).orElse(null);
-		if (tournament == null) {
-			return LiveArchiveView.none("Không tìm thấy giải đấu");
-		}
-		List<LiveArchiveRow> rows = new ArrayList<>();
-		for (Match match : matchService.listByTournamentIdWithDetails(tournamentId)) {
-			if (match == null || match.getStatus() != MatchStatus.FINISHED) {
-				continue;
-			}
-			String archiveUrl = match.getLiveArchiveUrl();
-			if (archiveUrl == null || archiveUrl.isBlank()) {
-				continue;
-			}
-			String homeName = match.getHomeTeam() == null ? "Đội 1" : match.getHomeTeam().getName();
-			String awayName = match.getAwayTeam() == null ? "Đội 2" : match.getAwayTeam().getName();
-			rows.add(new LiveArchiveRow(
-					match.getId(),
-					homeName + " vs " + awayName,
-					homeName,
-					awayName,
-					match.getRoundName(),
-					match.getScheduledAt(),
-					archiveUrl
-			));
-		}
-		rows.sort(Comparator.comparing((LiveArchiveRow r) -> r.scheduledAt() == null ? LocalDateTime.MIN : r.scheduledAt()).reversed());
-		if (rows.isEmpty()) {
-			return LiveArchiveView.none("Chưa có video live nào được lưu");
-		}
-		return new LiveArchiveView(true, "", rows);
-	}
-
 	private String toGroupName(String roundName) {
 		if (roundName == null) return "";
 		String value = roundName.trim().toUpperCase();
@@ -1077,8 +1040,7 @@ public class UserTournamentViewService {
 				match.getHomePenalty(),
 				match.getAwayPenalty(),
 				displayMatchStatus(match.getStatus()),
-				match.getLiveStreamUrl(),
-				match.getLiveArchiveUrl()
+				match.getLiveStreamUrl()
 		);
 	}
 
@@ -1322,8 +1284,7 @@ public class UserTournamentViewService {
 			Integer homePenalty,
 			Integer awayPenalty,
 			String statusLabel,
-			String liveStreamUrl,
-			String liveArchiveUrl
+			String liveStreamUrl
 	) {
 		public String homeDisplayScore() {
 			if (homeScore == null) return "-";
@@ -1387,27 +1348,6 @@ public class UserTournamentViewService {
 	) {
 		public static ScheduleView none(String message) {
 			return new ScheduleView(false, "NONE", message, false, Map.of(), Map.of(), List.of());
-		}
-	}
-
-	public record LiveArchiveRow(
-			Long matchId,
-			String title,
-			String homeTeamName,
-			String awayTeamName,
-			String roundName,
-			LocalDateTime scheduledAt,
-			String archiveUrl
-	) {
-	}
-
-	public record LiveArchiveView(
-			boolean hasVideos,
-			String message,
-			List<LiveArchiveRow> videos
-	) {
-		public static LiveArchiveView none(String message) {
-			return new LiveArchiveView(false, message, List.of());
 		}
 	}
 

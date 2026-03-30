@@ -4,7 +4,6 @@ com\example\football_tourament_web\service\admin\AdminMatchHistoryService$PageRe
 com\example\football_tourament_web\service\admin\AdminMatchHistoryService$PagedResult.class
 com\example\football_tourament_web\model\entity\Tournament.class
 com\example\football_tourament_web\model\entity\MatchEvent.class
-com\example\football_tourament_web\service\user\UserTournamentViewService$LiveArchiveView.class
 com\example\football_tourament_web\model\enums\PitchType.class
 com\example\football_tourament_web\service\admin\AdminMatchHistoryService$PlayerDto.class
 com\example\football_tourament_web\service\user\UserProfileService$1.class
@@ -25,7 +24,6 @@ com\example\football_tourament_web\repository\MatchRepository.class
 com\example\football_tourament_web\model\enums\UserRole.class
 com\example\football_tourament_web\model\dto\NewsItem.class
 com\example\football_tourament_web\repository\AppUserRepository.class
-com\example\football_tourament_web\service\user\UserTournamentViewService$LiveArchiveRow.class
 com\example\football_tourament_web\config\WebConfig.class
 com\example\football_tourament_web\model\enums\RegistrationStatus.class
 com\example\football_tourament_web\service\user\UserPaymentService$1.class

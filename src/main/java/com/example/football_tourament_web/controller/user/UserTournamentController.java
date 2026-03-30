@@ -184,13 +184,6 @@ public class UserTournamentController {
 		return "user/tournament/fragments/teams :: teams";
 	}
 
-	@GetMapping("/live-fragment")
-	public String liveFragment(@RequestParam(value = "id", required = false) Long id, Model model) {
-		attachTournament(model, id);
-		model.addAttribute("liveArchive", userTournamentViewService.buildLiveArchiveView(id));
-		return "user/tournament/fragments/live :: live";
-	}
-
 	private void attachTournament(Model model, Long id) {
 		var tournament = userTournamentViewService.findTournamentOrNull(id);
 		model.addAttribute("tournament", tournament);
