@@ -28,5 +28,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/football-tournament-web:latest
-            ${{ secrets.DOCKER_USERNAME }}/football-tournament-web:${{ github.run_number }}
+            ${{ secrets.DOCKER_USERNAME }}/football-tournament:latest
+            ${{ secrets.DOCKER_USERNAME }}/football-tournament:${{ github.run_number }}
