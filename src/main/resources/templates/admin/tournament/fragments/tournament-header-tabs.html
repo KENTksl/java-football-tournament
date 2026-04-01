@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <th:block th:fragment="headerTabs(activeTab, tournamentId, tournamentName)">
+      <div class="tournament__header">
+        <h1
+          class="tournament__title"
+          th:text="'CHI TIẾT GIẢI ĐẤU: ' + (${tournamentName} ?: 'Hutech mở rộng lần 31')"
+        >
+          CHI TIẾT GIẢI ĐẤU: Hutech mở rộng lần 31
+        </h1>
+        <a th:href="@{/admin/manage/tournament}" class="btn btn--dark tournament__back">Quay lại</a>
+      </div>
+
+      <div class="tabs">
+        <a th:href="@{/admin/general-information(id=${tournamentId})}" class="tab-link" th:classappend="${activeTab == 'info'} ? ' active' : ''">
+          Thông tin chung
+        </a>
+        <a th:href="@{/admin/team-list(id=${tournamentId})}" class="tab-link" th:classappend="${activeTab == 'teams'} ? ' active' : ''">
+          Danh sách đội
+        </a>
+        <a th:href="@{/admin/match-history(id=${tournamentId})}" class="tab-link" th:classappend="${activeTab == 'matches'} ? ' active' : ''">
+          Lịch thi đấu
+        </a>
+        <a th:href="@{/admin/tournament-bracket(id=${tournamentId})}" class="tab-link" th:classappend="${activeTab == 'bracket'} ? ' active' : ''">
+          Sơ đồ thi đấu
+        </a>
+        <a th:href="@{/admin/best-players(id=${tournamentId})}" class="tab-link" th:classappend="${activeTab == 'best-players'} ? ' active' : ''">
+          Cầu thủ xuất sắc
+        </a>
+      </div>
+    </th:block>
+  </body>
+</html>

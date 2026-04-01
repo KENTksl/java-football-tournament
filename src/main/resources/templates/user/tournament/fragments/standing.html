@@ -1,0 +1,219 @@
+<div th:fragment="standing">
+    <link rel="stylesheet" th:href="@{/assets/css/tournament-fragment-standing.css}">
+
+    <div class="standing-section">
+        <div style="display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between;">
+            <div class="group-standing-container" style="flex: 1 1 calc(50% - 12px); min-width: 320px; box-sizing: border-box;">
+                <div style="display:flex; align-items:flex-end; justify-content:space-between; gap: 12px; margin-bottom: 12px;">
+                    <div>
+                        <div class="group-title" style="font-weight: 800; color: #171717; font-size: 18px; line-height: 1.2;">Bảng A</div>
+                        <div class="muted" style="margin-top: 6px; font-size: 12px;">
+                            <span th:text="${(groupTeams != null and groupTeams['A'] != null) ? #lists.size(groupTeams['A']) : 0}">0</span> đội • Xếp theo: Điểm • HS • BT
+                        </div>
+                    </div>
+                </div>
+                <div class="standing-table-container" style="margin-top: 12px; max-height: 360px; overflow: auto;">
+                    <table class="standing-table">
+                        <thead>
+                        <tr>
+                            <th style="width: 56px; position: sticky; top: 0; z-index: 2;">STT</th>
+                            <th style="min-width: 220px; position: sticky; top: 0; z-index: 3; left: 0;">Đội</th>
+                            <th style="width: 96px; position: sticky; top: 0; z-index: 2; text-align: right;">Thành viên</th>
+                            <th style="width: 76px; position: sticky; top: 0; z-index: 2; text-align: right;">Điểm</th>
+                            <th style="width: 66px; position: sticky; top: 0; z-index: 2; text-align: right;">BT</th>
+                            <th style="width: 66px; position: sticky; top: 0; z-index: 2; text-align: right;">BB</th>
+                            <th style="width: 82px; position: sticky; top: 0; z-index: 2; text-align: right;">HS</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${groupTeams == null or groupTeams['A'] == null or #lists.isEmpty(groupTeams['A'])}">
+                            <td colspan="7" class="text-center">Chưa có dữ liệu đội bóng trong bảng này</td>
+                        </tr>
+                        <tr th:each="t, iter : ${groupTeams['A']}" th:style="${iter.even} ? 'background: rgba(0,0,0,0.015);' : ''">
+                            <td class="rank-cell" style="text-align:center;">
+                                <span th:text="${iter.count}"
+                                      th:style="${iter.count <= 2} ? 'display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;border-radius:999px;background:rgba(255,170,23,0.18);color:#111;font-weight:900;' : 'font-weight:900;'">1</span>
+                            </td>
+                            <td class="team-cell" style="position: sticky; left: 0; background: inherit; z-index: 1;">
+                                <span class="team-logo-standing">
+                                    <img th:if="${t.logoUrl != null and !#strings.isEmpty(t.logoUrl)}" th:src="${t.logoUrl}" th:alt="${t.name}">
+                                </span>
+                                <span th:text="${t.name}">Đội</span>
+                            </td>
+                            <td style="text-align:right;" th:text="${t.memberCount} ?: '-'">10</td>
+                            <td class="pts-cell" style="text-align:right;" th:text="${t.points}">0</td>
+                            <td style="text-align:right;" th:text="${t.goalsFor} ?: 0">0</td>
+                            <td style="text-align:right;" th:text="${t.goalsAgainst} ?: 0">0</td>
+                            <td style="text-align:right;">
+                                <span th:text="${t.goalDiff() > 0 ? ('+' + t.goalDiff()) : t.goalDiff()}"
+                                      th:style="${t.goalDiff() > 0} ? 'display:inline-flex;align-items:center;justify-content:center;min-width:40px;padding:2px 8px;border-radius:999px;background:rgba(34,197,94,0.14);color:#166534;font-weight:900;'
+                                       : (${t.goalDiff() < 0} ? 'display:inline-flex;align-items:center;justify-content:center;min-width:40px;padding:2px 8px;border-radius:999px;background:rgba(239,68,68,0.12);color:#991b1b;font-weight:900;'
+                                       : 'display:inline-flex;align-items:center;justify-content:center;min-width:40px;padding:2px 8px;border-radius:999px;background:rgba(17,24,39,0.06);color:#111827;font-weight:900;')">0</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="group-standing-container" style="flex: 1 1 calc(50% - 12px); min-width: 320px; box-sizing: border-box;">
+                <div style="display:flex; align-items:flex-end; justify-content:space-between; gap: 12px; margin-bottom: 12px;">
+                    <div>
+                        <div class="group-title" style="font-weight: 800; color: #171717; font-size: 18px; line-height: 1.2;">Bảng B</div>
+                        <div class="muted" style="margin-top: 6px; font-size: 12px;">
+                            <span th:text="${(groupTeams != null and groupTeams['B'] != null) ? #lists.size(groupTeams['B']) : 0}">0</span> đội • Xếp theo: Điểm • HS • BT
+                        </div>
+                    </div>
+                </div>
+                <div class="standing-table-container" style="margin-top: 12px; max-height: 360px; overflow: auto;">
+                    <table class="standing-table">
+                        <thead>
+                        <tr>
+                            <th style="width: 56px; position: sticky; top: 0; z-index: 2;">STT</th>
+                            <th style="min-width: 220px; position: sticky; top: 0; z-index: 3; left: 0;">Đội</th>
+                            <th style="width: 96px; position: sticky; top: 0; z-index: 2; text-align: right;">Thành viên</th>
+                            <th style="width: 76px; position: sticky; top: 0; z-index: 2; text-align: right;">Điểm</th>
+                            <th style="width: 66px; position: sticky; top: 0; z-index: 2; text-align: right;">BT</th>
+                            <th style="width: 66px; position: sticky; top: 0; z-index: 2; text-align: right;">BB</th>
+                            <th style="width: 82px; position: sticky; top: 0; z-index: 2; text-align: right;">HS</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${groupTeams == null or groupTeams['B'] == null or #lists.isEmpty(groupTeams['B'])}">
+                            <td colspan="7" class="text-center">Chưa có dữ liệu đội bóng trong bảng này</td>
+                        </tr>
+                        <tr th:each="t, iter : ${groupTeams['B']}" th:style="${iter.even} ? 'background: rgba(0,0,0,0.015);' : ''">
+                            <td class="rank-cell" style="text-align:center;">
+                                <span th:text="${iter.count}"
+                                      th:style="${iter.count <= 2} ? 'display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;border-radius:999px;background:rgba(255,170,23,0.18);color:#111;font-weight:900;' : 'font-weight:900;'">1</span>
+                            </td>
+                            <td class="team-cell" style="position: sticky; left: 0; background: inherit; z-index: 1;">
+                                <span class="team-logo-standing">
+                                    <img th:if="${t.logoUrl != null and !#strings.isEmpty(t.logoUrl)}" th:src="${t.logoUrl}" th:alt="${t.name}">
+                                </span>
+                                <span th:text="${t.name}">Đội</span>
+                            </td>
+                            <td style="text-align:right;" th:text="${t.memberCount} ?: '-'">10</td>
+                            <td class="pts-cell" style="text-align:right;" th:text="${t.points}">0</td>
+                            <td style="text-align:right;" th:text="${t.goalsFor} ?: 0">0</td>
+                            <td style="text-align:right;" th:text="${t.goalsAgainst} ?: 0">0</td>
+                            <td style="text-align:right;">
+                                <span th:text="${t.goalDiff() > 0 ? ('+' + t.goalDiff()) : t.goalDiff()}"
+                                      th:style="${t.goalDiff() > 0} ? 'display:inline-flex;align-items:center;justify-content:center;min-width:40px;padding:2px 8px;border-radius:999px;background:rgba(34,197,94,0.14);color:#166534;font-weight:900;'
+                                       : (${t.goalDiff() < 0} ? 'display:inline-flex;align-items:center;justify-content:center;min-width:40px;padding:2px 8px;border-radius:999px;background:rgba(239,68,68,0.12);color:#991b1b;font-weight:900;'
+                                       : 'display:inline-flex;align-items:center;justify-content:center;min-width:40px;padding:2px 8px;border-radius:999px;background:rgba(17,24,39,0.06);color:#111827;font-weight:900;')">0</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="group-standing-container" style="flex: 1 1 calc(50% - 12px); min-width: 320px; box-sizing: border-box;">
+                <div style="display:flex; align-items:flex-end; justify-content:space-between; gap: 12px; margin-bottom: 12px;">
+                    <div>
+                        <div class="group-title" style="font-weight: 800; color: #171717; font-size: 18px; line-height: 1.2;">Bảng C</div>
+                        <div class="muted" style="margin-top: 6px; font-size: 12px;">
+                            <span th:text="${(groupTeams != null and groupTeams['C'] != null) ? #lists.size(groupTeams['C']) : 0}">0</span> đội • Xếp theo: Điểm • HS • BT
+                        </div>
+                    </div>
+                </div>
+                <div class="standing-table-container" style="margin-top: 12px; max-height: 360px; overflow: auto;">
+                    <table class="standing-table">
+                        <thead>
+                        <tr>
+                            <th style="width: 56px; position: sticky; top: 0; z-index: 2;">STT</th>
+                            <th style="min-width: 220px; position: sticky; top: 0; z-index: 3; left: 0;">Đội</th>
+                            <th style="width: 96px; position: sticky; top: 0; z-index: 2; text-align: right;">Thành viên</th>
+                            <th style="width: 76px; position: sticky; top: 0; z-index: 2; text-align: right;">Điểm</th>
+                            <th style="width: 66px; position: sticky; top: 0; z-index: 2; text-align: right;">BT</th>
+                            <th style="width: 66px; position: sticky; top: 0; z-index: 2; text-align: right;">BB</th>
+                            <th style="width: 82px; position: sticky; top: 0; z-index: 2; text-align: right;">HS</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${groupTeams == null or groupTeams['C'] == null or #lists.isEmpty(groupTeams['C'])}">
+                            <td colspan="7" class="text-center">Chưa có dữ liệu đội bóng trong bảng này</td>
+                        </tr>
+                        <tr th:each="t, iter : ${groupTeams['C']}" th:style="${iter.even} ? 'background: rgba(0,0,0,0.015);' : ''">
+                            <td class="rank-cell" style="text-align:center;">
+                                <span th:text="${iter.count}"
+                                      th:style="${iter.count <= 2} ? 'display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;border-radius:999px;background:rgba(255,170,23,0.18);color:#111;font-weight:900;' : 'font-weight:900;'">1</span>
+                            </td>
+                            <td class="team-cell" style="position: sticky; left: 0; background: inherit; z-index: 1;">
+                                <span class="team-logo-standing">
+                                    <img th:if="${t.logoUrl != null and !#strings.isEmpty(t.logoUrl)}" th:src="${t.logoUrl}" th:alt="${t.name}">
+                                </span>
+                                <span th:text="${t.name}">Đội</span>
+                            </td>
+                            <td style="text-align:right;" th:text="${t.memberCount} ?: '-'">10</td>
+                            <td class="pts-cell" style="text-align:right;" th:text="${t.points}">0</td>
+                            <td style="text-align:right;" th:text="${t.goalsFor} ?: 0">0</td>
+                            <td style="text-align:right;" th:text="${t.goalsAgainst} ?: 0">0</td>
+                            <td style="text-align:right;">
+                                <span th:text="${t.goalDiff() > 0 ? ('+' + t.goalDiff()) : t.goalDiff()}"
+                                      th:style="${t.goalDiff() > 0} ? 'display:inline-flex;align-items:center;justify-content:center;min-width:40px;padding:2px 8px;border-radius:999px;background:rgba(34,197,94,0.14);color:#166534;font-weight:900;'
+                                       : (${t.goalDiff() < 0} ? 'display:inline-flex;align-items:center;justify-content:center;min-width:40px;padding:2px 8px;border-radius:999px;background:rgba(239,68,68,0.12);color:#991b1b;font-weight:900;'
+                                       : 'display:inline-flex;align-items:center;justify-content:center;min-width:40px;padding:2px 8px;border-radius:999px;background:rgba(17,24,39,0.06);color:#111827;font-weight:900;')">0</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="group-standing-container" style="flex: 1 1 calc(50% - 12px); min-width: 320px; box-sizing: border-box;">
+                <div style="display:flex; align-items:flex-end; justify-content:space-between; gap: 12px; margin-bottom: 12px;">
+                    <div>
+                        <div class="group-title" style="font-weight: 800; color: #171717; font-size: 18px; line-height: 1.2;">Bảng D</div>
+                        <div class="muted" style="margin-top: 6px; font-size: 12px;">
+                            <span th:text="${(groupTeams != null and groupTeams['D'] != null) ? #lists.size(groupTeams['D']) : 0}">0</span> đội • Xếp theo: Điểm • HS • BT
+                        </div>
+                    </div>
+                </div>
+                <div class="standing-table-container" style="margin-top: 12px; max-height: 360px; overflow: auto;">
+                    <table class="standing-table">
+                        <thead>
+                        <tr>
+                            <th style="width: 56px; position: sticky; top: 0; z-index: 2;">STT</th>
+                            <th style="min-width: 220px; position: sticky; top: 0; z-index: 3; left: 0;">Đội</th>
+                            <th style="width: 96px; position: sticky; top: 0; z-index: 2; text-align: right;">Thành viên</th>
+                            <th style="width: 76px; position: sticky; top: 0; z-index: 2; text-align: right;">Điểm</th>
+                            <th style="width: 66px; position: sticky; top: 0; z-index: 2; text-align: right;">BT</th>
+                            <th style="width: 66px; position: sticky; top: 0; z-index: 2; text-align: right;">BB</th>
+                            <th style="width: 82px; position: sticky; top: 0; z-index: 2; text-align: right;">HS</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${groupTeams == null or groupTeams['D'] == null or #lists.isEmpty(groupTeams['D'])}">
+                            <td colspan="7" class="text-center">Chưa có dữ liệu đội bóng trong bảng này</td>
+                        </tr>
+                        <tr th:each="t, iter : ${groupTeams['D']}" th:style="${iter.even} ? 'background: rgba(0,0,0,0.015);' : ''">
+                            <td class="rank-cell" style="text-align:center;">
+                                <span th:text="${iter.count}"
+                                      th:style="${iter.count <= 2} ? 'display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;border-radius:999px;background:rgba(255,170,23,0.18);color:#111;font-weight:900;' : 'font-weight:900;'">1</span>
+                            </td>
+                            <td class="team-cell" style="position: sticky; left: 0; background: inherit; z-index: 1;">
+                                <span class="team-logo-standing">
+                                    <img th:if="${t.logoUrl != null and !#strings.isEmpty(t.logoUrl)}" th:src="${t.logoUrl}" th:alt="${t.name}">
+                                </span>
+                                <span th:text="${t.name}">Đội</span>
+                            </td>
+                            <td style="text-align:right;" th:text="${t.memberCount} ?: '-'">10</td>
+                            <td class="pts-cell" style="text-align:right;" th:text="${t.points}">0</td>
+                            <td style="text-align:right;" th:text="${t.goalsFor} ?: 0">0</td>
+                            <td style="text-align:right;" th:text="${t.goalsAgainst} ?: 0">0</td>
+                            <td style="text-align:right;">
+                                <span th:text="${t.goalDiff() > 0 ? ('+' + t.goalDiff()) : t.goalDiff()}"
+                                      th:style="${t.goalDiff() > 0} ? 'display:inline-flex;align-items:center;justify-content:center;min-width:40px;padding:2px 8px;border-radius:999px;background:rgba(34,197,94,0.14);color:#166534;font-weight:900;'
+                                       : (${t.goalDiff() < 0} ? 'display:inline-flex;align-items:center;justify-content:center;min-width:40px;padding:2px 8px;border-radius:999px;background:rgba(239,68,68,0.12);color:#991b1b;font-weight:900;'
+                                       : 'display:inline-flex;align-items:center;justify-content:center;min-width:40px;padding:2px 8px;border-radius:999px;background:rgba(17,24,39,0.06);color:#111827;font-weight:900;')">0</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xem trực tiếp trận đấu</title>
+    <style>
+        * { box-sizing: border-box; }
+        html, body { margin: 0; width: 100%; height: 100%; background: #05070b; color: #fff; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+        .live-page { width: 100%; height: 100%; display: flex; flex-direction: column; }
+        .live-top { height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 16px; background: #0b1220; border-bottom: 1px solid rgba(255,255,255,0.12); }
+        .live-title { font-size: 16px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .back-link { text-decoration: none; color: #fff; background: #1d4ed8; border-radius: 8px; padding: 8px 12px; font-weight: 600; }
+        .live-body { flex: 1 1 auto; min-height: 0; display: flex; }
+        .live-frame { width: 100%; height: 100%; border: 0; background: #000; }
+        .empty-box { flex: 1 1 auto; display: grid; place-items: center; padding: 24px; text-align: center; }
+        .empty-inner { max-width: 560px; }
+        .empty-title { margin: 0 0 10px; font-size: 28px; font-weight: 800; }
+        .empty-message { margin: 0 0 18px; color: #cbd5e1; font-size: 16px; }
+    </style>
+</head>
+<body>
+<div class="live-page">
+    <div class="live-top">
+        <div class="live-title" th:text="${liveMatch != null ? liveMatch.title : 'Phát trực tiếp'}">Phát trực tiếp</div>
+        <a class="back-link" th:href="@{/user/tournament/match-schedule(id=${tournamentId})}">Quay lại</a>
+    </div>
+
+    <div class="live-body" th:if="${liveMatch != null and liveMatch.available and liveMatch.liveStreamUrl != null and !#strings.isEmpty(liveMatch.liveStreamUrl)}">
+        <iframe class="live-frame" allowfullscreen
+                referrerpolicy="strict-origin-when-cross-origin"
+                th:src="${liveMatch.liveStreamUrl}"></iframe>
+    </div>
+    <div class="empty-box" th:if="${liveMatch == null or !liveMatch.available or liveMatch.liveStreamUrl == null or #strings.isEmpty(liveMatch.liveStreamUrl)}">
+        <div class="empty-inner">
+            <h1 class="empty-title">Chưa có luồng trực tiếp</h1>
+            <p class="empty-message" th:text="${liveMatch != null and liveMatch.message != null ? liveMatch.message : 'Admin chưa cập nhật link live cho trận đấu này.'}">Admin chưa cập nhật link live cho trận đấu này.</p>
+            <a class="back-link" th:href="@{/user/tournament/match-schedule(id=${tournamentId})}">Quay lại lịch đấu</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

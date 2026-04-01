@@ -1,0 +1,88 @@
+<aside class="sidebar" aria-label="Thanh điều hướng" th:fragment="sidebar">
+    <div class="sidebar__brand">
+        <div class="sidebar__brandIcon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M4 12.5l4.5 4.5L20 5.5" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <div>
+            <div class="sidebar__brandTitle">Admin Space</div>
+            <div class="muted" style="font-size: 13px; margin-top: 2px;">Bảng điều khiển</div>
+        </div>
+    </div>
+
+    <nav class="nav">
+        <!-- Bảng điều khiển -->
+        <a class="nav__item nav__item--large" th:classappend="${activePage == 'dashboard'} ? 'nav__item--active' : ''" href="/admin/general-overview">
+            <span class="nav__icon nav__icon--large">
+                <img src="/assets/general-overview/nav-dashboard.png" alt="">
+            </span>
+            <span class="nav__label nav__label--large">Bảng điều khiển</span>
+        </a>
+
+        <!-- Hồ sơ -->
+        <a class="nav__item nav__item--large" th:classappend="${activePage == 'profile'} ? 'nav__item--active' : ''" href="/admin/admin-profile">
+            <span class="nav__icon nav__icon--large">
+                <img src="/assets/general-overview/nav-profile.png" alt="">
+            </span>
+            <span class="nav__label nav__label--large">Hồ sơ của tôi</span>
+        </a>
+
+        <!-- Quản lý Dropdown -->
+        <div class="nav-group" th:classappend="${activePage == 'manage'} ? 'nav-group--open' : ''">
+            <a class="nav__item nav__item--large" href="javascript:void(0)" onclick="toggleNavGroup(this)">
+                <span class="nav__icon nav__icon--large">
+                    <img src="/assets/general-overview/tournament.jpg" alt="">
+                </span>
+                <span class="nav__label nav__label--large">Quản lý</span>
+                <img class="nav__chevron" src="/assets/general-overview/sidebar-arrow.png" alt="">
+            </a>
+            <div class="nav-sub">
+                <a class="nav__item" th:classappend="${activeSubPage == 'tournament'} ? 'nav__item--active' : ''" href="/admin/manage/tournament">
+                    <span class="nav__label">Giải đấu</span>
+                </a>
+                <a class="nav__item" th:classappend="${activeSubPage == 'user'} ? 'nav__item--active' : ''" href="/admin/manage/user">
+                    <span class="nav__label">Người dùng</span>
+                </a>
+                <a class="nav__item" th:classappend="${activeSubPage == 'team'} ? 'nav__item--active' : ''" href="/admin/team-management">
+                    <span class="nav__label">Đội tuyển</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Thống kê Dropdown -->
+        <div class="nav-group" th:classappend="${activePage == 'stats'} ? 'nav-group--open' : ''">
+            <a class="nav__item nav__item--large" href="javascript:void(0)" onclick="toggleNavGroup(this)">
+                <span class="nav__icon nav__icon--large">
+                    <img src="/assets/general-overview/sidebar-stats.png" alt="">
+                </span>
+                <span class="nav__label nav__label--large">Thống kê</span>
+                <img class="nav__chevron" src="/assets/general-overview/sidebar-arrow.png" alt="">
+            </a>
+            <div class="nav-sub">
+                <a class="nav__item" th:classappend="${activeSubPage == 'billing'} ? 'nav__item--active' : ''" href="/admin/invoice-management">
+                    <span class="nav__label">Hóa đơn</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="sidebar__footer">
+        <form th:action="@{/dang-xuat}" method="post" id="logoutForm" style="display: none;">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        </form>
+        <a class="nav__item nav__item--large" href="javascript:void(0)" onclick="document.getElementById('logoutForm').submit();">
+            <span class="nav__icon nav__icon--large">
+                <img src="/assets/general-overview/sidebar-logout.png" alt="">
+            </span>
+            <span class="nav__label nav__label--large">Đăng xuất</span>
+        </a>
+    </div>
+
+    <script>
+        function toggleNavGroup(element) {
+            const group = element.closest('.nav-group');
+            group.classList.toggle('nav-group--open');
+        }
+    </script>
+</aside>

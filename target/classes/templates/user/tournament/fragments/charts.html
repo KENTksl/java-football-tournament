@@ -1,0 +1,227 @@
+<div th:fragment="charts">
+    <link rel="stylesheet" th:href="@{/assets/css/tournament-fragment-charts.css}">
+
+    <div class="charts-section">
+        <div class="mb-4">
+            <div class="muted" th:if="${charts != null and charts.teamName != null}">
+                Đang xem: <span th:text="${charts.teamName}">—</span>
+            </div>
+
+            <details id="teamChooser" style="margin-top: 12px; max-width: 820px;">
+                <summary style="cursor:pointer; font-weight: 700;">Chọn đội để xem</summary>
+                <div style="margin-top: 10px; padding: 12px; border: 1px solid rgba(17,24,39,0.08); border-radius: 12px; background: #fff;">
+                    <div style="display:flex; flex-wrap: wrap; gap: 10px;">
+                        <label th:each="team : ${teams}" style="display:flex; align-items:center; gap: 8px; padding: 8px 10px; border: 1px solid rgba(17,24,39,0.08); border-radius: 999px; cursor: pointer;">
+                            <input class="js-team-pick" type="checkbox"
+                                   th:value="${team.teamId}"
+                                   th:checked="${team.teamId.toString() == #strings.defaultString(selectedTeamId, '')}">
+                            <span th:text="${team.teamName}">Team</span>
+                        </label>
+                    </div>
+                    <div class="muted" style="margin-top: 10px;">Chỉ chọn 1 đội.</div>
+                </div>
+            </details>
+        </div>
+
+        <div th:if="${charts != null and charts.teamId != null}" style="display:flex; flex-wrap:wrap; gap: 10px; margin-bottom: 14px;">
+            <div style="flex: 1 1 160px; min-width: 160px; background:#fff; border:1px solid rgba(0,0,0,0.08); border-radius: 14px; padding: 10px 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.05);">
+                <div class="muted" style="font-size: 12px; font-weight: 700;">Thắng</div>
+                <div style="font-weight: 900; font-size: 18px; color:#16a34a;" th:text="${charts.win}">0</div>
+            </div>
+            <div style="flex: 1 1 160px; min-width: 160px; background:#fff; border:1px solid rgba(0,0,0,0.08); border-radius: 14px; padding: 10px 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.05);">
+                <div class="muted" style="font-size: 12px; font-weight: 700;">Hòa</div>
+                <div style="font-weight: 900; font-size: 18px; color:#ca8a04;" th:text="${charts.draw}">0</div>
+            </div>
+            <div style="flex: 1 1 160px; min-width: 160px; background:#fff; border:1px solid rgba(0,0,0,0.08); border-radius: 14px; padding: 10px 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.05);">
+                <div class="muted" style="font-size: 12px; font-weight: 700;">Thua</div>
+                <div style="font-weight: 900; font-size: 18px; color:#dc2626;" th:text="${charts.loss}">0</div>
+            </div>
+            <div style="flex: 1 1 160px; min-width: 160px; background:#fff; border:1px solid rgba(0,0,0,0.08); border-radius: 14px; padding: 10px 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.05);">
+                <div class="muted" style="font-size: 12px; font-weight: 700;">Trận có tỉ số</div>
+                <div style="font-weight: 900; font-size: 18px;" th:text="${charts.matchLabels != null ? #lists.size(charts.matchLabels) : 0}">0</div>
+            </div>
+            <div style="flex: 1 1 160px; min-width: 160px; background:#fff; border:1px solid rgba(0,0,0,0.08); border-radius: 14px; padding: 10px 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.05);">
+                <div class="muted" style="font-size: 12px; font-weight: 700;">Tổng BT</div>
+                <div style="font-weight: 900; font-size: 18px;" th:text="${charts.goalsForByMatch != null ? #aggregates.sum(charts.goalsForByMatch) : 0}">0</div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div style="display:flex; align-items:flex-end; justify-content:space-between; gap: 12px; margin-bottom: 12px;">
+                    <h3 class="chart-card-title" style="margin:0;">Tỉ lệ thắng / hòa / thua</h3>
+                    <div style="display:flex; gap: 8px; flex-wrap:wrap;">
+                        <span style="display:inline-flex; align-items:center; gap: 6px; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.08); background:#fff; font-weight:800; font-size: 12px;">
+                            <span style="width:10px; height:10px; border-radius:999px; background:#22c55e;"></span> Thắng
+                        </span>
+                        <span style="display:inline-flex; align-items:center; gap: 6px; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.08); background:#fff; font-weight:800; font-size: 12px;">
+                            <span style="width:10px; height:10px; border-radius:999px; background:#facc15;"></span> Hòa
+                        </span>
+                        <span style="display:inline-flex; align-items:center; gap: 6px; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.08); background:#fff; font-weight:800; font-size: 12px;">
+                            <span style="width:10px; height:10px; border-radius:999px; background:#ef4444;"></span> Thua
+                        </span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="wdlPieChart"></canvas>
+                </div>
+                <div id="wdlEmptyState" class="muted" style="margin-top: 10px;" hidden>Chưa có dữ liệu trận đã có tỉ số cho đội này.</div>
+            </div>
+
+            <div class="chart-card">
+                <div style="display:flex; align-items:flex-end; justify-content:space-between; gap: 12px; margin-bottom: 12px;">
+                    <h3 class="chart-card-title" style="margin:0;">Bàn thắng theo từng trận</h3>
+                    <div class="muted" style="font-size: 12px;">Kéo ngang để xem đầy đủ nhãn</div>
+                </div>
+                <div style="overflow-x:auto; padding-bottom: 6px;">
+                    <div class="chart-container" style="min-width: 680px;">
+                        <canvas id="goalsPerMatchBarChart"></canvas>
+                    </div>
+                </div>
+                <div id="goalsEmptyState" class="muted" style="margin-top: 10px;" hidden>Chưa có dữ liệu bàn thắng theo trận cho đội này.</div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        function renderCharts(chartsData) {
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js is not loaded');
+                return;
+            }
+
+            const colors = {
+                win: '#22c55e',
+                draw: '#facc15',
+                loss: '#ef4444'
+            };
+
+            const chartIds = ['wdlPieChart', 'goalsPerMatchBarChart'];
+            chartIds.forEach(id => {
+                try {
+                    const existingChart = Chart.getChart(id);
+                    if (existingChart) existingChart.destroy();
+                } catch (e) {
+                    console.warn('Could not destroy chart:', id, e);
+                }
+            });
+
+            const hasTeam = chartsData && chartsData.teamId != null;
+            const hasWdl = hasTeam && ((Number(chartsData.win) || 0) + (Number(chartsData.draw) || 0) + (Number(chartsData.loss) || 0)) > 0;
+            const hasGoalsByMatch = hasTeam && Array.isArray(chartsData.matchLabels) && chartsData.matchLabels.length > 0;
+
+            const wdlEmpty = document.getElementById('wdlEmptyState');
+            if (wdlEmpty) wdlEmpty.hidden = hasWdl;
+            const goalsEmpty = document.getElementById('goalsEmptyState');
+            if (goalsEmpty) goalsEmpty.hidden = hasGoalsByMatch;
+
+            const canvasPie = document.getElementById('wdlPieChart');
+            if (canvasPie) {
+                const ctx = canvasPie.getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Thắng', 'Hòa', 'Thua'],
+                        datasets: [{
+                            data: hasWdl ? [chartsData.win, chartsData.draw, chartsData.loss] : [0, 0, 0],
+                            backgroundColor: [colors.win, colors.draw, colors.loss],
+                            borderColor: '#ffffff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } },
+                            tooltip: { enabled: hasWdl }
+                        }
+                    }
+                });
+            }
+
+            const canvasGoals = document.getElementById('goalsPerMatchBarChart');
+            if (canvasGoals) {
+                const ctx = canvasGoals.getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: hasGoalsByMatch ? chartsData.matchLabels : ['Chưa có dữ liệu'],
+                        datasets: [{
+                            label: 'Bàn thắng',
+                            data: hasGoalsByMatch ? chartsData.goalsForByMatch : [0],
+                            backgroundColor: colors.win,
+                            borderRadius: 6,
+                            barThickness: 22
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { stepSize: 1 } },
+                            x: { grid: { display: false }, ticks: { maxRotation: 60, minRotation: 20 } }
+                        }
+                    }
+                });
+            }
+        }
+
+        function reloadChartsByTeam(teamId) {
+            const tournamentId = /*[[${tournament != null ? tournament.id : null}]]*/ null;
+            const container = document.querySelector('[data-tab-panel="fragment"]');
+            if (!container || !tournamentId) return;
+
+            let url = `/user/tournament/charts-fragment?id=${tournamentId}`;
+            if (teamId) {
+                url += `&teamId=${teamId}`;
+            }
+
+            fetch(url)
+                    .then(response => response.text())
+                    .then(html => {
+                        container.innerHTML = html;
+                        const scripts = container.querySelectorAll('script');
+                        scripts.forEach(oldScript => {
+                            const newScript = document.createElement('script');
+                            Array.from(oldScript.attributes).forEach(attribute => {
+                                newScript.setAttribute(attribute.name, attribute.value);
+                            });
+                            newScript.textContent = oldScript.textContent;
+                            oldScript.replaceWith(newScript);
+                        });
+                    })
+                    .catch(err => console.error('Failed to reload charts:', err));
+        }
+
+        (() => {
+            const chartsData = /*[[${charts}]]*/ {
+                teamId: null,
+                teamName: null,
+                win: 0,
+                draw: 0,
+                loss: 0,
+                matchLabels: [],
+                goalsForByMatch: []
+            };
+            renderCharts(chartsData);
+
+            const picks = Array.from(document.querySelectorAll('.js-team-pick'));
+            if (picks.length > 0) {
+                picks.forEach(p => {
+                    p.addEventListener('change', () => {
+                        if (!p.checked) {
+                            p.checked = true;
+                            return;
+                        }
+                        picks.forEach(other => { if (other !== p) other.checked = false; });
+                        reloadChartsByTeam(p.value);
+                    });
+                });
+            }
+        })();
+        /*]]>*/
+    </script>
+</div>

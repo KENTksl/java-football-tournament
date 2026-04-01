@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết giải đấu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/assets/css/user-home.css}">
+    <link rel="stylesheet" th:href="@{/assets/css/user-pages.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" th:href="@{/assets/css/tournament-match-schedule.css}">
+
+</head>
+<body class="tournament-page">
+
+<!-- TOP NAV -->
+<th:block th:replace="~{user/fragments/header :: header('tournament')}"></th:block>
+
+ 
+<section class="banner">
+    <div class="container">
+        <h1>CHI TIẾT GIẢI ĐẤU</h1>
+        <p class="crumb">Home / Tournament Detail</p>
+    </div>
+</section>
+
+<!-- MAIN CONTENT -->
+<main>
+    <div class="container">
+
+        <!-- BACK LINK -->
+        <div class="back-link-bar">
+            <a th:href="@{/user/tournament}" class="back-link">
+                <span class="back-link__icon">←</span>
+                Quay lại danh sách
+            </a>
+            <button type="button"
+                    th:if="${tournament != null and tournament.status != null and tournament.status.name() == 'UPCOMING' and !tournamentIsFull and currentUserEmail != null and !#strings.isEmpty(currentUserEmail)}"
+                    class="register-btn"
+                    data-open-signup-modal
+                    th:attr="data-signup-url=@{/user/tournament/sign-up(id=${tournament.id},embedded=true)}">
+                Đăng kí giải đấu
+            </button>
+            <a th:if="${tournament != null and tournament.status != null and tournament.status.name() == 'UPCOMING' and !tournamentIsFull and (currentUserEmail == null or #strings.isEmpty(currentUserEmail))}"
+               class="register-btn"
+               th:href="@{/dang-nhap(redirect=${'/user/tournament/sign-up?id=' + tournament.id + '&embedded=true'})}">
+                Đăng nhập để đăng ký
+            </a>
+            <span th:if="${tournament != null and tournament.status != null and tournament.status.name() == 'UPCOMING' and tournamentIsFull}" class="register-btn" style="background:#6b7280;">Giải đã đủ đội</span>
+        </div>
+
+        <!-- TOURNAMENT INFO -->
+        <div class="tournament-section">
+            <div class="tournament-info">
+                <div class="tournament-logo">
+                    <img th:if="${tournament != null and tournament.imageUrl != null and !#strings.isEmpty(tournament.imageUrl)}"
+                         th:src="${tournament.imageUrl}"
+                         th:alt="${tournament.name != null ? tournament.name : 'Tournament'}"
+                         class="tournament-logo__img">
+                    <svg th:unless="${tournament != null and tournament.imageUrl != null and !#strings.isEmpty(tournament.imageUrl)}"
+                         class="club-logo-svg" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="55" cy="55" r="50" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+                        <circle cx="55" cy="55" r="42" fill="none" stroke="#222" stroke-width="3"/>
+                        <circle cx="55" cy="55" r="12" fill="#222"/>
+                        <line x1="55" y1="13" x2="55" y2="97" stroke="#222" stroke-width="2.5"/>
+                        <line x1="13" y1="55" x2="97" y2="55" stroke="#222" stroke-width="2.5"/>
+                        <polygon points="55,22 68,42 55,55 42,42" fill="#222"/>
+                        <polygon points="55,88 68,68 55,55 42,68" fill="#222"/>
+                        <text x="55" y="30" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" font-family="Arial">CLUB</text>
+                        <text x="55" y="82" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" font-family="Arial">NAME</text>
+                    </svg>
+                </div>
+
+                <div class="tournament-details">
+                    <div class="tournament-name" th:text="${tournament != null and tournament.name != null and !#strings.isEmpty(tournament.name) ? tournament.name : 'Giải đấu'}">HUTECH mở rộng lần 31</div>
+                    <div class="tournament-meta">
+                        <span th:text="${'BTC: ' + (tournament != null and tournament.organizer != null and !#strings.isEmpty(tournament.organizer) ? tournament.organizer : '—')}">BTC: Đỗ Thành Nhân</span>
+                        <span th:text="${'Hình thức: ' + ((tournament != null and tournament.mode != null and tournament.mode.name() == 'GROUP_STAGE') ? 'Vòng bảng' : 'Knockout')}">Hình thức: Knockout</span>
+                        <span th:text="${'Số đội: ' + (tournament != null and tournament.teamLimit != null ? tournament.teamLimit : '—')}">Số đội: 4</span>
+                        <span>Trạng thái:
+                            <span class="status-badge" th:text="${
+                            tournament == null or tournament.status == null ? 'Đang cập nhật'
+                            : (tournament.status.name() == 'UPCOMING' ? 'Sắp diễn ra'
+                            : (tournament.status.name() == 'LIVE' ? 'Đang diễn ra' : 'Đã kết thúc'))
+                            }">Đã kết thúc</span>
+                        </span>
+                        <span th:text="${'Mô tả: ' + (tournament != null and tournament.description != null and !#strings.isEmpty(tournament.description) ? tournament.description : 'Chưa có mô tả')}">Mô tả: Chưa có mô tả</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABS -->
+            <div class="tabs">
+                <button type="button" class="tab tab--active" data-tab-target="schedule">Lịch đấu</button>
+                <button type="button" class="tab" data-tab-target="fragment" th:attr="data-fragment-url=@{/user/tournament/standing-fragment(id=${tournament != null ? tournament.id : null})}">BXH</button>
+                <button type="button" class="tab" data-tab-target="fragment" th:attr="data-fragment-url=@{/user/tournament/statistics-fragment(id=${tournament != null ? tournament.id : null})}">Thống kê</button>
+                <button type="button" class="tab" data-tab-target="fragment" th:attr="data-fragment-url=@{/user/tournament/charts-fragment(id=${tournament != null ? tournament.id : null})}">Biểu đồ</button>
+                <button type="button" class="tab" data-tab-target="fragment" th:attr="data-fragment-url=@{/user/tournament/live-fragment(id=${tournament != null ? tournament.id : null})}">Live</button>
+                <button type="button" class="tab" data-tab-target="fragment" th:attr="data-fragment-url=@{/user/tournament/bracket-fragment(id=${tournament != null ? tournament.id : null})}">Bracket</button>
+                <button type="button" class="tab" data-tab-target="fragment" th:attr="data-fragment-url=@{/user/tournament/best-players-fragment(id=${tournament != null ? tournament.id : null})}">Cầu thủ xuất sắc</button>
+                <button type="button" class="tab" data-tab-target="fragment" th:attr="data-fragment-url=@{/user/tournament/teams-fragment(id=${tournament != null ? tournament.id : null})}">Các đội</button>
+            </div>
+        </div>
+
+        <div data-tab-panel="schedule">
+            <div class="matches-section">
+                <div th:if="${!scheduleReady}" class="alert alert-light" style="border:1px solid #d9d9d9; border-radius:12px;">
+                    <span th:text="${scheduleMessage}">Giải đấu chưa có lịch thi đấu</span>
+                </div>
+
+                <th:block th:if="${scheduleReady and scheduleMode == 'GROUP_STAGE'}">
+                    <div class="tabs" style="margin-bottom:16px;">
+                        <button type="button" class="tab tab--active" data-stage-tab="group">Vòng bảng</button>
+                        <button type="button" class="tab" data-stage-tab="knockout">Vòng trong</button>
+                    </div>
+
+                    <div data-stage-panel="group">
+                    <div class="tabs" style="margin-bottom:16px;">
+                        <button type="button" class="tab tab--active" data-group-tab="A">Bảng A</button>
+                        <button type="button" class="tab" data-group-tab="B">Bảng B</button>
+                        <button type="button" class="tab" data-group-tab="C">Bảng C</button>
+                        <button type="button" class="tab" data-group-tab="D">Bảng D</button>
+                    </div>
+
+                    <div data-group-panel="A" class="group-panel is-open">
+                        <div style="font-weight:700; margin:10px 0;">Danh sách cặp đấu bảng A</div>
+                        <table class="table">
+                            <thead><tr><th>Ngày/giờ</th><th>Lượt</th><th>Đội 1</th><th class="text-center">Tỉ số</th><th>Đội 2</th><th>Trạng thái</th><th class="text-center">Xem</th></tr></thead>
+                            <tbody>
+                            <tr th:if="${groupMatches == null or groupMatches['A'] == null or #lists.isEmpty(groupMatches['A'])}">
+                                <td colspan="6" class="text-center">Chưa có lịch thi đấu bảng A</td>
+                            </tr>
+                            <tr th:each="m : ${groupMatches['A']}">
+                                <td th:text="${m.scheduledAt != null ? #temporals.format(m.scheduledAt, 'yyyy-MM-dd HH:mm') : 'Chưa xếp lịch'}">2026-01-01 20:00</td>
+                                <td><span class="badge" style="background:#fff7ed;color:#9a3412;font-weight:800;padding:4px 8px;border-radius:999px;" th:text="${m.legLabel != null && !#strings.isEmpty(m.legLabel) ? m.legLabel : '-'}">L1</span></td>
+                                <td th:text="${m.homeTeamName}">Đội 1</td>
+                                <td class="text-center fw-bold" th:text="${m.scoreLabel()}"></td>
+                                <td th:text="${m.awayTeamName}">Đội 2</td>
+                                <td th:text="${m.statusLabel}">Sắp diễn ra</td>
+                                <td class="text-center">
+                                    <button type="button" class="view-btn" data-open-match-modal th:attr="data-lineup-url=@{/user/tournament/match-lineup(tournamentId=${tournament != null ? tournament.id : null},matchId=${m.id})}">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg>
+                                    </button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div data-group-panel="B" class="group-panel" hidden>
+                        <div style="font-weight:700; margin:10px 0;">Danh sách cặp đấu bảng B</div>
+                        <table class="table">
+                            <thead><tr><th>Ngày/giờ</th><th>Lượt</th><th>Đội 1</th><th class="text-center">Tỉ số</th><th>Đội 2</th><th>Trạng thái</th><th class="text-center">Xem</th></tr></thead>
+                            <tbody>
+                            <tr th:if="${groupMatches == null or groupMatches['B'] == null or #lists.isEmpty(groupMatches['B'])}"><td colspan="6" class="text-center">Chưa có lịch thi đấu bảng B</td></tr>
+                            <tr th:each="m : ${groupMatches['B']}">
+                                <td th:text="${m.scheduledAt != null ? #temporals.format(m.scheduledAt, 'yyyy-MM-dd HH:mm') : 'Chưa xếp lịch'}"></td><td><span class="badge" style="background:#fff7ed;color:#9a3412;font-weight:800;padding:4px 8px;border-radius:999px;" th:text="${m.legLabel != null && !#strings.isEmpty(m.legLabel) ? m.legLabel : '-'}">L1</span></td><td th:text="${m.homeTeamName}"></td><td class="text-center fw-bold" th:text="${m.scoreLabel()}"></td><td th:text="${m.awayTeamName}"></td><td th:text="${m.statusLabel}"></td><td class="text-center"><button type="button" class="view-btn" data-open-match-modal th:attr="data-lineup-url=@{/user/tournament/match-lineup(tournamentId=${tournament != null ? tournament.id : null},matchId=${m.id})}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg></button></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div data-group-panel="C" class="group-panel" hidden>
+                        <div style="font-weight:700; margin:10px 0;">Danh sách cặp đấu bảng C</div>
+                        <table class="table">
+                            <thead><tr><th>Ngày/giờ</th><th>Lượt</th><th>Đội 1</th><th class="text-center">Tỉ số</th><th>Đội 2</th><th>Trạng thái</th><th class="text-center">Xem</th></tr></thead>
+                            <tbody>
+                            <tr th:if="${groupMatches == null or groupMatches['C'] == null or #lists.isEmpty(groupMatches['C'])}"><td colspan="6" class="text-center">Chưa có lịch thi đấu bảng C</td></tr>
+                            <tr th:each="m : ${groupMatches['C']}">
+                                <td th:text="${m.scheduledAt != null ? #temporals.format(m.scheduledAt, 'yyyy-MM-dd HH:mm') : 'Chưa xếp lịch'}"></td><td><span class="badge" style="background:#fff7ed;color:#9a3412;font-weight:800;padding:4px 8px;border-radius:999px;" th:text="${m.legLabel != null && !#strings.isEmpty(m.legLabel) ? m.legLabel : '-'}">L1</span></td><td th:text="${m.homeTeamName}"></td><td class="text-center fw-bold" th:text="${m.scoreLabel()}"></td><td th:text="${m.awayTeamName}"></td><td th:text="${m.statusLabel}"></td><td class="text-center"><button type="button" class="view-btn" data-open-match-modal th:attr="data-lineup-url=@{/user/tournament/match-lineup(tournamentId=${tournament != null ? tournament.id : null},matchId=${m.id})}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg></button></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div data-group-panel="D" class="group-panel" hidden>
+                        <div style="font-weight:700; margin:10px 0;">Danh sách cặp đấu bảng D</div>
+                        <table class="table">
+                            <thead><tr><th>Ngày/giờ</th><th>Lượt</th><th>Đội 1</th><th class="text-center">Tỉ số</th><th>Đội 2</th><th>Trạng thái</th><th class="text-center">Xem</th></tr></thead>
+                            <tbody>
+                            <tr th:if="${groupMatches == null or groupMatches['D'] == null or #lists.isEmpty(groupMatches['D'])}"><td colspan="6" class="text-center">Chưa có lịch thi đấu bảng D</td></tr>
+                            <tr th:each="m : ${groupMatches['D']}">
+                                <td th:text="${m.scheduledAt != null ? #temporals.format(m.scheduledAt, 'yyyy-MM-dd HH:mm') : 'Chưa xếp lịch'}"></td><td><span class="badge" style="background:#fff7ed;color:#9a3412;font-weight:800;padding:4px 8px;border-radius:999px;" th:text="${m.legLabel != null && !#strings.isEmpty(m.legLabel) ? m.legLabel : '-'}">L1</span></td><td th:text="${m.homeTeamName}"></td><td class="text-center fw-bold" th:text="${m.scoreLabel()}"></td><td th:text="${m.awayTeamName}"></td><td th:text="${m.statusLabel}"></td><td class="text-center"><button type="button" class="view-btn" data-open-match-modal th:attr="data-lineup-url=@{/user/tournament/match-lineup(tournamentId=${tournament != null ? tournament.id : null},matchId=${m.id})}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg></button></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    </div>
+
+                    <div data-stage-panel="knockout" hidden>
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Vòng</th>
+                                <th>Ngày/giờ</th>
+                                <th>Đội 1</th>
+                                <th class="text-center">Tỉ số</th>
+                                <th>Đội 2</th>
+                                <th>Trạng thái</th>
+                                <th class="text-center">Xem</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:if="${knockoutMatches == null or #lists.isEmpty(knockoutMatches)}">
+                                <td colspan="7" class="text-center">Vòng trong sẽ tự cập nhật khi vòng bảng hoàn tất</td>
+                            </tr>
+                            <tr th:each="m : ${knockoutMatches}">
+                                <td th:text="${m.roundName != null ? m.roundName : 'Vòng'}">Tứ kết</td>
+                                <td th:text="${m.scheduledAt != null ? #temporals.format(m.scheduledAt, 'yyyy-MM-dd HH:mm') : 'Chưa xếp lịch'}">2026-01-01 20:00</td>
+                                <td th:text="${m.homeTeamName}">Đội 1</td>
+                                <td class="text-center fw-bold" th:text="${m.scoreLabel()}"></td>
+                                <td th:text="${m.awayTeamName}">Đội 2</td>
+                                <td th:text="${m.statusLabel}">Sắp diễn ra</td>
+                                <td class="text-center"><button type="button" class="view-btn" data-open-match-modal th:attr="data-lineup-url=@{/user/tournament/match-lineup(tournamentId=${tournament != null ? tournament.id : null},matchId=${m.id})}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg></button></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </th:block>
+
+                <th:block th:if="${scheduleReady and scheduleMode == 'KNOCKOUT'}">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Vòng</th>
+                            <th>Ngày/giờ</th>
+                            <th>Đội 1</th>
+                            <th class="text-center">Tỉ số</th>
+                            <th>Đội 2</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Xem</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${knockoutMatches == null or #lists.isEmpty(knockoutMatches)}">
+                            <td colspan="7" class="text-center">Chưa có lịch đấu vòng trong</td>
+                        </tr>
+                        <tr th:each="m : ${knockoutMatches}">
+                            <td th:text="${m.roundName != null ? m.roundName : 'Vòng'}">Bán kết</td>
+                            <td th:text="${m.scheduledAt != null ? #temporals.format(m.scheduledAt, 'yyyy-MM-dd HH:mm') : 'Chưa xếp lịch'}">2026-01-01 20:00</td>
+                            <td th:text="${m.homeTeamName}">Đội 1</td>
+                            <td class="text-center fw-bold" th:text="${m.scoreLabel()}"></td>
+                            <td th:text="${m.awayTeamName}">Đội 2</td>
+                            <td th:text="${m.statusLabel}">Sắp diễn ra</td>
+                            <td class="text-center"><button type="button" class="view-btn" data-open-match-modal th:attr="data-lineup-url=@{/user/tournament/match-lineup(tournamentId=${tournament != null ? tournament.id : null},matchId=${m.id})}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg></button></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </th:block>
+            </div>
+        </div>
+        <div data-tab-panel="fragment" hidden></div>
+
+</div>
+</main>
+
+<th:block th:replace="~{user/fragments/footer :: footer('tournament')}"></th:block>
+<div id="tournamentMeta" th:attr="data-tournament-id=${tournament != null ? tournament.id : ''}" hidden></div>
+
+<div class="modal" id="matchDetailModal" aria-hidden="true">
+    <div class="modal__backdrop" data-close-match-modal></div>
+    <section class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="matchDetailTitle">
+        <header class="modal__top">
+            <h2 class="modal__title" id="matchDetailTitle">CHI TIẾT TRẬN ĐẤU</h2>
+            <button type="button" class="modal__close" data-close-match-modal aria-label="Đóng">×</button>
+        </header>
+        <div class="modal__body">
+            <div class="score-strip">
+                <div class="score-strip__team" id="lineupHomeTeamName">Đội 1</div>
+                <div class="score-strip__score" id="lineupScoreText">-</div>
+                <div class="score-strip__team score-strip__team--right" id="lineupAwayTeamName">Đội 2</div>
+            </div>
+            <div class="lineup-grid">
+                <section class="lineup-card team-column">
+                    <h3 class="lineup-card__title" id="lineupHomeTeamTitle">ĐỘI 1</h3>
+                    <div class="formation-pitch" id="lineupHomePitch"></div>
+                    <div class="bench-title">Đội hình dự bị</div>
+                    <div class="bench" id="lineupHomeBench"></div>
+                </section>
+                <section class="lineup-card team-column">
+                    <h3 class="lineup-card__title" id="lineupAwayTeamTitle">ĐỘI 2</h3>
+                    <div class="formation-pitch" id="lineupAwayPitch"></div>
+                    <div class="bench-title">Đội hình dự bị</div>
+                    <div class="bench" id="lineupAwayBench"></div>
+                </section>
+            </div>
+            <div class="modal__foot">
+                <a id="watchLiveBtn" class="modal__action" href="#" hidden>Xem trực tiếp</a>
+                <button type="button" class="modal__action" data-close-match-modal>Đóng</button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="signup-overlay" id="signupOverlay" aria-hidden="true">
+    <div class="signup-overlay__backdrop" data-close-signup-overlay></div>
+    <section class="signup-overlay__dialog" role="dialog" aria-modal="true">
+        <header class="signup-overlay__header">
+            <h3>Đăng kí giải đấu</h3>
+            <button type="button" class="signup-overlay__close" data-close-signup-overlay aria-label="Đóng">×</button>
+        </header>
+        <iframe id="signupOverlayFrame" class="signup-overlay__frame" src="about:blank"></iframe>
+    </section>
+</div>
+
+<script>
+    const tabs = document.querySelectorAll('.tournament-section > .tabs .tab');
+    const schedulePanel = document.querySelector('[data-tab-panel="schedule"]');
+    const fragmentPanel = document.querySelector('[data-tab-panel="fragment"]');
+    const fragmentCache = new Map();
+
+    const executeInlineScripts = container => {
+        const scripts = container.querySelectorAll('script');
+        scripts.forEach(oldScript => {
+            const newScript = document.createElement('script');
+            Array.from(oldScript.attributes).forEach(attribute => {
+                newScript.setAttribute(attribute.name, attribute.value);
+            });
+            newScript.textContent = oldScript.textContent;
+            oldScript.replaceWith(newScript);
+        });
+    };
+
+    const setActiveTab = activeTab => {
+        tabs.forEach(tab => tab.classList.remove('tab--active'));
+        activeTab.classList.add('tab--active');
+    };
+
+    const showSchedulePanel = activeTab => {
+        setActiveTab(activeTab);
+        schedulePanel.hidden = false;
+        fragmentPanel.hidden = true;
+    };
+
+    const showFragmentPanel = async activeTab => {
+        const fragmentUrl = activeTab.dataset.fragmentUrl;
+        if (!fragmentUrl) {
+            return;
+        }
+        setActiveTab(activeTab);
+        schedulePanel.hidden = true;
+        fragmentPanel.hidden = false;
+        const shouldCache = !fragmentUrl.includes('/standing-fragment');
+        if (!shouldCache || !fragmentCache.has(fragmentUrl)) {
+            const response = await fetch(fragmentUrl, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Không tải được nội dung tab');
+            }
+            const html = await response.text();
+            if (shouldCache) {
+                fragmentCache.set(fragmentUrl, html);
+            } else {
+                fragmentCache.delete(fragmentUrl);
+                fragmentPanel.innerHTML = html;
+                executeInlineScripts(fragmentPanel);
+                return;
+            }
+        }
+        fragmentPanel.innerHTML = fragmentCache.get(fragmentUrl);
+        executeInlineScripts(fragmentPanel);
+    };
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', async event => {
+            event.preventDefault();
+            if (tab.dataset.tabTarget === 'schedule') {
+                showSchedulePanel(tab);
+                return;
+            }
+            try {
+                await showFragmentPanel(tab);
+            } catch (error) {
+                fragmentPanel.innerHTML = '<div style="padding:16px;">Không thể tải dữ liệu tab.</div>';
+                fragmentPanel.hidden = false;
+            }
+        });
+    });
+
+    const stageTabs = document.querySelectorAll('[data-stage-tab]');
+    const stagePanels = document.querySelectorAll('[data-stage-panel]');
+    stageTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            stageTabs.forEach(item => item.classList.remove('tab--active'));
+            tab.classList.add('tab--active');
+            const stage = tab.dataset.stageTab;
+            stagePanels.forEach(panel => {
+                panel.hidden = panel.dataset.stagePanel !== stage;
+            });
+        });
+    });
+
+    const groupTabs = document.querySelectorAll('[data-group-tab]');
+    const groupPanels = document.querySelectorAll('[data-group-panel]');
+    groupTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            groupTabs.forEach(item => item.classList.remove('tab--active'));
+            tab.classList.add('tab--active');
+            const group = tab.dataset.groupTab;
+            groupPanels.forEach(panel => {
+                panel.hidden = panel.dataset.groupPanel !== group;
+            });
+        });
+    });
+
+    const matchDetailModal = document.getElementById('matchDetailModal');
+    const closeModalButtons = document.querySelectorAll('[data-close-match-modal]');
+    const lineupHomeTeamName = document.getElementById('lineupHomeTeamName');
+    const lineupAwayTeamName = document.getElementById('lineupAwayTeamName');
+    const lineupHomeTeamTitle = document.getElementById('lineupHomeTeamTitle');
+    const lineupAwayTeamTitle = document.getElementById('lineupAwayTeamTitle');
+    const lineupScoreText = document.getElementById('lineupScoreText');
+    const lineupHomePitch = document.getElementById('lineupHomePitch');
+    const lineupAwayPitch = document.getElementById('lineupAwayPitch');
+    const lineupHomeBench = document.getElementById('lineupHomeBench');
+    const lineupAwayBench = document.getElementById('lineupAwayBench');
+    const watchLiveBtn = document.getElementById('watchLiveBtn');
+    const tournamentMeta = document.getElementById('tournamentMeta');
+    const tournamentIdForLive = tournamentMeta ? tournamentMeta.dataset.tournamentId : '';
+    const signupOverlay = document.getElementById('signupOverlay');
+    const signupOverlayFrame = document.getElementById('signupOverlayFrame');
+
+    const openMatchModal = () => {
+        matchDetailModal.classList.add('is-open');
+        matchDetailModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    };
+
+    const closeMatchModal = () => {
+        matchDetailModal.classList.remove('is-open');
+        matchDetailModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    };
+
+    closeModalButtons.forEach(button => {
+        button.addEventListener('click', closeMatchModal);
+    });
+
+    const avatarOf = player => player?.avatarUrl || 'https://i.pravatar.cc/100?u=' + (player?.id || Math.random());
+
+    const renderStarterToken = (player, top, left, label) => {
+        if (!player) {
+            return '<div class="position-slot lineup-slot-marker" style="top:' + top + '%;left:' + left + '%;">' + label + '</div>';
+        }
+        const numberText = player.jerseyNumber == null ? '' : ('#' + player.jerseyNumber);
+        const positionText = player.position || label || '';
+        return '<div class="lineup-player-token" style="top:' + top + '%;left:' + left + '%;">'
+            + '<img src="' + avatarOf(player) + '" alt="' + (player.fullName || 'player') + '">'
+            + '<div class="lineup-player-meta">' + positionText + '<br>' + numberText + '<br>' + (player.fullName || '') + '</div>'
+            + '</div>';
+    };
+
+    const renderBench = (players, target) => {
+        if (!Array.isArray(players) || players.length === 0) {
+            target.innerHTML = '<div class="lineup-empty">Chưa có cầu thủ dự bị</div>';
+            return;
+        }
+        target.innerHTML = players.map(player => {
+            const numberText = player.jerseyNumber == null ? '' : ('#' + player.jerseyNumber + ' ');
+            return '<div class="lineup-bench-item"><img src="' + avatarOf(player) + '" alt="' + (player.fullName || 'player') + '"><span>' + numberText + (player.fullName || '') + '</span></div>';
+        }).join('');
+    };
+
+    const renderPitch = (pitch, slots, starters) => {
+        const starterMap = new Map();
+        if (Array.isArray(starters)) {
+            starters.forEach(item => {
+                starterMap.set(item.slotIndex, item.player);
+            });
+        }
+        pitch.innerHTML = (Array.isArray(slots) ? slots : []).map(slot => {
+            const player = starterMap.get(slot.index);
+            return renderStarterToken(player, slot.top, slot.left, slot.label);
+        }).join('');
+    };
+
+    const showLineupModal = lineup => {
+        lineupHomeTeamName.textContent = lineup?.homeTeam?.teamName || 'Đội 1';
+        lineupAwayTeamName.textContent = lineup?.awayTeam?.teamName || 'Đội 2';
+        lineupHomeTeamTitle.textContent = lineup?.homeTeam?.teamName || 'ĐỘI 1';
+        lineupAwayTeamTitle.textContent = lineup?.awayTeam?.teamName || 'ĐỘI 2';
+        const score = lineup?.homeScore != null && lineup?.awayScore != null ? (lineup.homeScore + ' - ' + lineup.awayScore) : 'Chưa có tỉ số';
+        lineupScoreText.textContent = score + (lineup?.statusLabel ? (' (' + lineup.statusLabel + ')') : '');
+        renderPitch(lineupHomePitch, lineup?.pitchSlots, lineup?.homeTeam?.starters);
+        renderPitch(lineupAwayPitch, lineup?.pitchSlots, lineup?.awayTeam?.starters);
+        renderBench(lineup?.homeTeam?.bench, lineupHomeBench);
+        renderBench(lineup?.awayTeam?.bench, lineupAwayBench);
+        if (watchLiveBtn) {
+            if (lineup?.liveStreamUrl) {
+                const matchId = lineup?.matchId;
+                if (tournamentIdForLive && matchId) {
+                    watchLiveBtn.href = '/user/tournament/live-match?id=' + tournamentIdForLive + '&matchId=' + matchId;
+                    watchLiveBtn.hidden = false;
+                } else {
+                    watchLiveBtn.href = lineup.liveStreamUrl;
+                    watchLiveBtn.hidden = false;
+                }
+            } else {
+                watchLiveBtn.href = '#';
+                watchLiveBtn.hidden = true;
+            }
+        }
+        openMatchModal();
+    };
+
+    document.addEventListener('click', async event => {
+        const button = event.target.closest('[data-open-match-modal]');
+        if (!button) {
+            return;
+        }
+        event.preventDefault();
+        const lineupUrl = button.dataset.lineupUrl;
+        if (!lineupUrl) {
+            return;
+        }
+        const originalHtml = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '...';
+        try {
+            const response = await fetch(lineupUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (!response.ok) {
+                throw new Error('Không thể tải đội hình');
+            }
+            const data = await response.json();
+            if (!data.found) {
+                alert(data.message || 'Admin chưa cập nhật đội hình trận này');
+                return;
+            }
+            showLineupModal(data);
+        } catch (error) {
+            alert('Không thể tải đội hình. Vui lòng thử lại.');
+        } finally {
+            button.disabled = false;
+            button.innerHTML = originalHtml;
+        }
+    });
+
+    window.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && matchDetailModal.classList.contains('is-open')) {
+            closeMatchModal();
+        }
+    });
+
+    const openSignupOverlay = signupUrl => {
+        if (!signupUrl) return;
+        signupOverlayFrame.src = signupUrl;
+        signupOverlay.classList.add('is-open');
+        signupOverlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    };
+
+    const closeSignupOverlay = () => {
+        signupOverlay.classList.remove('is-open');
+        signupOverlay.setAttribute('aria-hidden', 'true');
+        signupOverlayFrame.src = 'about:blank';
+        document.body.style.overflow = '';
+    };
+
+    document.querySelectorAll('[data-open-signup-modal]').forEach(button => {
+        button.addEventListener('click', () => {
+            openSignupOverlay(button.dataset.signupUrl);
+        });
+    });
+
+    document.querySelectorAll('[data-close-signup-overlay]').forEach(button => {
+        button.addEventListener('click', closeSignupOverlay);
+    });
+
+    window.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && signupOverlay.classList.contains('is-open')) {
+            closeSignupOverlay();
+        }
+    });
+</script>
+</body>
+</html>
+
