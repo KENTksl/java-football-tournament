@@ -1,22 +1,30 @@
 services:
   db:
+    # MySQL database cho ứng dụng
     container_name: football-db
     image: mysql:8.4
     environment:
+      # Tên database được app dùng (SPRING_DATASOURCE_URL)
       MYSQL_DATABASE: TournamentDB
+      # Lấy từ .env (khuyến nghị). Nếu không có thì dùng "root".
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
     ports:
+      # Tuỳ chọn: mở DB ra host (tiện dùng tool local). Không cần thì có thể bỏ.
       - "3306:3306"
     volumes:
+      # Lưu dữ liệu MySQL để không mất khi restart container
       - db_data:/var/lib/mysql
     healthcheck:
+      # Chờ MySQL sẵn sàng rồi mới chạy app
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${MYSQL_ROOT_PASSWORD:-root}"]
       interval: 5s
       timeout: 3s
       retries: 30
 
   app:
+    # Container chạy ứng dụng Spring Boot
     container_name: football-app
+    # Tên image/tag sau khi build (docker compose build)
     image: nhqminh/football-tournament
     build:
       context: .
@@ -24,16 +32,24 @@ services:
       db:
         condition: service_healthy
     environment:
+      # QUAN TRỌNG: trong Docker network phải dùng "db" (KHÔNG phải localhost)
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/TournamentDB?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       DB_USERNAME: root
+      # Dùng lại MYSQL_ROOT_PASSWORD làm mật khẩu DB cho app
       DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      # Chiến lược tạo/cập nhật schema (production có thể đổi sang "validate")
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      # Tắt open-in-view để tránh lazy-loading trong view (an toàn hơn)
       SPRING_JPA_OPEN_IN_VIEW: "false"
     ports:
+      # Mở port app ra host
       - "8080:8080"
     volumes:
+      # Lưu file uploads (khớp thư mục tạo trong Dockerfile)
       - uploads_data:/app/src/main/resources/static/uploads
 
 volumes:
+  # Volume cho MySQL
   db_data:
+  # Volume cho uploads
   uploads_data:
